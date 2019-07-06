@@ -1,0 +1,12 @@
+// Copyright (c) The Libra Core Contributors
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package types;
+option go_package = "github.com/the729/go-libra/generated/types";
+
+message AccessPath {
+  bytes address = 1;
+  bytes path = 2;
+}

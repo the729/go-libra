@@ -10,3 +10,8 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+cmd/test
+*.pb.go
+wallet.toml*
+cmd/client/client
