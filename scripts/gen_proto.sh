@@ -1,11 +1,11 @@
 #!/bin/bash
-
-print_help()
-{
-    echo "Build client binary and connect to testnet."
-    echo "\`$0 -r|--release\` to use release build or"
-    echo "\`$0\` to use debug build."
-}
+#
+# Usage:
+#   ./gen_proto.sh
+#       - build all .proto into .pb.go
+#   LIBRAPATH=/path/to/rust/libra ./gen_proto.sh
+#       - copy .proto from rust LibraCore project, patch them, then build
+#
 
 copy_proto()
 {
