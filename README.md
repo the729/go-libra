@@ -15,6 +15,10 @@ As Libra itself is in an early stage, go-libra is developed as a proof of concep
 
 ## Installation
 
+1. Install protobuf and gRPC (instructions here: https://grpc.io/docs/quickstart/go/). 
+
+2. Install go-libra:
+
 ```bash
 $ # download the code
 $ go get -u github.com/the729/go-libra
