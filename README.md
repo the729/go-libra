@@ -1,11 +1,11 @@
 # go-libra
-This is a golang implementation of the Libra blockchain (github.com/libra/libra). Currently, only a client is implemented. 
+This is a golang implementation of the Libra blockchain (https://github.com/libra/libra). Currently, only a client is implemented. 
 
 As Libra itself is in an early stage, go-libra is developed as a proof of concept, only for experimental and learning purposes. 
 
 ## Features
 
-- ✓ Connect to testnet AccessControl server with gRPC
+- ✓ Connect to testnet AdmissionControl server with gRPC
 - ✓ Query account states, including balance, sequence number, from the ledger, and do all necessary verifications
 - ✓ Mint LibraCoin through the 'official' faucet service
 - ✓ Peer to peer transfer LibraCoin, and wait for ledger inclusion
@@ -31,7 +31,7 @@ This should build the client binary executable in cmd/client/client.
 
 ## Usage
 
-The commands similar to those of the official rust implementation. However, this is not an interactive CLI program, meaning that every time when you execute a new command, a new process is created, do the work, and terminated. 
+The commands are similar to those of the official rust implementation. However, this is not an interactive CLI program, meaning that every time when you execute a new command, a new process is created, do the work, and terminated. 
 
 This guarantees that no state is preserved between commands, except the config files. It is easier to see what must be done in order to finish each command, without any prior knowledge about the ledger state.
 
