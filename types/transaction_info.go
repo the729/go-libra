@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 
 	"github.com/the729/go-libra/crypto/sha3libra"
-	pbtypes "github.com/the729/go-libra/generated/types"
+	"github.com/the729/go-libra/generated/pbtypes"
 )
 
 type TransactionInfo struct {

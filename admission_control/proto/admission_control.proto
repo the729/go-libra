@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package admission_control;
-option go_package = "github.com/the729/go-libra/generated/ac";
+option go_package = "github.com/the729/go-libra/generated/pbac";
 
 import "get_with_proof.proto";
 import "mempool_status.proto";

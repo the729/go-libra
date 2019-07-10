@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package mempool;
-option go_package = "github.com/the729/go-libra/generated/mpshared";
+option go_package = "github.com/the729/go-libra/generated/pbmpshared";
 
 enum MempoolAddTransactionStatus {
   // Transaction was sent to Mempool

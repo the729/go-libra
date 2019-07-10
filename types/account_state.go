@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	pbtypes "github.com/the729/go-libra/generated/types"
+	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof"
 )
 

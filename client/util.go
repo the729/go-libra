@@ -6,7 +6,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/the729/go-libra/config"
-	"github.com/the729/go-libra/generated/ac"
+	"github.com/the729/go-libra/generated/pbac"
 	"github.com/the729/go-libra/types/validator"
 )
 
@@ -16,7 +16,7 @@ type Client struct {
 	WalletFile      string
 
 	conn     *grpc.ClientConn
-	ac       ac.AdmissionControlClient
+	ac       pbac.AdmissionControlClient
 	verifier validator.Verifier
 	accounts map[string]*Account
 }
@@ -28,7 +28,7 @@ func (c *Client) Connect() error {
 		return fmt.Errorf("did not connect: %v", err)
 	}
 
-	acClient := ac.NewAdmissionControlClient(conn)
+	acClient := pbac.NewAdmissionControlClient(conn)
 	c.conn = conn
 	c.ac = acClient
 	return nil

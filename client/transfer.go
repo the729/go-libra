@@ -18,8 +18,8 @@ import (
 	"golang.org/x/crypto/ed25519"
 
 	"github.com/the729/go-libra/crypto/sha3libra"
-	"github.com/the729/go-libra/generated/ac"
-	pbtypes "github.com/the729/go-libra/generated/types"
+	"github.com/the729/go-libra/generated/pbac"
+	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/language/stdscript"
 	"github.com/urfave/cli"
 )
@@ -77,8 +77,8 @@ func (c *Client) SignRawTransaction(rawTxnBytes []byte, signer ed25519.PrivateKe
 	}
 }
 
-func (c *Client) SubmitTransactionRequest(signedTxn *pbtypes.SignedTransaction) (*ac.SubmitTransactionResponse, error) {
-	req := &ac.SubmitTransactionRequest{
+func (c *Client) SubmitTransactionRequest(signedTxn *pbtypes.SignedTransaction) (*pbac.SubmitTransactionResponse, error) {
+	req := &pbac.SubmitTransactionRequest{
 		SignedTxn: signedTxn,
 	}
 
@@ -139,7 +139,7 @@ func (c *Client) CmdTransfer(ctx *cli.Context) error {
 
 	log.Printf("Result: ")
 	spew.Dump(resp)
-	if resp.GetVmStatus() != nil || resp.GetAcStatus() != ac.AdmissionControlStatus_Accepted {
+	if resp.GetVmStatus() != nil || resp.GetAcStatus() != pbac.AdmissionControlStatus_Accepted {
 		log.Printf("Transaction failed. ")
 		return nil
 	}

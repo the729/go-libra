@@ -4,7 +4,7 @@
 syntax = "proto3";
 
 package types;
-option go_package = "github.com/the729/go-libra/generated/types";
+option go_package = "github.com/the729/go-libra/generated/pbtypes";
 
 /// Even though we don't always need all hashes, we pass them in and return them
 /// always so that we keep them in sync on the client and don't make the client

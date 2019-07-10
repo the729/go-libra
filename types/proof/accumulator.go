@@ -5,7 +5,7 @@ import (
 
 	"github.com/the729/go-libra/common/bitmap"
 	"github.com/the729/go-libra/crypto/sha3libra"
-	pbtypes "github.com/the729/go-libra/generated/types"
+	"github.com/the729/go-libra/generated/pbtypes"
 )
 
 type Accumulator struct {

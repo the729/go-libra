@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	pbtypes "github.com/the729/go-libra/generated/types"
+	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
 	"github.com/urfave/cli"
 )

@@ -6,7 +6,7 @@ import (
 
 	"github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
-	pbtypes "github.com/the729/go-libra/generated/types"
+	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/validator"
 )
 
