@@ -50,6 +50,12 @@ func main() {
 					Aliases: []string{"as"},
 					Action:  c.CmdQueryAccountState,
 				},
+				{
+					Name:    "transaction_range",
+					Usage:   "start limit",
+					Aliases: []string{"tr"},
+					Action:  c.CmdQueryTransactionRange,
+				},
 			},
 		},
 		{
