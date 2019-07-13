@@ -139,15 +139,27 @@ func (c *Client) CmdTransfer(ctx *cli.Context) error {
 
 	log.Printf("Result: ")
 	spew.Dump(resp)
-	if resp.GetVmStatus() != nil || resp.GetAcStatus() != pbac.AdmissionControlStatus_Accepted {
-		log.Printf("Transaction failed. ")
+	if vmStatus := resp.GetVmStatus(); vmStatus != nil {
+		log.Printf("VM Error.")
+		return nil
+	}
+	if mpStatus := resp.GetMempoolStatus(); mpStatus != nil {
+		log.Printf("Mempool Error: ")
+		log.Printf("         Code: %d", mpStatus.Code)
+		log.Printf("      Message: %s", mpStatus.Message)
+		return nil
+	}
+	if acStatus := resp.GetAcStatus(); acStatus.Code != pbac.AdmissionControlStatusCode_Accepted {
+		log.Printf("AC Error: ")
+		log.Printf("    Code: %d", acStatus.Code)
+		log.Printf(" Message: %s", acStatus.Message)
 		return nil
 	}
 
 	log.Printf("Waiting until transaction is included in ledger...")
 	for range time.Tick(1 * time.Second) {
 		seq, ledgerInfo, _ := c.GetAccountSequenceNumber(sender.Address)
-		log.Printf("sequence number of sender: %d", seq)
+		log.Printf("sequence number of sender: %d (ledger version: %d)", seq, ledgerInfo.Version)
 		if seq >= sender.SequenceNumber+1 {
 			break
 		}
