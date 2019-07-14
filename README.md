@@ -1,7 +1,7 @@
 # go-libra
 This is a golang implementation of the Libra blockchain (https://github.com/libra/libra). Currently, only a client is implemented. 
 
-It is not a simple gRPC client. It has all the cryptographic verification algorithms implemented, including validator-signature-based consensus verification, ledger history accumulator proof, and account state sparse Merkle tree proof. 
+It is not a simple gRPC client. It has all the cryptographic verification algorithms implemented, including validator-signature-based consensus verification, ledger history accumulator proof, and account state sparse Merkle tree proof, etc. 
 
 As Libra itself is in an early stage, go-libra is developed as a proof of concept, only for experimental and learning purposes. 
 
@@ -11,11 +11,14 @@ As Libra itself is in an early stage, go-libra is developed as a proof of concep
 - ✓ Data models with all necessary cryptographic verification algorithms
   - ✓ Ledger state: signature-based consensus verification
   - ✓ Transaction info: ledger history accumulator proof
+  - ✓ Transaction list: ledger history accumulator proof on a range of transactions
+  - ✓ Transaction signature: ed25519 signature
   - ✓ Account state: sparse Merkle tree proof
+  - ✓ Events: event list hash based on Merkle tree accumulator
 - ✓ Query account states, including balance, sequence number, from the ledger, and do all necessary verifications
 - ✓ Mint LibraCoin through the 'official' faucet service
 - ✓ Peer to peer transfer LibraCoin, and wait for ledger inclusion
-- X Query transactions from the ledger
+- ✓ Query transactions from the ledger (without beautiful output)
 - X Use mnemonics to manage wallet and private keys
 - X Compile Move IR into bytecode
 
