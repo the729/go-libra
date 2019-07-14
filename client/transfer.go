@@ -2,11 +2,7 @@ package client
 
 import (
 	"context"
-	"crypto"
-	"crypto/rand"
-	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -14,68 +10,13 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/golang/protobuf/proto"
+	"github.com/urfave/cli"
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbac"
 	"github.com/the729/go-libra/generated/pbtypes"
-	"github.com/the729/go-libra/language/stdscript"
-	"github.com/urfave/cli"
+	"github.com/the729/go-libra/types"
 )
-
-func (c *Client) NewRawTransaction(
-	sender, receiver *Account,
-	amount, maxGasAmount, gasUnitPrice uint64,
-	expiration time.Time,
-) ([]byte, error) {
-	ammountBytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(ammountBytes, amount)
-
-	txn := &pbtypes.RawTransaction{
-		SenderAccount:  sender.Address,
-		SequenceNumber: sender.SequenceNumber,
-		Payload: &pbtypes.RawTransaction_Program{
-			Program: &pbtypes.Program{
-				Code: stdscript.PeerToPeerTransfer,
-				Arguments: []*pbtypes.TransactionArgument{
-					{
-						Type: pbtypes.TransactionArgument_ADDRESS,
-						Data: receiver.Address,
-					},
-					{
-						Type: pbtypes.TransactionArgument_U64,
-						Data: ammountBytes,
-					},
-				},
-				Modules: nil,
-			},
-		},
-		MaxGasAmount:   maxGasAmount,
-		GasUnitPrice:   gasUnitPrice,
-		ExpirationTime: uint64(expiration.Unix()),
-	}
-
-	j, _ := json.MarshalIndent(txn, "", "    ")
-	log.Printf("Raw txn: %s", string(j))
-
-	raw, err := proto.Marshal(txn)
-	return raw, err
-}
-
-func (c *Client) SignRawTransaction(rawTxnBytes []byte, signer ed25519.PrivateKey) *pbtypes.SignedTransaction {
-	hasher := sha3libra.NewRawTransaction()
-	hasher.Write(rawTxnBytes)
-	txnHash := hasher.Sum([]byte{})
-	senderPubKey := signer.Public().(ed25519.PublicKey)
-	sig, _ := signer.Sign(rand.Reader, txnHash, crypto.Hash(0))
-
-	return &pbtypes.SignedTransaction{
-		RawTxnBytes:     rawTxnBytes,
-		SenderPublicKey: senderPubKey,
-		SenderSignature: sig,
-	}
-}
 
 func (c *Client) SubmitTransactionRequest(signedTxn *pbtypes.SignedTransaction) (*pbac.SubmitTransactionResponse, error) {
 	req := &pbac.SubmitTransactionRequest{
@@ -126,13 +67,17 @@ func (c *Client) CmdTransfer(ctx *cli.Context) error {
 	expiration := time.Now().Add(1 * time.Minute)
 	maxGasAmount := uint64(10000) // 1000 is too little
 	gasUnitPrice := uint64(0)
-	rawTxn, err := c.NewRawTransaction(sender, receiver, amountMicro, maxGasAmount, gasUnitPrice, expiration)
+	rawTxn, err := types.NewRawTransaction(
+		sender.Address, receiver.Address, sender.SequenceNumber,
+		amountMicro, maxGasAmount, gasUnitPrice, expiration,
+	)
 	if err != nil {
 		return fmt.Errorf("cannot create raw transaction: %v", err)
 	}
 
-	signedTxn := c.SignRawTransaction(rawTxn, ed25519.PrivateKey(sender.PrivateKey))
-	resp, err := c.SubmitTransactionRequest(signedTxn)
+	signedTxn := types.SignRawTransaction(rawTxn, ed25519.PrivateKey(sender.PrivateKey))
+	pbSignedTxn, _ := signedTxn.ToProto()
+	resp, err := c.SubmitTransactionRequest(pbSignedTxn)
 	if err != nil {
 		return fmt.Errorf("submit transaction error: %v", err)
 	}
