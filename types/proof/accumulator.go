@@ -41,9 +41,10 @@ func (a *Accumulator) Verify(elemIndex uint64, elemHash, expectedRootHash sha3li
 	// log.Printf("target hash: %s", hex.EncodeToString(expectedRootHash))
 	hash := elemHash
 	// log.Printf("initial hash: %s", hex.EncodeToString(hash))
+	hasher := sha3libra.NewTransactionAccumulator()
 	for i := bm.BitsRev(); i.Next(); {
 		idx, b := i.Bit()
-		hasher := sha3libra.NewTransactionAccumulator()
+		hasher.Reset()
 		if b {
 			hasher.Write(a.siblings[len(a.siblings)-idx-1])
 			hasher.Write(hash)

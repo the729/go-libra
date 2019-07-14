@@ -21,13 +21,16 @@ type AccountStateProof struct {
 }
 
 func (a *AccountStateWithProof) FromProtoResponse(pb *pbtypes.GetAccountStateResponse) error {
-	if pb.AccountStateWithProof == nil {
-		return errors.New("nil pb.AccountStateWithProof")
+	if pb == nil {
+		return ErrNilInput
 	}
 	return a.FromProto(pb.AccountStateWithProof)
 }
 
 func (a *AccountStateWithProof) FromProto(pb *pbtypes.AccountStateWithProof) error {
+	if pb == nil {
+		return ErrNilInput
+	}
 	a.Version = pb.Version
 	if pb.Blob != nil {
 		a.Blob = &AccountBlob{Raw: pb.Blob.Blob}
@@ -38,6 +41,9 @@ func (a *AccountStateWithProof) FromProto(pb *pbtypes.AccountStateWithProof) err
 
 func (ap *AccountStateProof) FromProto(pb *pbtypes.AccountStateProof) error {
 	var err error
+	if pb == nil {
+		return ErrNilInput
+	}
 
 	ap.ledgerInfoToTransactionInfoProof = &proof.Accumulator{}
 	err = ap.ledgerInfoToTransactionInfoProof.FromProto(pb.LedgerInfoToTransactionInfoProof)

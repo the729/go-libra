@@ -2,7 +2,9 @@ package types
 
 import (
 	"encoding/hex"
+	"io"
 
+	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 )
 
@@ -11,6 +13,13 @@ const (
 )
 
 type AccountAddress []byte
+
+func (a AccountAddress) SerializeTo(w io.Writer) error {
+	if err := serialization.SimpleSerializer.Write(w, []byte(a)); err != nil {
+		return err
+	}
+	return nil
+}
 
 func (a AccountAddress) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewAccountAddress()

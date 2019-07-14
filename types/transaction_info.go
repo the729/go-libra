@@ -1,8 +1,9 @@
 package types
 
 import (
-	"encoding/binary"
+	"io"
 
+	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 )
@@ -22,11 +23,20 @@ func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
 	return nil
 }
 
+func (t *TransactionInfo) SerializeTo(w io.Writer) error {
+	w.Write(t.signedTransactionHash)
+	w.Write(t.stateRootHash)
+	w.Write(t.eventRootHash)
+	if err := serialization.SimpleSerializer.Write(w, t.gasUsed); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (t *TransactionInfo) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewTransactionInfo()
-	hasher.Write(t.signedTransactionHash)
-	hasher.Write(t.stateRootHash)
-	hasher.Write(t.eventRootHash)
-	binary.Write(hasher, binary.LittleEndian, t.gasUsed)
+	if err := t.SerializeTo(hasher); err != nil {
+		panic(err)
+	}
 	return hasher.Sum([]byte{})
 }

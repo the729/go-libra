@@ -14,14 +14,27 @@ const (
 
 type HashValue = []byte
 
+type state struct {
+	hash.Hash
+	salt []byte
+}
+
+func (s *state) Reset() {
+	s.Hash.Reset()
+	s.Write(s.salt)
+}
+
 func newHasher(salt []byte) hash.Hash {
 	saltHasher := sha3.New256()
 	saltHasher.Write(salt)
 	saltHasher.Write([]byte(libraHashSuffix))
 	saltHash := saltHasher.Sum([]byte{})
 
-	hasher := sha3.New256()
-	hasher.Write(saltHash)
+	hasher := &state{
+		Hash: sha3.New256(),
+		salt: saltHash,
+	}
+	hasher.Reset()
 	return hasher
 }
 
