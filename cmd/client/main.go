@@ -45,6 +45,12 @@ func main() {
 			Aliases: []string{"q"},
 			Subcommands: []cli.Command{
 				{
+					Name:    "ledger_info",
+					Usage:   "known_version",
+					Aliases: []string{"l"},
+					Action:  c.CmdQueryLedgerInfo,
+				},
+				{
 					Name:    "account_state",
 					Usage:   "address_prefix",
 					Aliases: []string{"as"},
