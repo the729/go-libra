@@ -106,9 +106,13 @@ func (tl *TransactionListWithProof) Verify(ledgerInfo *LedgerInfo) error {
 	hashes := make([]sha3libra.HashValue, 0)
 	// 1. verify signed transactions, and events
 	for i, t := range tl.Transactions {
+		// according to https://community.libra.org/t/how-to-verify-a-signedtransaction-thoroughly/1214/3,
+		// it is unnecessary to verify SignedTransaction itself
 		if err := t.SignedTransaction.Verify(); err != nil {
 			return fmt.Errorf("txn(%d) signature verification fail: %v", tl.FirstTxnVersion+uint64(i), err)
 		}
+
+		// verify SignedTransaction and Events hash from transaction info
 		txnHash := t.SignedTransaction.Hash()
 		if !sha3libra.Equal(txnHash, t.Info.signedTransactionHash) {
 			return fmt.Errorf("signed txn hash mismatch in txn(%d)", tl.FirstTxnVersion+uint64(i))
