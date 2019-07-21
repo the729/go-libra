@@ -19,6 +19,7 @@ As Libra itself is in an early stage, go-libra is developed as a proof of concep
 - ✓ Mint LibraCoin through the 'official' faucet service
 - ✓ Peer to peer transfer LibraCoin, and wait for ledger inclusion
 - ✓ Query transactions from the ledger (without beautiful output)
+- ✓ Query account transaction by sequence number
 - X Use mnemonics to manage wallet and private keys
 - X Compile Move IR into bytecode
 
