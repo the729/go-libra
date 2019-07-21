@@ -62,6 +62,12 @@ func main() {
 					Aliases: []string{"tr"},
 					Action:  c.CmdQueryTransactionRange,
 				},
+				{
+					Name:    "transaction_by_seq",
+					Usage:   "address_prefix sequence",
+					Aliases: []string{"ts"},
+					Action:  c.CmdQueryTransactionByAccountSeq,
+				},
 			},
 		},
 		{
