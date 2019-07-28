@@ -12,7 +12,6 @@
 *.out
 
 cmd/test
-*.pb.go
 wallet.toml*
 cmd/client/client
 
