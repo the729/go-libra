@@ -126,7 +126,7 @@ func (tl *TransactionListWithProof) Verify(ledgerInfo *LedgerInfo) error {
 	}
 
 	// 2. verify transaction accumulator
-	err := tl.Proof.Verify(tl.FirstTxnVersion, hashes, ledgerInfo.transactionAccumulatorHash)
+	err := tl.Proof.Verify(tl.FirstTxnVersion, hashes, ledgerInfo.TransactionAccumulatorHash)
 	if err != nil {
 		return fmt.Errorf("accumulator range proof failed: %v", err)
 	}

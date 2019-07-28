@@ -11,21 +11,27 @@ import (
 )
 
 type Client struct {
-	ServerAddr      string
-	TrustedPeerFile string
-	WalletFile      string
-
 	conn     *grpc.ClientConn
 	ac       pbac.AdmissionControlClient
 	verifier validator.Verifier
-	accounts map[string]*Account
 }
 
-func (c *Client) Connect() error {
+func New(ServerAddr, TrustedPeerFile string) (*Client, error) {
+	c := &Client{}
+	if err := c.loadTrustedPeers(TrustedPeerFile); err != nil {
+		return nil, err
+	}
+	if err := c.connect(ServerAddr); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (c *Client) connect(server string) error {
 	// Set up a connection to the server.
-	conn, err := grpc.Dial(c.ServerAddr, grpc.WithInsecure())
+	conn, err := grpc.Dial(server, grpc.WithInsecure())
 	if err != nil {
-		return fmt.Errorf("did not connect: %v", err)
+		return fmt.Errorf("grpc dial error: %v", err)
 	}
 
 	acClient := pbac.NewAdmissionControlClient(conn)
@@ -34,12 +40,12 @@ func (c *Client) Connect() error {
 	return nil
 }
 
-func (c *Client) Disconnect() {
+func (c *Client) Close() {
 	c.conn.Close()
 }
 
-func (c *Client) LoadTrustedPeers() error {
-	peerconf, err := config.LoadTrustedPeersFromFile(c.TrustedPeerFile)
+func (c *Client) loadTrustedPeers(file string) error {
+	peerconf, err := config.LoadTrustedPeersFromFile(file)
 	if err != nil {
 		return fmt.Errorf("load conf err: %v", err)
 	}

@@ -4,22 +4,37 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/the729/go-libra/common/canonical_serialization"
+	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 )
+
+type RawAccountBlob []byte
 
 type AccountBlob struct {
 	Raw []byte
 	Map map[string][]byte
 }
 
-func (b *AccountBlob) Hash() sha3libra.HashValue {
+type ProvenAccountBlob struct {
+	proven      bool
+	accountBlob AccountBlob
+	addr        AccountAddress
+}
+
+func (b RawAccountBlob) Hash() sha3libra.HashValue {
 	if b == nil {
 		return nil
 	}
 	hasher := sha3libra.NewAccountStateBlob()
-	hasher.Write(b.Raw)
+	hasher.Write(b)
 	return hasher.Sum([]byte{})
+}
+
+func (b *AccountBlob) Hash() sha3libra.HashValue {
+	if b == nil {
+		return nil
+	}
+	return RawAccountBlob(b.Raw).Hash()
 }
 
 func (b *AccountBlob) ParseToMap() error {
@@ -57,4 +72,39 @@ func (b *AccountBlob) GetResource(tag *StructTag) (*AccountResource, error) {
 		return nil, fmt.Errorf("unmarshal resource error: %v", err)
 	}
 	return r, nil
+}
+
+func (pb *ProvenAccountBlob) GetRawBlob() []byte {
+	if !pb.proven {
+		panic("not valid proven account blob")
+	}
+	return cloneBytes(pb.accountBlob.Raw)
+}
+
+func (pb *ProvenAccountBlob) GetResource(tag *StructTag) (*ProvenAccountResource, error) {
+	if !pb.proven {
+		panic("not valid proven account blob")
+	}
+	ar, err := pb.accountBlob.GetResource(tag)
+	if err != nil {
+		return nil, err
+	}
+	return &ProvenAccountResource{
+		proven: true,
+		accountResource: AccountResource{
+			Balance:             ar.Balance,
+			SequenceNumber:      ar.SequenceNumber,
+			AuthenticationKey:   cloneBytes(ar.AuthenticationKey),
+			SentEventsCount:     ar.SentEventsCount,
+			ReceivedEventsCount: ar.ReceivedEventsCount,
+		},
+		addr: cloneBytes(pb.addr),
+	}, nil
+}
+
+func (pb *ProvenAccountBlob) GetAddress() AccountAddress {
+	if !pb.proven {
+		panic("not valid proven account blob")
+	}
+	return AccountAddress(cloneBytes(pb.addr))
 }

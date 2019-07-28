@@ -85,7 +85,7 @@ func (t *SignedTransactionWithProof) Verify(ledgerInfo *LedgerInfo) error {
 
 	err := t.Proof.ledgerInfoToTransactionInfoProof.Verify(
 		t.Version, t.Proof.transactionInfo.Hash(),
-		ledgerInfo.transactionAccumulatorHash,
+		ledgerInfo.TransactionAccumulatorHash,
 	)
 	if err != nil {
 		return fmt.Errorf("cannot verify transaction info from ledger info: %v", err)

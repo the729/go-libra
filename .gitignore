@@ -15,3 +15,5 @@ cmd/test
 *.pb.go
 wallet.toml*
 cmd/client/client
+
+ignore/

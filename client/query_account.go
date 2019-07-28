@@ -2,18 +2,27 @@ package client
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
-	"github.com/urfave/cli"
 )
 
-func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.AccountStateWithProof, *types.LedgerInfo, error) {
+func MustToAddress(str string) types.AccountAddress {
+	addr, err := hex.DecodeString(str)
+	if err != nil {
+		panic(err)
+	}
+	if len(addr) != types.AccountAddressLength {
+		panic("wrong address length")
+	}
+	return types.AccountAddress(addr)
+}
+
+func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAccountState, error) {
 	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -30,45 +39,33 @@ func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.AccountSta
 		},
 	})
 	if err != nil {
-		return nil, nil, fmt.Errorf("rpc failed: %v", err)
+		return nil, fmt.Errorf("rpc failed: %v", err)
 	}
 	// respj, _ := json.MarshalIndent(resp, "", "    ")
 	// log.Println(string(respj))
 
 	li := &types.LedgerInfoWithSignatures{}
 	li.FromProto(resp.LedgerInfoWithSigs)
-	err = li.Verify(c.verifier)
+	pli, err := li.Verify(c.verifier)
 	if err != nil {
-		return nil, nil, fmt.Errorf("verify failed: %v", err)
+		return nil, fmt.Errorf("verify failed: %v", err)
 	}
 
 	account := &types.AccountStateWithProof{}
 	err = account.FromProtoResponse(resp.ResponseItems[0].GetGetAccountStateResponse())
 	if err != nil {
-		return nil, nil, fmt.Errorf("account state with proof from proto failed: %v", err)
+		return nil, fmt.Errorf("account state with proof from proto failed: %v", err)
 	}
 
-	err = account.Verify(addr, li.LedgerInfo)
+	paccount, err := account.Verify(addr, pli)
 	if err != nil {
-		return nil, nil, fmt.Errorf("account state with proof verify failed: %v", err)
+		return nil, fmt.Errorf("account state with proof verify failed: %v", err)
 	}
 
-	if account.Blob != nil {
-		err = account.Blob.ParseToMap()
-		if err != nil {
-			return nil, nil, fmt.Errorf("account blob cannot parse to map: %v", err)
-		}
-	}
-	return account, li.LedgerInfo, nil
+	return paccount, nil
 }
 
-func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.AccountBlob) (*types.AccountResource, error) {
-	if blob.Map == nil {
-		err := blob.ParseToMap()
-		if err != nil {
-			return nil, fmt.Errorf("account blob cannot parse to map: %v", err)
-		}
-	}
+func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.ProvenAccountBlob) (*types.ProvenAccountResource, error) {
 	res, err := blob.GetResource(&types.StructTag{
 		Address: make([]byte, 32),
 		Module:  "LibraAccount",
@@ -80,50 +77,17 @@ func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.AccountBlob) (*
 	return res, nil
 }
 
-func (c *Client) GetAccountSequenceNumber(addr types.AccountAddress) (uint64, *types.LedgerInfo, error) {
-	state, ledgerInfo, err := c.QueryAccountState(addr)
+func (c *Client) GetAccountSequenceNumber(addr types.AccountAddress) (uint64, error) {
+	paccount, err := c.QueryAccountState(addr)
 	if err != nil {
-		return 0, nil, err
+		return 0, err
 	}
-	if state.Blob == nil {
-		return 0, ledgerInfo, errors.New("sender account not present in ledger.")
+	if paccount.IsNil() {
+		return 0, errors.New("sender account not present in ledger.")
 	}
-	resource, err := c.GetLibraCoinResourceFromAccountBlob(state.Blob)
+	resource, err := c.GetLibraCoinResourceFromAccountBlob(paccount.GetAccountBlob())
 	if err != nil {
-		return 0, ledgerInfo, err
+		return 0, err
 	}
-	return resource.SequenceNumber, ledgerInfo, nil
-}
-
-func (c *Client) CmdQueryAccountState(ctx *cli.Context) error {
-	c.Connect()
-	defer c.Disconnect()
-	c.LoadTrustedPeers()
-	c.LoadAccounts()
-
-	addr := ctx.Args().Get(0)
-	account, err := c.GetAccount(addr)
-	if err != nil {
-		return err
-	}
-	accountState, ledgerInfo, err := c.QueryAccountState(account.Address)
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Ledger info: version %d, time %d", ledgerInfo.Version, ledgerInfo.TimestampUsec)
-
-	if accountState.Blob != nil {
-		log.Printf("Account version: %d", accountState.Version)
-		log.Printf("Libra coin resource:")
-		libraCoin, err := c.GetLibraCoinResourceFromAccountBlob(accountState.Blob)
-		if err != nil {
-			fmt.Println("Account does not contain libra coin resource.")
-			return nil
-		}
-		spew.Dump(libraCoin)
-	} else {
-		fmt.Println("Account is not present in the ledger.")
-	}
-	return nil
+	return resource.GetSequenceNumber(), nil
 }
