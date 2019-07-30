@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -10,17 +9,6 @@ import (
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
 )
-
-func MustToAddress(str string) types.AccountAddress {
-	addr, err := hex.DecodeString(str)
-	if err != nil {
-		panic(err)
-	}
-	if len(addr) != types.AccountAddressLength {
-		panic("wrong address length")
-	}
-	return types.AccountAddress(addr)
-}
 
 func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAccountState, error) {
 	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)

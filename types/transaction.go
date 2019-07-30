@@ -91,7 +91,7 @@ func (t *SignedTransaction) Verify() error {
 	return nil
 }
 
-func NewRawTransaction(
+func NewRawP2PTransaction(
 	senderAddress, receiverAddress AccountAddress,
 	senderSequenceNumber uint64,
 	amount, maxGasAmount, gasUnitPrice uint64,
