@@ -28,8 +28,14 @@ func (s simpleSerializer) WriteByteSlice(w io.Writer, v []byte) error {
 }
 
 func (s simpleSerializer) Write(w io.Writer, v interface{}) error {
-	if v, ok := v.([]byte); ok {
-		return s.WriteByteSlice(w, v)
+	if vv, ok := v.([]byte); ok {
+		return s.WriteByteSlice(w, vv)
+	} else if vv, ok := v.(bool); ok {
+		v8 := uint8(0)
+		if vv {
+			v8 = uint8(1)
+		}
+		return binary.Write(w, s.byteOrder, v8)
 	}
 	return binary.Write(w, s.byteOrder, v)
 }

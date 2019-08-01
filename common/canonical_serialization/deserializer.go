@@ -22,3 +22,13 @@ func (d simpleDeserializer) ByteSlice(b []byte) ([]byte, error) {
 	copy(r, b[4:])
 	return r, nil
 }
+
+func (d simpleDeserializer) Bool(b []byte) bool {
+	if len(b) < 1 {
+		panic(ErrWrongSize)
+	}
+	if b[0] != 0 {
+		return true
+	}
+	return false
+}

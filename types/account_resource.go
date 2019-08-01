@@ -3,11 +3,12 @@ package types
 import serialization "github.com/the729/go-libra/common/canonical_serialization"
 
 type AccountResource struct {
-	Balance             uint64
-	SequenceNumber      uint64
-	AuthenticationKey   []byte
-	SentEventsCount     uint64
-	ReceivedEventsCount uint64
+	Balance                       uint64
+	SequenceNumber                uint64
+	AuthenticationKey             []byte
+	SentEventsCount               uint64
+	ReceivedEventsCount           uint64
+	DelegatedWithdrawalCapability bool
 }
 
 type ProvenAccountResource struct {
@@ -25,6 +26,8 @@ func (r *AccountResource) UnmarshalBinary(data []byte) error {
 	data = data[len(akey)+4:]
 	r.Balance = serialization.SimpleDeserializer.Uint64(data)
 	data = data[8:]
+	r.DelegatedWithdrawalCapability = serialization.SimpleDeserializer.Bool(data)
+	data = data[1:]
 	r.ReceivedEventsCount = serialization.SimpleDeserializer.Uint64(data)
 	data = data[8:]
 	r.SentEventsCount = serialization.SimpleDeserializer.Uint64(data)
@@ -66,6 +69,13 @@ func (pr *ProvenAccountResource) GetReceivedEventsCount() uint64 {
 		panic("not valid proven account resource")
 	}
 	return pr.accountResource.ReceivedEventsCount
+}
+
+func (pr *ProvenAccountResource) GetDelegatedWithdrawalCapability() bool {
+	if !pr.proven {
+		panic("not valid proven account resource")
+	}
+	return pr.accountResource.DelegatedWithdrawalCapability
 }
 
 func (pr *ProvenAccountResource) GetAddress() AccountAddress {
