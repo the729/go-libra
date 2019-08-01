@@ -83,12 +83,12 @@ func (a *AccountStateWithProof) Verify(addr AccountAddress, provenLedgerInfo *Pr
 	if blobHash == nil {
 		err = a.Proof.TransactionInfoToAccountProof.VerifyNonInclusion(
 			addrHash,
-			a.Proof.TransactionInfo.stateRootHash,
+			a.Proof.TransactionInfo.StateRootHash,
 		)
 	} else {
 		err = a.Proof.TransactionInfoToAccountProof.VerifyInclusion(
 			&proof.LeafNode{addrHash, blobHash},
-			a.Proof.TransactionInfo.stateRootHash,
+			a.Proof.TransactionInfo.StateRootHash,
 		)
 	}
 	if err != nil {

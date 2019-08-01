@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"time"
 
@@ -17,10 +18,28 @@ import (
 	"github.com/the729/go-libra/language/stdscript"
 )
 
+type RawTransaction = pbtypes.RawTransaction
+
 type SignedTransaction struct {
 	RawTxnBytes     []byte
 	SenderPublicKey []byte
 	SenderSignature []byte
+}
+
+type SubmittedTransaction struct {
+	*SignedTransaction
+	Info    *TransactionInfo
+	Events  EventList
+	Version uint64
+}
+
+type ProvenTransaction struct {
+	proven     bool
+	withEvents bool
+	signedTxn  *SignedTransaction
+	events     EventList
+	version    uint64
+	gasUsed    uint64
 }
 
 func (t *SignedTransaction) FromProto(pb *pbtypes.SignedTransaction) error {
@@ -62,7 +81,21 @@ func (t *SignedTransaction) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
-func (t *SignedTransaction) Verify() error {
+func (t *SignedTransaction) Clone() *SignedTransaction {
+	out := &SignedTransaction{}
+	out.RawTxnBytes = cloneBytes(t.RawTxnBytes)
+	out.SenderPublicKey = cloneBytes(t.SenderPublicKey)
+	out.SenderSignature = cloneBytes(t.SenderSignature)
+	return out
+}
+
+func (t *SignedTransaction) UnmarshalRawTransaction() (*RawTransaction, error) {
+	rt := &RawTransaction{}
+	err := proto.Unmarshal(t.RawTxnBytes, rt)
+	return rt, err
+}
+
+func (t *SignedTransaction) VerifySignature() error {
 	// 1. decode raw transaction, compare sender account and sender public key
 	// Account address sometimes is different from hash(publickey), e.g.
 	// libracore account 0x0.
@@ -91,6 +124,73 @@ func (t *SignedTransaction) Verify() error {
 	return nil
 }
 
+func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
+	// according to https://community.libra.org/t/how-to-verify-a-signedtransaction-thoroughly/1214/3,
+	// it is unnecessary to verify SignedTransaction itself
+	if err := st.SignedTransaction.VerifySignature(); err != nil {
+		return nil, fmt.Errorf("txn(%d) signature verification fail: %v", st.Version, err)
+	}
+
+	// verify SignedTransaction and Events hash from transaction info
+	txnHash := st.SignedTransaction.Hash()
+	if !sha3libra.Equal(txnHash, st.Info.SignedTransactionHash) {
+		return nil, fmt.Errorf("signed txn hash mismatch in txn(%d)", st.Version)
+	}
+	eventHash := st.Events.Hash()
+	withEvents := true
+	if !sha3libra.Equal(eventHash, st.Info.EventRootHash) {
+		if st.Events != nil {
+			return nil, fmt.Errorf("event root hash mismatch in txn(%d)", st.Version)
+		}
+		// if event hash does not match, and events is nil, must be without events
+		withEvents = false
+	}
+
+	return &ProvenTransaction{
+		proven:     true,
+		withEvents: withEvents,
+		signedTxn:  st.SignedTransaction.Clone(),
+		events:     st.Events.Clone(),
+		version:    st.Version,
+		gasUsed:    st.Info.GasUsed,
+	}, nil
+}
+
+func (pt *ProvenTransaction) GetSignedTxn() *SignedTransaction {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.signedTxn.Clone()
+}
+
+func (pt *ProvenTransaction) GetWithEvents() bool {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.withEvents
+}
+
+func (pt *ProvenTransaction) GetEvents() []*ContractEvent {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.events.Clone()
+}
+
+func (pt *ProvenTransaction) GetVersion() uint64 {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.version
+}
+
+func (pt *ProvenTransaction) GetGasUsed() uint64 {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.gasUsed
+}
+
 func NewRawP2PTransaction(
 	senderAddress, receiverAddress AccountAddress,
 	senderSequenceNumber uint64,
@@ -100,7 +200,7 @@ func NewRawP2PTransaction(
 	ammountBytes := make([]byte, 8)
 	binary.LittleEndian.PutUint64(ammountBytes, amount)
 
-	txn := &pbtypes.RawTransaction{
+	txn := &RawTransaction{
 		SenderAccount:  senderAddress,
 		SequenceNumber: senderSequenceNumber,
 		Payload: &pbtypes.RawTransaction_Program{

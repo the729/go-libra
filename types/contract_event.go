@@ -52,6 +52,14 @@ func (e *ContractEvent) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
+func (e *ContractEvent) Clone() *ContractEvent {
+	out := &ContractEvent{}
+	out.AccessPath = e.AccessPath.Clone()
+	out.SequenceNumber = e.SequenceNumber
+	out.Data = cloneBytes(e.Data)
+	return out
+}
+
 func (el EventList) Hash() sha3libra.HashValue {
 	nodeHasher := sha3libra.NewEventAccumulator()
 	hasher := sha3libra.NewAccumulator(nodeHasher)
@@ -59,4 +67,15 @@ func (el EventList) Hash() sha3libra.HashValue {
 		hasher.Write(e.Hash())
 	}
 	return hasher.Sum([]byte{})
+}
+
+func (el EventList) Clone() EventList {
+	if el == nil {
+		return nil
+	}
+	out := make([]*ContractEvent, 0, len(el))
+	for _, e := range el {
+		out = append(out, e.Clone())
+	}
+	return out
 }

@@ -27,7 +27,7 @@ func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAcco
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("rpc failed: %v", err)
+		return nil, err
 	}
 	// respj, _ := json.MarshalIndent(resp, "", "    ")
 	// log.Println(string(respj))
@@ -36,7 +36,7 @@ func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAcco
 	li.FromProto(resp.LedgerInfoWithSigs)
 	pli, err := li.Verify(c.verifier)
 	if err != nil {
-		return nil, fmt.Errorf("verify failed: %v", err)
+		return nil, fmt.Errorf("ledger info verification failed: %v", err)
 	}
 
 	account := &types.AccountStateWithProof{}
@@ -47,7 +47,7 @@ func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAcco
 
 	paccount, err := account.Verify(addr, pli)
 	if err != nil {
-		return nil, fmt.Errorf("account state with proof verify failed: %v", err)
+		return nil, fmt.Errorf("account state with proof verification failed: %v", err)
 	}
 
 	return paccount, nil
@@ -71,7 +71,7 @@ func (c *Client) GetAccountSequenceNumber(addr types.AccountAddress) (uint64, er
 		return 0, err
 	}
 	if paccount.IsNil() {
-		return 0, errors.New("sender account not present in ledger.")
+		return 0, errors.New("sender account not present in ledger")
 	}
 	resource, err := c.GetLibraCoinResourceFromAccountBlob(paccount.GetAccountBlob())
 	if err != nil {

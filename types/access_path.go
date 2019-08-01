@@ -30,3 +30,10 @@ func (ap *AccessPath) SerializeTo(w io.Writer) error {
 	}
 	return nil
 }
+
+func (ap *AccessPath) Clone() *AccessPath {
+	out := &AccessPath{}
+	out.Address = cloneBytes(ap.Address)
+	out.Path = cloneBytes(ap.Path)
+	return out
+}

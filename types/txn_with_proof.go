@@ -75,11 +75,11 @@ func (t *SignedTransactionWithProof) Verify(ledgerInfo *LedgerInfo) error {
 	// it is unnecessary to verify SignedTransaction itself
 
 	txnHash := t.SignedTransaction.Hash()
-	if !sha3libra.Equal(txnHash, t.Proof.transactionInfo.signedTransactionHash) {
+	if !sha3libra.Equal(txnHash, t.Proof.transactionInfo.SignedTransactionHash) {
 		return errors.New("signed txn hash mismatch")
 	}
 	eventHash := t.Events.Hash()
-	if !sha3libra.Equal(eventHash, t.Proof.transactionInfo.eventRootHash) {
+	if !sha3libra.Equal(eventHash, t.Proof.transactionInfo.EventRootHash) {
 		return errors.New("event hash mismatch")
 	}
 

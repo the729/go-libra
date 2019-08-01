@@ -9,25 +9,25 @@ import (
 )
 
 type TransactionInfo struct {
-	signedTransactionHash []byte
-	stateRootHash         []byte
-	eventRootHash         []byte
-	gasUsed               uint64
+	SignedTransactionHash []byte
+	StateRootHash         []byte
+	EventRootHash         []byte
+	GasUsed               uint64
 }
 
 func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
-	t.signedTransactionHash = pb.SignedTransactionHash
-	t.stateRootHash = pb.StateRootHash
-	t.eventRootHash = pb.EventRootHash
-	t.gasUsed = pb.GasUsed
+	t.SignedTransactionHash = pb.SignedTransactionHash
+	t.StateRootHash = pb.StateRootHash
+	t.EventRootHash = pb.EventRootHash
+	t.GasUsed = pb.GasUsed
 	return nil
 }
 
 func (t *TransactionInfo) SerializeTo(w io.Writer) error {
-	w.Write(t.signedTransactionHash)
-	w.Write(t.stateRootHash)
-	w.Write(t.eventRootHash)
-	if err := serialization.SimpleSerializer.Write(w, t.gasUsed); err != nil {
+	w.Write(t.SignedTransactionHash)
+	w.Write(t.StateRootHash)
+	w.Write(t.EventRootHash)
+	if err := serialization.SimpleSerializer.Write(w, t.GasUsed); err != nil {
 		return err
 	}
 	return nil
