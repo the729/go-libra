@@ -122,6 +122,7 @@ func (tl *TransactionListWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*Prove
 			return nil, err
 		}
 		hashes = append(hashes, t.Info.Hash())
+		provenTxn.proven = true
 		provenTxns = append(provenTxns, provenTxn)
 	}
 

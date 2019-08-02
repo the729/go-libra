@@ -1,24 +1,15 @@
 package types
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof"
 )
 
 type SignedTransactionWithProof struct {
-	*SignedTransaction
-	Version uint64
-	Events  EventList
-	Proof   *SignedTransactionProof
-}
-
-type SignedTransactionProof struct {
-	ledgerInfoToTransactionInfoProof *proof.Accumulator
-	transactionInfo                  *TransactionInfo
+	*SubmittedTransaction
+	LedgerInfoToTransactionInfoProof *proof.Accumulator
 }
 
 func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWithProof) error {
@@ -26,6 +17,7 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 	if pb == nil {
 		return ErrNilInput
 	}
+	t.SubmittedTransaction = &SubmittedTransaction{}
 	t.Version = pb.Version
 
 	t.SignedTransaction = &SignedTransaction{}
@@ -43,53 +35,34 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 		t.Events = append(t.Events, ev1)
 	}
 
-	t.Proof = &SignedTransactionProof{}
-	err = t.Proof.FromProto(pb.Proof)
+	t.Info = &TransactionInfo{}
+	err = t.Info.FromProto(pb.Proof.TransactionInfo)
+	if err != nil {
+		return err
+	}
+
+	t.LedgerInfoToTransactionInfoProof = &proof.Accumulator{}
+	err = t.LedgerInfoToTransactionInfoProof.FromProto(pb.Proof.LedgerInfoToTransactionInfoProof)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (tp *SignedTransactionProof) FromProto(pb *pbtypes.SignedTransactionProof) error {
-	var err error
-	if pb == nil {
-		return ErrNilInput
-	}
-
-	tp.ledgerInfoToTransactionInfoProof = &proof.Accumulator{}
-	err = tp.ledgerInfoToTransactionInfoProof.FromProto(pb.LedgerInfoToTransactionInfoProof)
+func (t *SignedTransactionWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*ProvenTransaction, error) {
+	pTxn, err := t.SubmittedTransaction.Verify()
 	if err != nil {
-		return err
-	}
-	tp.transactionInfo = &TransactionInfo{}
-	err = tp.transactionInfo.FromProto(pb.TransactionInfo)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (t *SignedTransactionWithProof) Verify(ledgerInfo *LedgerInfo) error {
-	// according to https://community.libra.org/t/how-to-verify-a-signedtransaction-thoroughly/1214/3,
-	// it is unnecessary to verify SignedTransaction itself
-
-	txnHash := t.SignedTransaction.Hash()
-	if !sha3libra.Equal(txnHash, t.Proof.transactionInfo.SignedTransactionHash) {
-		return errors.New("signed txn hash mismatch")
-	}
-	eventHash := t.Events.Hash()
-	if !sha3libra.Equal(eventHash, t.Proof.transactionInfo.EventRootHash) {
-		return errors.New("event hash mismatch")
+		return nil, err
 	}
 
-	err := t.Proof.ledgerInfoToTransactionInfoProof.Verify(
-		t.Version, t.Proof.transactionInfo.Hash(),
-		ledgerInfo.TransactionAccumulatorHash,
+	err = t.LedgerInfoToTransactionInfoProof.Verify(
+		t.Version, t.Info.Hash(),
+		ledgerInfo.GetTransactionAccumulatorHash(),
 	)
 	if err != nil {
-		return fmt.Errorf("cannot verify transaction info from ledger info: %v", err)
+		return nil, fmt.Errorf("cannot verify transaction info from ledger info: %v", err)
 	}
 
-	return nil
+	pTxn.proven = true
+	return pTxn, nil
 }

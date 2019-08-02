@@ -147,7 +147,8 @@ func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
 	}
 
 	return &ProvenTransaction{
-		proven:     true,
+		// this verification alone does not prove ledger inclusion
+		proven:     false,
 		withEvents: withEvents,
 		signedTxn:  st.SignedTransaction.Clone(),
 		events:     st.Events.Clone(),
