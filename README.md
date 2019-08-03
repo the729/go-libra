@@ -6,7 +6,7 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 ## Features
 
-Compatible with testnet 2019/07/31 (commit hash 05c40c977b).
+Compatible with testnet 2019/07/31 (commit hash [05c40c977b](https://github.com/libra/libra/commit/05c40c977badf052b9efcc4e0180e3628bee2847)).
 
 - ✓ Connect to testnet AdmissionControl server with gRPC
 - ✓ Data models with all necessary cryptographic verification algorithms
@@ -132,11 +132,11 @@ if err != nil {
 
 ## Examples
 
-Several examples are included in `example/` folder.
- - cli_client: A fully functional Libra CLI client
- - query_account: Query specific account states
- - query_txn_range: Query a range of transactions
- - query_txn_by_seq: Query a transaction by specific account and sequence number
- - p2p_transaction: Make P2P transaction
+Several examples are included in `example` folder.
+ - [cli_client](example/cli_client): A fully functional Libra CLI client
+ - [query_account](example/query_account): Query specific account states
+ - [query_txn_range](example/query_txn_range): Query a range of transactions
+ - [query_txn_by_seq](example/query_txn_by_seq): Query a transaction by specific account and sequence number
+ - [p2p_transaction](example/p2p_transaction): Make P2P transaction
 
 ## Contributions are welcome
