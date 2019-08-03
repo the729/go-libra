@@ -1,9 +1,12 @@
 # go-libra
-This is a golang implementation of the Libra blockchain (https://github.com/libra/libra) client library. 
+
+A golang client library for Libra blockchain (https://github.com/libra/libra). 
 
 It has all cryptographic verification algorithms, including validator-signature-based consensus verification, ledger history accumulator proof, and account state sparse Merkle tree proof, etc. 
 
 ## Features
+
+Compatible with testnet 2019/07/31 (commit hash 05c40c977b).
 
 - ✓ Connect to testnet AdmissionControl server with gRPC
 - ✓ Data models with all necessary cryptographic verification algorithms
@@ -18,9 +21,7 @@ It has all cryptographic verification algorithms, including validator-signature-
 - ✓ Query transactions by ledger version
 - ✓ Query account transaction by sequence number
 
-## Examples
-
-See `example/` folder. More examples coming soon.
+## Usage
 
 ### Get account balance, cryptographically proven
 
@@ -46,8 +47,10 @@ func main() {
 	defer c.Close()
 
 	addrStr := "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
+	// Parse hex string into binary address
 	addr := client.MustToAddress(addrStr)
 
+	// provenState is cryptographically proven state of account
 	provenState, err := c.QueryAccountState(addr)
 	if err != nil {
 		log.Fatal(err)
@@ -68,10 +71,72 @@ func main() {
 }
 ```
 
-## Implementation
+### Get transactions by range
 
-I deliberately name the packages, functions, and variables similar to official rust project, with subtle changes to suit golang idioms. It is easier to keep up with the rust project in this way.
+```golang
+provenTxnList, err := c.QueryTransactionRange(1000, 5, false)
+if err != nil {
+	log.Fatal(err)
+}
 
-After the official rust project is more stable, we can refactor the code to make it tastes more like golang, and to make the packages reusable for other projects.
+for _, provenTxn := range provenTxnList.GetTransactions() {
+	log.Printf("Txn #%d:", provenTxn.GetVersion())
+	// process each proven transaction
+}
+```
 
-Contributions are welcome.
+### Get transaction by address and sequence number
+
+```golang
+addrStr := "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
+addr := client.MustToAddress(addrStr)
+
+provenTxn, err := c.QueryTransactionByAccountSeq(addr, 0, true)
+if err != nil {
+	log.Fatal(err)
+}
+
+log.Printf("Txn #%d:", provenTxn.GetVersion())
+```
+
+### Make peer-to-peer transaction
+
+```golang
+// Get current account sequence of sender
+seq, err := c.GetAccountSequenceNumber(senderAddr)
+if err != nil {
+	log.Fatal(err)
+}
+
+// Build a raw transaction
+rawTxn, err := types.NewRawP2PTransaction(
+	senderAddr, recvAddr, seq,
+	amountMicro, maxGasAmount, gasUnitPrice, expiration,
+)
+if err != nil {
+	log.Fatal(err)
+}
+
+// Sign and submit transaction
+err = c.SubmitRawTransaction(rawTxn, priKey)
+if err != nil {
+	log.Fatal(err)
+}
+
+// Wait until transaction is included in ledger, or timeout
+err = c.PollSequenceUntil(senderAddr, seq+1, expiration)
+if err != nil {
+	log.Fatal(err)
+}
+```
+
+## Examples
+
+Several examples are included in `example/` folder.
+ - cli_client: A fully functional Libra CLI client
+ - query_account: Query specific account states
+ - query_txn_range: Query a range of transactions
+ - query_txn_by_seq: Query a transaction by specific account and sequence number
+ - p2p_transaction: Make P2P transaction
+
+## Contributions are welcome
