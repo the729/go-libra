@@ -10,6 +10,8 @@ import (
 	"github.com/the729/go-libra/types"
 )
 
+// QueryTransactionRange queries a list of transactions from RPC server, and does necessary
+// crypto verifications.
 func (c *Client) QueryTransactionRange(start, limit uint64, withEvents bool) (*types.ProvenTransactionList, error) {
 	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -58,6 +60,8 @@ func (c *Client) QueryTransactionRange(start, limit uint64, withEvents bool) (*t
 	return ptl, nil
 }
 
+// QueryTransactionByAccountSeq queries the transaction that is sent from a specific account at a specific sequence number,
+// and does necessary crypto verifications.
 func (c *Client) QueryTransactionByAccountSeq(addr types.AccountAddress, sequence uint64, withEvents bool) (*types.ProvenTransaction, error) {
 	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -95,23 +99,7 @@ func (c *Client) QueryTransactionByAccountSeq(addr types.AccountAddress, sequenc
 		return nil, errors.New("nil response")
 	}
 
-	if resp1.SignedTransactionWithProof != nil {
-		txn := &types.SignedTransactionWithProof{}
-		if err = txn.FromProto(resp1.SignedTransactionWithProof); err != nil {
-			return nil, err
-		}
-
-		ptxn, err := txn.Verify(pli)
-		if err != nil {
-			return nil, fmt.Errorf("transaction verify failed: %v", err)
-		}
-		return ptxn, nil
-		// log.Printf("Version: %d", txn.Version)
-		// log.Printf("Transaction detail:")
-		// spew.Dump(txn.SignedTransaction)
-		// log.Printf("Events:")
-		// spew.Dump(txn.Events)
-	} else {
+	if resp1.SignedTransactionWithProof == nil {
 		state := &types.AccountStateWithProof{}
 		err = state.FromProto(resp1.ProofOfCurrentSequenceNumber)
 		if err != nil {
@@ -133,4 +121,15 @@ func (c *Client) QueryTransactionByAccountSeq(addr types.AccountAddress, sequenc
 		}
 		return nil, fmt.Errorf("latest account sequence number is: %v", pres.GetSequenceNumber())
 	}
+
+	txn := &types.SignedTransactionWithProof{}
+	if err = txn.FromProto(resp1.SignedTransactionWithProof); err != nil {
+		return nil, err
+	}
+
+	ptxn, err := txn.Verify(pli)
+	if err != nil {
+		return nil, fmt.Errorf("transaction verify failed: %v", err)
+	}
+	return ptxn, nil
 }

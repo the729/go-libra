@@ -10,30 +10,19 @@ import (
 	"golang.org/x/crypto/ed25519"
 
 	"github.com/the729/go-libra/generated/pbac"
-	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
 )
 
-func (c *Client) SubmitTransactionRequest(signedTxn *pbtypes.SignedTransaction) (*pbac.SubmitTransactionResponse, error) {
-	req := &pbac.SubmitTransactionRequest{
-		SignedTxn: signedTxn,
-	}
-
+// SubmitRawTransaction signes and submits a raw transaction.
+func (c *Client) SubmitRawTransaction(rawTxn []byte, privateKey ed25519.PrivateKey) error {
 	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	resp, err := c.ac.SubmitTransaction(ctx1, req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (c *Client) SubmitRawTransaction(rawTxn []byte, privateKey ed25519.PrivateKey) error {
 	signedTxn := types.SignRawTransaction(rawTxn, privateKey)
 	pbSignedTxn, _ := signedTxn.ToProto()
-	resp, err := c.SubmitTransactionRequest(pbSignedTxn)
+	resp, err := c.ac.SubmitTransaction(ctx1, &pbac.SubmitTransactionRequest{
+		SignedTxn: pbSignedTxn,
+	})
 	if err != nil {
 		return fmt.Errorf("submit transaction error: %v", err)
 	}
@@ -53,6 +42,8 @@ func (c *Client) SubmitRawTransaction(rawTxn []byte, privateKey ed25519.PrivateK
 	return nil
 }
 
+// PollSequenceUntil blocks to repeatedly poll the sequence number of a specific account, until the sequence number
+// is greater or equal to specified target sequence number, or the ledger state passes specified expiration time.
 func (c *Client) PollSequenceUntil(addr types.AccountAddress, targetSeq uint64, expiration time.Time) error {
 	for range time.Tick(1 * time.Second) {
 		paccount, err := c.QueryAccountState(addr)

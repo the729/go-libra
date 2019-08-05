@@ -10,12 +10,15 @@ import (
 	"github.com/the729/go-libra/types/validator"
 )
 
+// Client is a Libra client.
+// It has a gRPC client to a Libra RPC server, with public keys to trusted peers.
 type Client struct {
 	conn     *grpc.ClientConn
 	ac       pbac.AdmissionControlClient
 	verifier validator.Verifier
 }
 
+// New creates a new Libra Client.
 func New(ServerAddr, TrustedPeerFile string) (*Client, error) {
 	c := &Client{}
 	if err := c.loadTrustedPeers(TrustedPeerFile); err != nil {
@@ -40,6 +43,7 @@ func (c *Client) connect(server string) error {
 	return nil
 }
 
+// Close the client.
 func (c *Client) Close() {
 	c.conn.Close()
 }

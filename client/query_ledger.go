@@ -9,6 +9,7 @@ import (
 	"github.com/the729/go-libra/types"
 )
 
+// QueryLedgerInfo queries ledger info from RPC server, and does necessary crypto verifications.
 func (c *Client) QueryLedgerInfo(knownVersion uint64) (*types.ProvenLedgerInfo, error) {
 	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
