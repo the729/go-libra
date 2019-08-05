@@ -1,3 +1,15 @@
+/*
+Package client implements a gRPC client to Libra RPC service.
+
+Features include:
+  - Query ledger information
+  - Query account state
+  - Query transactions by range
+  - Query single transaction by account and sequence number
+  - Sign and submit raw transactions
+
+All queries are cryptographically verified to proof their inclusion and integrity in the blockchain.
+*/
 package client
 
 import (
