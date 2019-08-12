@@ -12,6 +12,7 @@ type AccessPath struct {
 	Path    []byte
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (ap *AccessPath) FromProto(pb *pbtypes.AccessPath) error {
 	if pb == nil {
 		return ErrNilInput
@@ -21,6 +22,7 @@ func (ap *AccessPath) FromProto(pb *pbtypes.AccessPath) error {
 	return nil
 }
 
+// SerializeTo serializes this struct into a io.Writer.
 func (ap *AccessPath) SerializeTo(w io.Writer) error {
 	if err := ap.Address.SerializeTo(w); err != nil {
 		return err
@@ -31,6 +33,7 @@ func (ap *AccessPath) SerializeTo(w io.Writer) error {
 	return nil
 }
 
+// Clone deep clones this struct.
 func (ap *AccessPath) Clone() *AccessPath {
 	out := &AccessPath{}
 	out.Address = cloneBytes(ap.Address)

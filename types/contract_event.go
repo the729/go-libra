@@ -9,14 +9,17 @@ import (
 	"github.com/the729/go-libra/generated/pbtypes"
 )
 
+// ContractEvent is a output event of transaction
 type ContractEvent struct {
 	AccessPath     *AccessPath
 	SequenceNumber uint64
 	Data           []byte
 }
 
+// EventList is a list of events
 type EventList []*ContractEvent
 
+// FromProto parses a protobuf struct into this struct.
 func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 	if pb == nil {
 		return ErrNilInput
@@ -31,6 +34,7 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 	return nil
 }
 
+// SerializeTo serializes this struct into a io.Writer.
 func (e *ContractEvent) SerializeTo(w io.Writer) error {
 	if err := e.AccessPath.SerializeTo(w); err != nil {
 		return err
@@ -44,6 +48,7 @@ func (e *ContractEvent) SerializeTo(w io.Writer) error {
 	return nil
 }
 
+// Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (e *ContractEvent) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewContractEvent()
 	if err := e.SerializeTo(hasher); err != nil {
@@ -52,6 +57,7 @@ func (e *ContractEvent) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
+// Clone deep clones this struct.
 func (e *ContractEvent) Clone() *ContractEvent {
 	out := &ContractEvent{}
 	out.AccessPath = e.AccessPath.Clone()
@@ -60,6 +66,7 @@ func (e *ContractEvent) Clone() *ContractEvent {
 	return out
 }
 
+// Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (el EventList) Hash() sha3libra.HashValue {
 	nodeHasher := sha3libra.NewEventAccumulator()
 	hasher := sha3libra.NewAccumulator(nodeHasher)
@@ -69,6 +76,7 @@ func (el EventList) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
+// Clone deep clones this struct.
 func (el EventList) Clone() EventList {
 	if el == nil {
 		return nil

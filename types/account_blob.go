@@ -8,19 +8,25 @@ import (
 	"github.com/the729/go-libra/crypto/sha3libra"
 )
 
+// RawAccountBlob is the raw blob of an account.
 type RawAccountBlob []byte
 
+// AccountBlob is the blob of an account.
+//
+// It consists of the raw blob, and the decoded map of resources.
 type AccountBlob struct {
 	Raw []byte
 	Map map[string][]byte
 }
 
+// ProvenAccountBlob is and account blob proven to be included in the ledger.
 type ProvenAccountBlob struct {
 	proven      bool
 	accountBlob AccountBlob
 	addr        AccountAddress
 }
 
+// Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (b RawAccountBlob) Hash() sha3libra.HashValue {
 	if b == nil {
 		return nil
@@ -30,6 +36,7 @@ func (b RawAccountBlob) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
+// Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (b *AccountBlob) Hash() sha3libra.HashValue {
 	if b == nil {
 		return nil
@@ -37,6 +44,7 @@ func (b *AccountBlob) Hash() sha3libra.HashValue {
 	return RawAccountBlob(b.Raw).Hash()
 }
 
+// ParseToMap parses the raw blob into a map of resources.
 func (b *AccountBlob) ParseToMap() error {
 	data := b.Raw
 	l := int(serialization.SimpleDeserializer.Uint32(data))
@@ -59,6 +67,9 @@ func (b *AccountBlob) ParseToMap() error {
 	return nil
 }
 
+// GetResource gets Libra coin account resource from the account blob.
+//
+// The account blob should be already parsed into map of resources.
 func (b *AccountBlob) GetResource(tag *StructTag) (*AccountResource, error) {
 	tagHash := tag.Hash()
 	key := "\x01" + string(tagHash)
@@ -74,6 +85,7 @@ func (b *AccountBlob) GetResource(tag *StructTag) (*AccountResource, error) {
 	return r, nil
 }
 
+// GetRawBlob returns a copy of raw blob
 func (pb *ProvenAccountBlob) GetRawBlob() []byte {
 	if !pb.proven {
 		panic("not valid proven account blob")
@@ -81,6 +93,7 @@ func (pb *ProvenAccountBlob) GetRawBlob() []byte {
 	return cloneBytes(pb.accountBlob.Raw)
 }
 
+// GetResource gets Libra coin account resource from a proven account blob.
 func (pb *ProvenAccountBlob) GetResource(tag *StructTag) (*ProvenAccountResource, error) {
 	if !pb.proven {
 		panic("not valid proven account blob")
@@ -102,6 +115,7 @@ func (pb *ProvenAccountBlob) GetResource(tag *StructTag) (*ProvenAccountResource
 	}, nil
 }
 
+// GetAddress returns a copy of account address.
 func (pb *ProvenAccountBlob) GetAddress() AccountAddress {
 	if !pb.proven {
 		panic("not valid proven account blob")

@@ -10,6 +10,7 @@ import (
 	"github.com/the729/go-libra/types/validator"
 )
 
+// LedgerInfo is a information struct of a version (height) of the ledger.
 type LedgerInfo struct {
 	Version                    uint64
 	TransactionAccumulatorHash []byte
@@ -19,16 +20,20 @@ type LedgerInfo struct {
 	TimestampUsec              uint64
 }
 
+// LedgerInfoWithSignatures is a ledger info with signature from trusted
+// validators.
 type LedgerInfoWithSignatures struct {
 	*LedgerInfo
 	Sigs map[string]sha3libra.HashValue
 }
 
+// ProvenLedgerInfo is a ledger info proven to be history state of the ledger.
 type ProvenLedgerInfo struct {
 	proven     bool
 	ledgerInfo LedgerInfo
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 	l.Version = pb.Version
 	l.TransactionAccumulatorHash = pb.TransactionAccumulatorHash
@@ -39,6 +44,7 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 	return nil
 }
 
+// SerializeTo serializes this struct into a io.Writer.
 func (l *LedgerInfo) SerializeTo(w io.Writer) error {
 	serialization.SimpleSerializer.Write(w, l.Version)
 	w.Write(l.TransactionAccumulatorHash)
@@ -49,6 +55,7 @@ func (l *LedgerInfo) SerializeTo(w io.Writer) error {
 	return nil
 }
 
+// Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (l *LedgerInfo) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewLedgerInfo()
 	l.SerializeTo(hasher)
@@ -57,6 +64,7 @@ func (l *LedgerInfo) Hash() sha3libra.HashValue {
 	return hash
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (l *LedgerInfoWithSignatures) FromProto(pb *pbtypes.LedgerInfoWithSignatures) error {
 	l.LedgerInfo = &LedgerInfo{}
 	l.LedgerInfo.FromProto(pb.LedgerInfo)
@@ -69,6 +77,7 @@ func (l *LedgerInfoWithSignatures) FromProto(pb *pbtypes.LedgerInfoWithSignature
 	return nil
 }
 
+// Verify the ledger info with a consensus verifier and output a ProvenLedgerInfo.
 func (l *LedgerInfoWithSignatures) Verify(v validator.Verifier) (*ProvenLedgerInfo, error) {
 	if err := v.Verify(l.LedgerInfo.Hash(), l.Sigs); err != nil {
 		return nil, err
@@ -86,6 +95,7 @@ func (l *LedgerInfoWithSignatures) Verify(v validator.Verifier) (*ProvenLedgerIn
 	}, nil
 }
 
+// GetVersion returns the height of this ledger info.
 func (pl *ProvenLedgerInfo) GetVersion() uint64 {
 	if !pl.proven {
 		panic("not valid proven ledger info")
@@ -93,6 +103,7 @@ func (pl *ProvenLedgerInfo) GetVersion() uint64 {
 	return pl.ledgerInfo.Version
 }
 
+// GetTransactionAccumulatorHash returns the root hash of the transaction Merkle Tree accumulator.
 func (pl *ProvenLedgerInfo) GetTransactionAccumulatorHash() []byte {
 	if !pl.proven {
 		panic("not valid proven ledger info")
@@ -100,6 +111,7 @@ func (pl *ProvenLedgerInfo) GetTransactionAccumulatorHash() []byte {
 	return cloneBytes(pl.ledgerInfo.TransactionAccumulatorHash)
 }
 
+// GetEpochNum returns the epoch number.
 func (pl *ProvenLedgerInfo) GetEpochNum() uint64 {
 	if !pl.proven {
 		panic("not valid proven ledger info")
@@ -107,6 +119,7 @@ func (pl *ProvenLedgerInfo) GetEpochNum() uint64 {
 	return pl.ledgerInfo.EpochNum
 }
 
+// GetTimestampUsec returns the timestamp of this version, in microseconds.
 func (pl *ProvenLedgerInfo) GetTimestampUsec() uint64 {
 	if !pl.proven {
 		panic("not valid proven ledger info")

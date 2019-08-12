@@ -9,17 +9,22 @@ import (
 	"github.com/the729/go-libra/types/proof"
 )
 
+// TransactionListWithProof is a consecutive list of transactions with a Merkle Tree accumulator
+// range proof to prove inclusion of all transactions in the list.
 type TransactionListWithProof struct {
 	Transactions []*SubmittedTransaction
 	Proof        *proof.AccumulatorRange
 }
 
+// ProvenTransactionList is a consecutive list of transactions which has been proven to be included
+// in the ledger.
 type ProvenTransactionList struct {
 	proven       bool
 	transactions []*ProvenTransaction
 	ledgerInfo   *ProvenLedgerInfo
 }
 
+// FromProtoResponse parses a protobuf struct into this struct.
 func (tl *TransactionListWithProof) FromProtoResponse(pb *pbtypes.GetTransactionsResponse) error {
 	if pb == nil {
 		return ErrNilInput
@@ -27,6 +32,7 @@ func (tl *TransactionListWithProof) FromProtoResponse(pb *pbtypes.GetTransaction
 	return tl.FromProto(pb.TxnListWithProof)
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithProof) error {
 	if pb == nil {
 		return ErrNilInput
@@ -93,6 +99,7 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 	return nil
 }
 
+// Verify the proof of the transaction list, and output a ProvenTransactionList if successful.
 func (tl *TransactionListWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*ProvenTransactionList, error) {
 	var firstVersion uint64
 
@@ -139,6 +146,7 @@ func (tl *TransactionListWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*Prove
 	}, nil
 }
 
+// GetTransactions returns a copy of the underlying proven transaction list.
 func (ptl *ProvenTransactionList) GetTransactions() []*ProvenTransaction {
 	if !ptl.proven {
 		panic("not valid proven transaction list")
@@ -148,6 +156,7 @@ func (ptl *ProvenTransactionList) GetTransactions() []*ProvenTransaction {
 	return out
 }
 
+// GetLedgerInfo returns the ledger info which proofs this transaction list.
 func (ptl *ProvenTransactionList) GetLedgerInfo() *ProvenLedgerInfo {
 	if !ptl.proven {
 		panic("not valid proven transaction list")

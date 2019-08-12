@@ -7,11 +7,14 @@ import (
 	"github.com/the729/go-libra/types/proof"
 )
 
+// SignedTransactionWithProof is a submitted transaction with a Merkle Tree accumulator proof
+// to prove its inclusion in a version of the ledger.
 type SignedTransactionWithProof struct {
 	*SubmittedTransaction
 	LedgerInfoToTransactionInfoProof *proof.Accumulator
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWithProof) error {
 	var err error
 	if pb == nil {
@@ -49,6 +52,7 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 	return nil
 }
 
+// Verify the proof of the transaction, and output a ProvenTransaction if successful.
 func (t *SignedTransactionWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*ProvenTransaction, error) {
 	pTxn, err := t.SubmittedTransaction.Verify()
 	if err != nil {
