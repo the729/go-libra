@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/the729/go-libra)](https://goreportcard.com/report/github.com/the729/go-libra)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/15abfbbb81354b7fae9656baa6204002)](https://www.codacy.com/app/the729/go-libra?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=the729/go-libra&amp;utm_campaign=Badge_Grade)
 
-A golang client library for Libra blockchain (https://github.com/libra/libra). 
+A golang client library for [Libra blockchain](https://github.com/libra/libra). 
 
 It has all cryptographic verification algorithms, including validator-signature-based consensus verification, ledger history accumulator proof, and account state sparse Merkle tree proof, etc. 
 
@@ -11,18 +11,18 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 Compatible with testnet 2019/07/31 (commit hash [05c40c977b](https://github.com/libra/libra/commit/05c40c977badf052b9efcc4e0180e3628bee2847)).
 
- - Connect to testnet AdmissionControl server with gRPC
- - Data models with all necessary cryptographic verification algorithms
-   - Ledger state: signature-based consensus verification
-   - Transaction info: ledger history accumulator proof
-   - Transaction list: ledger history accumulator proof on a range of transactions
-   - Transaction signature: ed25519 signature
-   - Account state: sparse Merkle tree proof
-   - Events: event list hash based on Merkle tree accumulator
- - Query account states
- - Make P2P transaction, and wait for ledger inclusion
- - Query transactions by ledger version
- - Query account transaction by sequence number
+- Connect to testnet AdmissionControl server with gRPC
+- Data models with all necessary cryptographic verification algorithms
+  - Ledger state: signature-based consensus verification
+  - Transaction info: ledger history accumulator proof
+  - Transaction list: ledger history accumulator proof on a range of transactions
+  - Transaction signature: ed25519 signature
+  - Account state: sparse Merkle tree proof
+  - Events: event list hash based on Merkle tree accumulator
+- Query account states
+- Make P2P transaction, and wait for ledger inclusion
+- Query transactions by ledger version
+- Query account transaction by sequence number
 
 ## Usage
 
@@ -138,10 +138,10 @@ if err != nil {
 ## Examples
 
 Several examples are included in `example` folder.
- - [cli_client](example/cli_client): A fully functional Libra CLI client
- - [query_account](example/query_account): Query specific account states
- - [query_txn_range](example/query_txn_range): Query a range of transactions
- - [query_txn_by_seq](example/query_txn_by_seq): Query a transaction by specific account and sequence number
- - [p2p_transaction](example/p2p_transaction): Make P2P transaction
+- [cli_client](example/cli_client): A fully functional Libra CLI client
+- [query_account](example/query_account): Query specific account states
+- [query_txn_range](example/query_txn_range): Query a range of transactions
+- [query_txn_by_seq](example/query_txn_by_seq): Query a transaction by specific account and sequence number
+- [p2p_transaction](example/p2p_transaction): Make P2P transaction
 
 ## Contributions are welcome
