@@ -11,20 +11,22 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 Compatible with testnet 2019/07/31 (commit hash [05c40c977b](https://github.com/libra/libra/commit/05c40c977badf052b9efcc4e0180e3628bee2847)).
 
-- ✓ Connect to testnet AdmissionControl server with gRPC
-- ✓ Data models with all necessary cryptographic verification algorithms
-  - ✓ Ledger state: signature-based consensus verification
-  - ✓ Transaction info: ledger history accumulator proof
-  - ✓ Transaction list: ledger history accumulator proof on a range of transactions
-  - ✓ Transaction signature: ed25519 signature
-  - ✓ Account state: sparse Merkle tree proof
-  - ✓ Events: event list hash based on Merkle tree accumulator
-- ✓ Query account states
-- ✓ Make P2P transaction, and wait for ledger inclusion
-- ✓ Query transactions by ledger version
-- ✓ Query account transaction by sequence number
+ - Connect to testnet AdmissionControl server with gRPC
+ - Data models with all necessary cryptographic verification algorithms
+   - Ledger state: signature-based consensus verification
+   - Transaction info: ledger history accumulator proof
+   - Transaction list: ledger history accumulator proof on a range of transactions
+   - Transaction signature: ed25519 signature
+   - Account state: sparse Merkle tree proof
+   - Events: event list hash based on Merkle tree accumulator
+ - Query account states
+ - Make P2P transaction, and wait for ledger inclusion
+ - Query transactions by ledger version
+ - Query account transaction by sequence number
 
 ## Usage
+
+Godoc reference to [client package](https://godoc.org/github.com/the729/go-libra/client) and  [types package](https://godoc.org/github.com/the729/go-libra/types).
 
 ### Get account balance, cryptographically proven
 
