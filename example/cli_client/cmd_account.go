@@ -3,7 +3,10 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -85,7 +88,17 @@ func cmdMint(ctx *cli.Context) error {
 	}
 	amountMicro := uint64(amount) * 1000000
 
-	log.Printf("Please visit the following faucet service:")
-	log.Printf("http://faucet.testnet.libra.org/?amount=%d&address=%s", amountMicro, hex.EncodeToString(receiver.Address))
+	faucetURL := fmt.Sprintf("http://faucet.testnet.libra.org/?amount=%d&address=%s", amountMicro, hex.EncodeToString(receiver.Address))
+	log.Printf("Going to POST to faucet service: %s", faucetURL)
+
+	resp, err := http.PostForm(faucetURL, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	log.Printf("Respone (code=%d): %s", resp.StatusCode, string(body))
+
 	return nil
 }
