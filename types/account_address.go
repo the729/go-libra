@@ -35,7 +35,7 @@ func (a AccountAddress) Hash() sha3libra.HashValue {
 func (a *AccountAddress) UnmarshalText(txt []byte) error {
 	data, err := hex.DecodeString(string(txt))
 	if err != nil {
-		return ErrInvalidText
+		return err
 	}
 	*a = data
 	return nil

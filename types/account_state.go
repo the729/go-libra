@@ -8,22 +8,36 @@ import (
 	"github.com/the729/go-libra/types/proof"
 )
 
+// AccountState is an account state.
 type AccountState struct {
 	Version uint64
 	RawBlob RawAccountBlob
 }
 
+// AccountStateWithProof is an account state with proof.
 type AccountStateWithProof struct {
 	*AccountState
 	Proof *AccountStateProof
 }
 
+// AccountStateProof is a chain of proof that a certain account state is included
+// in the ledger, or the account does not exist.
 type AccountStateProof struct {
+	// TransactionInfo is the info of the transaction that leads to this version of the ledger.
 	*TransactionInfo
+
+	// LedgerInfoToTransactionInfoProof is a Merkle Tree accumulator to prove that TransactionInfo
+	// is included in the ledger.
 	LedgerInfoToTransactionInfoProof *proof.Accumulator
-	TransactionInfoToAccountProof    *proof.SparseMerkle
+
+	// TransactionInfoToAccountProof is a Sparse Merkle Tree proof that the account state is part of
+	// the whole ledger state.
+	TransactionInfoToAccountProof *proof.SparseMerkle
 }
 
+// ProvenAccountState is an account state proven to be equal to the state of the ledger.
+//
+// Either the account is included in the ledger, or it does not exist.
 type ProvenAccountState struct {
 	proven       bool
 	accountState AccountState
@@ -31,6 +45,7 @@ type ProvenAccountState struct {
 	ledgerInfo   *ProvenLedgerInfo
 }
 
+// FromProtoResponse parses a protobuf struct into this struct.
 func (a *AccountStateWithProof) FromProtoResponse(pb *pbtypes.GetAccountStateResponse) error {
 	if pb == nil {
 		return ErrNilInput
@@ -38,6 +53,7 @@ func (a *AccountStateWithProof) FromProtoResponse(pb *pbtypes.GetAccountStateRes
 	return a.FromProto(pb.AccountStateWithProof)
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (a *AccountStateWithProof) FromProto(pb *pbtypes.AccountStateWithProof) error {
 	if pb == nil {
 		return ErrNilInput
@@ -51,6 +67,7 @@ func (a *AccountStateWithProof) FromProto(pb *pbtypes.AccountStateWithProof) err
 	return a.Proof.FromProto(pb.Proof)
 }
 
+// FromProto parses a protobuf struct into this struct.
 func (ap *AccountStateProof) FromProto(pb *pbtypes.AccountStateProof) error {
 	var err error
 	if pb == nil {
@@ -75,6 +92,7 @@ func (ap *AccountStateProof) FromProto(pb *pbtypes.AccountStateProof) error {
 	return nil
 }
 
+// Verify the proof of the account state, and output a ProvenAccountState if successful.
 func (a *AccountStateWithProof) Verify(addr AccountAddress, provenLedgerInfo *ProvenLedgerInfo) (*ProvenAccountState, error) {
 	addrHash := addr.Hash()
 	blobHash := a.RawBlob.Hash()
@@ -87,7 +105,7 @@ func (a *AccountStateWithProof) Verify(addr AccountAddress, provenLedgerInfo *Pr
 		)
 	} else {
 		err = a.Proof.TransactionInfoToAccountProof.VerifyInclusion(
-			&proof.LeafNode{addrHash, blobHash},
+			&proof.LeafNode{Key: addrHash, ValueHash: blobHash},
 			a.Proof.TransactionInfo.StateRootHash,
 		)
 	}
@@ -118,6 +136,7 @@ func (a *AccountStateWithProof) Verify(addr AccountAddress, provenLedgerInfo *Pr
 	}, nil
 }
 
+// GetLedgerInfo returns the ledger info.
 func (pas *ProvenAccountState) GetLedgerInfo() *ProvenLedgerInfo {
 	if !pas.proven {
 		panic("not valid proven account state")
@@ -125,6 +144,7 @@ func (pas *ProvenAccountState) GetLedgerInfo() *ProvenLedgerInfo {
 	return pas.ledgerInfo
 }
 
+// GetVersion returns the version.
 func (pas *ProvenAccountState) GetVersion() uint64 {
 	if !pas.proven {
 		panic("not valid proven account state")
@@ -132,6 +152,7 @@ func (pas *ProvenAccountState) GetVersion() uint64 {
 	return pas.accountState.Version
 }
 
+// GetAddress returns a copy of the address of the account.
 func (pas *ProvenAccountState) GetAddress() AccountAddress {
 	if !pas.proven {
 		panic("not valid proven account state")
@@ -139,9 +160,16 @@ func (pas *ProvenAccountState) GetAddress() AccountAddress {
 	return AccountAddress(cloneBytes(pas.addr))
 }
 
+// GetAccountBlob returns a copy of the account blob, as a proven struct.
+//
+// GetAccountBlob returns nil if the account does not exist. You can call IsNil()
+// to check whether the account exists.
 func (pas *ProvenAccountState) GetAccountBlob() *ProvenAccountBlob {
 	if !pas.proven {
 		panic("not valid proven account state")
+	}
+	if pas.IsNil() {
+		return nil
 	}
 	pab := &ProvenAccountBlob{
 		proven: true,
@@ -152,6 +180,7 @@ func (pas *ProvenAccountState) GetAccountBlob() *ProvenAccountBlob {
 	return pab
 }
 
+// IsNil returns whether this account is null (not exists, or not created yet).
 func (pas *ProvenAccountState) IsNil() bool {
 	if !pas.proven {
 		panic("not valid proven account state")

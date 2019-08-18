@@ -7,6 +7,7 @@ import (
 	"github.com/the729/go-libra/generated/pbtypes"
 )
 
+// AccessPath is access path to an event.
 type AccessPath struct {
 	Address AccountAddress
 	Path    []byte
