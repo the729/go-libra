@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/the729/go-libra/client"
-	"github.com/the729/go-libra/types"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -41,7 +40,7 @@ func main() {
 	}
 	log.Printf("... is %d", seq)
 
-	rawTxn, err := types.NewRawP2PTransaction(
+	rawTxn, err := client.NewRawP2PTransaction(
 		senderAddr, recvAddr, seq,
 		amountMicro, maxGasAmount, gasUnitPrice, expiration,
 	)

@@ -67,12 +67,12 @@ func (b *AccountBlob) ParseToMap() error {
 	return nil
 }
 
-// GetResource gets Libra coin account resource from the account blob.
+// GetResource gets a resource from the account blob by its path.
 //
-// The account blob should be already parsed into map of resources.
-func (b *AccountBlob) GetResource(tag *StructTag) (*AccountResource, error) {
-	tagHash := tag.Hash()
-	key := "\x01" + string(tagHash)
+// The account blob should be already parsed into map of resources. To get Libra coin account resource,
+// use AccountResourcePath() to generate the path.
+func (b *AccountBlob) GetResource(path []byte) (*AccountResource, error) {
+	key := string(path)
 	val, ok := b.Map[key]
 	if !ok {
 		return nil, errors.New("resource not found")
@@ -93,12 +93,14 @@ func (pb *ProvenAccountBlob) GetRawBlob() []byte {
 	return cloneBytes(pb.accountBlob.Raw)
 }
 
-// GetResource gets Libra coin account resource from a proven account blob.
-func (pb *ProvenAccountBlob) GetResource(tag *StructTag) (*ProvenAccountResource, error) {
+// GetResource gets a resource from a proven account blob by its path.
+//
+// To get Libra coin account resource, use AccountResourcePath() to generate the path.
+func (pb *ProvenAccountBlob) GetResource(path []byte) (*ProvenAccountResource, error) {
 	if !pb.proven {
 		panic("not valid proven account blob")
 	}
-	ar, err := pb.accountBlob.GetResource(tag)
+	ar, err := pb.accountBlob.GetResource(path)
 	if err != nil {
 		return nil, err
 	}

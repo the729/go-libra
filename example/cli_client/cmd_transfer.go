@@ -9,7 +9,6 @@ import (
 	"github.com/urfave/cli"
 
 	"github.com/the729/go-libra/client"
-	"github.com/the729/go-libra/types"
 )
 
 func cmdTransfer(ctx *cli.Context) error {
@@ -52,7 +51,7 @@ func cmdTransfer(ctx *cli.Context) error {
 	}
 	log.Printf("... is %d", seq)
 
-	rawTxn, err := types.NewRawP2PTransaction(
+	rawTxn, err := client.NewRawP2PTransaction(
 		sender.Address, receiver.Address, seq,
 		amountMicro, maxGasAmount, gasUnitPrice, expiration,
 	)

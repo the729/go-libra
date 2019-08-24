@@ -57,11 +57,7 @@ func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAcco
 
 // GetLibraCoinResourceFromAccountBlob decodes the resource of Libra coin from a proven account blob.
 func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.ProvenAccountBlob) (*types.ProvenAccountResource, error) {
-	res, err := blob.GetResource(&types.StructTag{
-		Address: make([]byte, 32),
-		Module:  "LibraAccount",
-		Name:    "T",
-	})
+	res, err := blob.GetResource(types.AccountResourcePath())
 	if err != nil {
 		return nil, fmt.Errorf("get resource failed: %v", err)
 	}

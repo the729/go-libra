@@ -3,11 +3,9 @@ package types
 import (
 	"crypto"
 	"crypto/rand"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/crypto/ed25519"
@@ -15,7 +13,6 @@ import (
 	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
-	"github.com/the729/go-libra/language/stdscript"
 )
 
 // RawTransaction is a raw transaction struct.
@@ -228,48 +225,6 @@ func (pt *ProvenTransaction) GetGasUsed() uint64 {
 		panic("not valid proven transaction")
 	}
 	return pt.gasUsed
-}
-
-// NewRawP2PTransaction creates a new serialized raw transaction bytes corresponding to a
-// peer-to-peer Libra coin transaction.
-func NewRawP2PTransaction(
-	senderAddress, receiverAddress AccountAddress,
-	senderSequenceNumber uint64,
-	amount, maxGasAmount, gasUnitPrice uint64,
-	expiration time.Time,
-) ([]byte, error) {
-	ammountBytes := make([]byte, 8)
-	binary.LittleEndian.PutUint64(ammountBytes, amount)
-
-	txn := &RawTransaction{
-		SenderAccount:  senderAddress,
-		SequenceNumber: senderSequenceNumber,
-		Payload: &pbtypes.RawTransaction_Program{
-			Program: &pbtypes.Program{
-				Code: stdscript.PeerToPeerTransfer,
-				Arguments: []*pbtypes.TransactionArgument{
-					{
-						Type: pbtypes.TransactionArgument_ADDRESS,
-						Data: receiverAddress,
-					},
-					{
-						Type: pbtypes.TransactionArgument_U64,
-						Data: ammountBytes,
-					},
-				},
-				Modules: nil,
-			},
-		},
-		MaxGasAmount:   maxGasAmount,
-		GasUnitPrice:   gasUnitPrice,
-		ExpirationTime: uint64(expiration.Unix()),
-	}
-
-	// j, _ := json.MarshalIndent(txn, "", "    ")
-	// log.Printf("Raw txn: %s", string(j))
-
-	raw, err := proto.Marshal(txn)
-	return raw, err
 }
 
 // SignRawTransaction signes a raw transaction with a private key.
