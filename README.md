@@ -11,7 +11,6 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 Compatible with testnet 2019/07/31 (commit hash [05c40c977b](https://github.com/libra/libra/commit/05c40c977badf052b9efcc4e0180e3628bee2847)).
 
-- Connect to testnet AdmissionControl server with gRPC
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
   - Transaction info: ledger history accumulator proof
@@ -19,10 +18,11 @@ Compatible with testnet 2019/07/31 (commit hash [05c40c977b](https://github.com/
   - Transaction signature: ed25519 signature
   - Account state: sparse Merkle tree proof
   - Events: event list hash based on Merkle tree accumulator
-- Query account states
-- Make P2P transaction, and wait for ledger inclusion
-- Query transactions by ledger version
-- Query account transaction by sequence number
+- RPC functions
+  - Query account states
+  - Make P2P transaction, and wait for ledger inclusion
+  - Query transactions by ledger version
+  - Query account transaction by sequence number
 
 ## Usage
 
@@ -76,34 +76,6 @@ func main() {
 }
 ```
 
-### Get transactions by range
-
-```golang
-provenTxnList, err := c.QueryTransactionRange(1000, 5, false)
-if err != nil {
-	log.Fatal(err)
-}
-
-for _, provenTxn := range provenTxnList.GetTransactions() {
-	log.Printf("Txn #%d:", provenTxn.GetVersion())
-	// process each proven transaction
-}
-```
-
-### Get transaction by address and sequence number
-
-```golang
-addrStr := "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
-addr := client.MustToAddress(addrStr)
-
-provenTxn, err := c.QueryTransactionByAccountSeq(addr, 0, true)
-if err != nil {
-	log.Fatal(err)
-}
-
-log.Printf("Txn #%d:", provenTxn.GetVersion())
-```
-
 ### Make peer-to-peer transaction
 
 ```golang
@@ -135,7 +107,7 @@ if err != nil {
 }
 ```
 
-## Examples
+### Other examples
 
 Several examples are included in `example` folder.
 - [cli_client](example/cli_client): A fully functional Libra CLI client
