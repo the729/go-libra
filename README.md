@@ -24,6 +24,19 @@ Compatible with testnet 2019/07/31 (commit hash [05c40c977b](https://github.com/
   - Query transactions by ledger version
   - Query account transaction by sequence number
 
+## Installation
+
+```bash
+$ # download the code
+$ go get -u github.com/the729/go-libra
+
+$ # build example client
+$ cd example/cli_client && go build
+
+$ # see example/cli_client/README.md
+$ ./cli_client a ls
+```
+
 ## Usage
 
 Godoc reference to [client package](https://godoc.org/github.com/the729/go-libra/client) and  [types package](https://godoc.org/github.com/the729/go-libra/types).
