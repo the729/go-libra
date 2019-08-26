@@ -93,7 +93,7 @@ func main() {
 		},
 		{
 			Name:    "transfer",
-			Usage:   "sender_address_prefix receiver_address_prefix amount",
+			Usage:   "sender_address_prefix receiver_address_prefix amount [max_gas_amount [gas_unit_price_micro [expiration_seconds]]]",
 			Aliases: []string{"t"},
 			Action:  cmdTransfer,
 		},

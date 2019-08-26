@@ -40,9 +40,29 @@ func cmdTransfer(ctx *cli.Context) error {
 
 	log.Printf("Going to transfer %d microLibra from %s to %s", amountMicro, hex.EncodeToString(sender.Address), hex.EncodeToString(receiver.Address))
 
-	maxGasAmount := uint64(100000) // must > 29925
+	maxGasAmount := uint64(100000) // must > 28292
 	gasUnitPrice := uint64(0)
 	expiration := time.Now().Add(1 * time.Minute)
+
+	if ctx.Args().Get(3) != "" {
+		if maxGasAmount, err = strconv.ParseUint(ctx.Args().Get(3), 10, 64); err != nil {
+			return err
+		}
+	}
+	if ctx.Args().Get(4) != "" {
+		if gasUnitPrice, err = strconv.ParseUint(ctx.Args().Get(4), 10, 64); err != nil {
+			return err
+		}
+	}
+	if ctx.Args().Get(5) != "" {
+		expSec, err := strconv.Atoi(ctx.Args().Get(5))
+		if err != nil {
+			return err
+		}
+		expiration = time.Now().Add(time.Duration(expSec) * time.Second)
+	}
+
+	log.Printf("Max gas: %d, Gas price: %d, Expiration: %v", maxGasAmount, gasUnitPrice, expiration)
 
 	log.Printf("Get current account sequence of sender...")
 	seq, err := c.GetAccountSequenceNumber(sender.Address)
