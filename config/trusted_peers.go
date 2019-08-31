@@ -9,19 +9,20 @@ import (
 )
 
 type TrustedPeer struct {
-	NetworkSigningPubkey  lcrypto.PublicKey `toml:"network_signing_pubkey"`
-	NetworkIdentityPubkey lcrypto.PublicKey `toml:"network_identity_pubkey"`
-	ConsensusPubkey       lcrypto.PublicKey `toml:"consensus_pubkey"`
+	NetworkSigningPubkey  lcrypto.PublicKey `toml:"ns"`
+	NetworkIdentityPubkey lcrypto.PublicKey `toml:"ni"`
+	ConsensusPubkey       lcrypto.PublicKey `toml:"c"`
 }
 
 type TrustedPeersConfig struct {
-	Peers map[string]TrustedPeer `toml:"peers"`
+	Peers map[string]TrustedPeer
 }
 
 func LoadTrustedPeersFromFile(fn string) (*TrustedPeersConfig, error) {
 	peersConf := &TrustedPeersConfig{}
+	peersConf.Peers = make(map[string]TrustedPeer)
 
-	if _, err := toml.DecodeFile(fn, peersConf); err != nil {
+	if _, err := toml.DecodeFile(fn, &peersConf.Peers); err != nil {
 		return nil, fmt.Errorf("TrustedPeersConfig toml decode error: %v", err)
 	}
 
