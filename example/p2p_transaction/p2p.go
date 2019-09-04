@@ -29,7 +29,7 @@ func main() {
 	senderAddr := client.MustToAddress("18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a")
 	recvAddr := client.MustToAddress("e89a0d93fcf1ca4423328c1bddebe6c02da666808993c8a888ff7a8bad19ffd5")
 	amountMicro := uint64(2 * 1000000)
-	maxGasAmount := uint64(100000) // must > 29925
+	maxGasAmount := uint64(140000)
 	gasUnitPrice := uint64(0)
 	expiration := time.Now().Add(1 * time.Minute)
 

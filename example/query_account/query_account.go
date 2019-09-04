@@ -38,7 +38,9 @@ func main() {
 
 	log.Printf("Balance (microLibra): %d", provenResource.GetBalance())
 	log.Printf("Sequence Number: %d", provenResource.GetSequenceNumber())
-	log.Printf("SentEventsCount: %d", provenResource.GetSentEventsCount())
-	log.Printf("ReceivedEventsCount: %d", provenResource.GetReceivedEventsCount())
+	log.Printf("SentEventsCount: %d", provenResource.GetSentEvents().Count)
+	log.Printf("    Key: %x", provenResource.GetSentEvents().Key)
+	log.Printf("ReceivedEventsCount: %d", provenResource.GetReceivedEvents().Count)
+	log.Printf("    Key: %x", provenResource.GetReceivedEvents().Key)
 	log.Printf("DelegatedWithdrawalCapability: %v", provenResource.GetDelegatedWithdrawalCapability())
 }
