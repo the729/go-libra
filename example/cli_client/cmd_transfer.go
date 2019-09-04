@@ -40,7 +40,7 @@ func cmdTransfer(ctx *cli.Context) error {
 
 	log.Printf("Going to transfer %d microLibra from %s to %s", amountMicro, hex.EncodeToString(sender.Address), hex.EncodeToString(receiver.Address))
 
-	maxGasAmount := uint64(100000) // must > 28292
+	maxGasAmount := uint64(140000) // must > 70996?
 	gasUnitPrice := uint64(0)
 	expiration := time.Now().Add(1 * time.Minute)
 

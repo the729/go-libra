@@ -9,9 +9,16 @@ import (
 	"github.com/the729/go-libra/generated/pbtypes"
 )
 
+type EventKey []byte
+
+type EventHandle struct {
+	Count uint64
+	Key   EventKey
+}
+
 // ContractEvent is a output event of transaction
 type ContractEvent struct {
-	AccessPath     *AccessPath
+	Key            EventKey
 	SequenceNumber uint64
 	Data           []byte
 }
@@ -19,15 +26,20 @@ type ContractEvent struct {
 // EventList is a list of events
 type EventList []*ContractEvent
 
+// Clone deep clones this struct.
+func (eh *EventHandle) Clone() *EventHandle {
+	out := &EventHandle{}
+	out.Key = cloneBytes(eh.Key)
+	out.Count = eh.Count
+	return out
+}
+
 // FromProto parses a protobuf struct into this struct.
 func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 	if pb == nil {
 		return ErrNilInput
 	}
-	e.AccessPath = &AccessPath{}
-	if err := e.AccessPath.FromProto(pb.AccessPath); err != nil {
-		return err
-	}
+	e.Key = pb.Key
 	e.SequenceNumber = pb.SequenceNumber
 	e.Data = pb.EventData
 
@@ -36,7 +48,7 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 
 // SerializeTo serializes this struct into a io.Writer.
 func (e *ContractEvent) SerializeTo(w io.Writer) error {
-	if err := e.AccessPath.SerializeTo(w); err != nil {
+	if err := serialization.SimpleSerializer.Write(w, []byte(e.Key)); err != nil {
 		return err
 	}
 	if err := serialization.SimpleSerializer.Write(w, e.SequenceNumber); err != nil {
@@ -60,7 +72,7 @@ func (e *ContractEvent) Hash() sha3libra.HashValue {
 // Clone deep clones this struct.
 func (e *ContractEvent) Clone() *ContractEvent {
 	out := &ContractEvent{}
-	out.AccessPath = e.AccessPath.Clone()
+	out.Key = cloneBytes(e.Key)
 	out.SequenceNumber = e.SequenceNumber
 	out.Data = cloneBytes(e.Data)
 	return out

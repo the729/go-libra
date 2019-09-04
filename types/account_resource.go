@@ -1,15 +1,17 @@
 package types
 
-import serialization "github.com/the729/go-libra/common/canonical_serialization"
+import (
+	"github.com/the729/lcs"
+)
 
 // AccountResource is the Libra coin resource of an account.
 type AccountResource struct {
-	Balance                       uint64
-	SequenceNumber                uint64
 	AuthenticationKey             []byte
-	SentEventsCount               uint64
-	ReceivedEventsCount           uint64
+	Balance                       uint64
 	DelegatedWithdrawalCapability bool
+	ReceivedEvents                *EventHandle
+	SentEvents                    *EventHandle
+	SequenceNumber                uint64
 }
 
 // ProvenAccountResource is the Libra coin resource of an account which is proven
@@ -22,22 +24,19 @@ type ProvenAccountResource struct {
 
 // UnmarshalBinary unmarshals raw bytes into this account resource struct.
 func (r *AccountResource) UnmarshalBinary(data []byte) error {
-	akey, err := serialization.SimpleDeserializer.ByteSlice(data)
-	if err != nil {
-		return err
-	}
-	r.AuthenticationKey = akey
-	data = data[len(akey)+4:]
-	r.Balance = serialization.SimpleDeserializer.Uint64(data)
-	data = data[8:]
-	r.DelegatedWithdrawalCapability = serialization.SimpleDeserializer.Bool(data)
-	data = data[1:]
-	r.ReceivedEventsCount = serialization.SimpleDeserializer.Uint64(data)
-	data = data[8:]
-	r.SentEventsCount = serialization.SimpleDeserializer.Uint64(data)
-	data = data[8:]
-	r.SequenceNumber = serialization.SimpleDeserializer.Uint64(data)
-	return nil
+	return lcs.Unmarshal(data, r)
+}
+
+// Clone deep clones this struct.
+func (r *AccountResource) Clone() *AccountResource {
+	out := &AccountResource{}
+	out.AuthenticationKey = cloneBytes(r.AuthenticationKey)
+	out.Balance = r.Balance
+	out.DelegatedWithdrawalCapability = r.DelegatedWithdrawalCapability
+	out.ReceivedEvents = r.ReceivedEvents.Clone()
+	out.SentEvents = r.SentEvents.Clone()
+	out.SequenceNumber = r.SequenceNumber
+	return out
 }
 
 // GetBalance returns Libra coin balance in microLibra.
@@ -64,20 +63,24 @@ func (pr *ProvenAccountResource) GetAuthenticationKey() []byte {
 	return cloneBytes(pr.accountResource.AuthenticationKey)
 }
 
-// GetSentEventsCount returns count of sent events.
-func (pr *ProvenAccountResource) GetSentEventsCount() uint64 {
+// GetSentEvents returns sent events handle.
+func (pr *ProvenAccountResource) GetSentEvents() *EventHandle {
 	if !pr.proven {
 		panic("not valid proven account resource")
 	}
-	return pr.accountResource.SentEventsCount
+	c := &EventHandle{}
+	*c = *pr.accountResource.SentEvents
+	return c
 }
 
-// GetReceivedEventsCount returns count of received events.
-func (pr *ProvenAccountResource) GetReceivedEventsCount() uint64 {
+// GetReceivedEvents returns received events handle.
+func (pr *ProvenAccountResource) GetReceivedEvents() *EventHandle {
 	if !pr.proven {
 		panic("not valid proven account resource")
 	}
-	return pr.accountResource.ReceivedEventsCount
+	c := &EventHandle{}
+	*c = *pr.accountResource.ReceivedEvents
+	return c
 }
 
 // GetDelegatedWithdrawalCapability returns delegated withdrawal capability.

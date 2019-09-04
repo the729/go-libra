@@ -104,17 +104,12 @@ func (pb *ProvenAccountBlob) GetResource(path []byte) (*ProvenAccountResource, e
 	if err != nil {
 		return nil, err
 	}
-	return &ProvenAccountResource{
+	par := &ProvenAccountResource{
 		proven: true,
-		accountResource: AccountResource{
-			Balance:             ar.Balance,
-			SequenceNumber:      ar.SequenceNumber,
-			AuthenticationKey:   cloneBytes(ar.AuthenticationKey),
-			SentEventsCount:     ar.SentEventsCount,
-			ReceivedEventsCount: ar.ReceivedEventsCount,
-		},
-		addr: cloneBytes(pb.addr),
-	}, nil
+		addr:   cloneBytes(pb.addr),
+	}
+	par.accountResource = *(ar.Clone())
+	return par, nil
 }
 
 // GetAddress returns a copy of account address.

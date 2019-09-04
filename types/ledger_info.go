@@ -46,12 +46,24 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 
 // SerializeTo serializes this struct into a io.Writer.
 func (l *LedgerInfo) SerializeTo(w io.Writer) error {
-	serialization.SimpleSerializer.Write(w, l.Version)
-	w.Write(l.TransactionAccumulatorHash)
-	w.Write(l.ConsensusDataHash)
-	w.Write(l.ConsensusBlockID)
-	serialization.SimpleSerializer.Write(w, l.EpochNum)
-	serialization.SimpleSerializer.Write(w, l.TimestampUsec)
+	if err := serialization.SimpleSerializer.Write(w, l.Version); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, l.TransactionAccumulatorHash); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, l.ConsensusDataHash); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, l.ConsensusBlockID); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, l.EpochNum); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, l.TimestampUsec); err != nil {
+		return err
+	}
 	return nil
 }
 

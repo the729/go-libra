@@ -36,9 +36,15 @@ func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
 
 // SerializeTo serializes this struct into a io.Writer.
 func (t *TransactionInfo) SerializeTo(w io.Writer) error {
-	w.Write(t.SignedTransactionHash)
-	w.Write(t.StateRootHash)
-	w.Write(t.EventRootHash)
+	if err := serialization.SimpleSerializer.Write(w, t.SignedTransactionHash); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, t.StateRootHash); err != nil {
+		return err
+	}
+	if err := serialization.SimpleSerializer.Write(w, t.EventRootHash); err != nil {
+		return err
+	}
 	if err := serialization.SimpleSerializer.Write(w, t.GasUsed); err != nil {
 		return err
 	}

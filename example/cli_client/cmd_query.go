@@ -62,14 +62,16 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 		log.Printf("Account version: %d", accountState.GetVersion())
 		resource, err := c.GetLibraCoinResourceFromAccountBlob(accountState.GetAccountBlob())
 		if err != nil {
-			fmt.Println("Account does not contain libra coin resource.")
+			log.Printf("Account does not contain libra coin resource, err: %v", err)
 			return nil
 		}
 
 		log.Printf("Balance (microLibra): %d", resource.GetBalance())
 		log.Printf("Sequence Number: %d", resource.GetSequenceNumber())
-		log.Printf("SentEventsCount: %d", resource.GetSentEventsCount())
-		log.Printf("ReceivedEventsCount: %d", resource.GetReceivedEventsCount())
+		log.Printf("SentEventsCount: %d", resource.GetSentEvents().Count)
+		log.Printf("    Key: %x", resource.GetSentEvents().Key)
+		log.Printf("ReceivedEventsCount: %d", resource.GetReceivedEvents().Count)
+		log.Printf("    Key: %x", resource.GetReceivedEvents().Key)
 		log.Printf("DelegatedWithdrawalCapability: %v", resource.GetDelegatedWithdrawalCapability())
 	}
 	return nil
