@@ -1,5 +1,7 @@
 # go-libra
 
+[![Build Status](https://travis-ci.org/the729/go-libra.svg?branch=master)](https://travis-ci.org/the729/go-libra)
+[![codecov](https://codecov.io/gh/the729/go-libra/branch/master/graph/badge.svg)](https://codecov.io/gh/the729/go-libra)
 [![Go Report Card](https://goreportcard.com/badge/github.com/the729/go-libra)](https://goreportcard.com/report/github.com/the729/go-libra)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/15abfbbb81354b7fae9656baa6204002)](https://www.codacy.com/app/the729/go-libra?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=the729/go-libra&amp;utm_campaign=Badge_Grade)
 
