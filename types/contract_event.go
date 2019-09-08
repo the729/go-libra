@@ -1,12 +1,9 @@
 package types
 
 import (
-	"io"
-
 	"github.com/the729/go-libra/crypto/sha3libra"
-
-	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/generated/pbtypes"
+	"github.com/the729/lcs"
 )
 
 type EventKey []byte
@@ -46,24 +43,10 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 	return nil
 }
 
-// SerializeTo serializes this struct into a io.Writer.
-func (e *ContractEvent) SerializeTo(w io.Writer) error {
-	if err := serialization.SimpleSerializer.Write(w, []byte(e.Key)); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, e.SequenceNumber); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, e.Data); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (e *ContractEvent) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewContractEvent()
-	if err := e.SerializeTo(hasher); err != nil {
+	if err := lcs.NewEncoder(hasher).Encode(e); err != nil {
 		panic(err)
 	}
 	return hasher.Sum([]byte{})

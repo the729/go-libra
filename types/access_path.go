@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	"github.com/the729/go-libra/crypto/sha3libra"
-
-	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/generated/pbtypes"
 )
 
@@ -26,17 +24,6 @@ func (ap *AccessPath) FromProto(pb *pbtypes.AccessPath) error {
 	}
 	ap.Address = pb.Address
 	ap.Path = pb.Path
-	return nil
-}
-
-// SerializeTo serializes this struct into a io.Writer.
-func (ap *AccessPath) SerializeTo(w io.Writer) error {
-	if err := ap.Address.SerializeTo(w); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, ap.Path); err != nil {
-		return err
-	}
 	return nil
 }
 

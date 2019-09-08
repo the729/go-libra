@@ -21,18 +21,6 @@ func (k *PublicKey) UnmarshalText(txt []byte) error {
 	return nil
 }
 
-// func (k *PublicKey) UnmarshalBinary(data []byte) error {
-// 	r, err := serialization.SimpleDeserializer.ByteSlice(data)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if len(r) != ed25519.PublicKeySize {
-// 		return ErrWrongSize
-// 	}
-// 	*k = r
-// 	return nil
-// }
-
 func (k PublicKey) MarshalText() (text []byte, err error) {
 	return []byte(hex.EncodeToString(k)), nil
 }
@@ -48,18 +36,6 @@ func (k *PrivateKey) UnmarshalText(txt []byte) error {
 	*k = data
 	return nil
 }
-
-// func (k *PrivateKey) UnmarshalBinary(data []byte) error {
-// 	r, err := serialization.SimpleDeserializer.ByteSlice(data)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if len(r) != ed25519.PrivateKeySize {
-// 		return ErrWrongSize
-// 	}
-// 	*k = r
-// 	return nil
-// }
 
 func (k PrivateKey) MarshalText() (text []byte, err error) {
 	return []byte(hex.EncodeToString(k)), nil

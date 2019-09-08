@@ -1,9 +1,5 @@
 package types
 
-import (
-	"github.com/the729/lcs"
-)
-
 // AccountResource is the Libra coin resource of an account.
 type AccountResource struct {
 	AuthenticationKey             []byte
@@ -20,11 +16,6 @@ type ProvenAccountResource struct {
 	proven          bool
 	accountResource AccountResource
 	addr            AccountAddress
-}
-
-// UnmarshalBinary unmarshals raw bytes into this account resource struct.
-func (r *AccountResource) UnmarshalBinary(data []byte) error {
-	return lcs.Unmarshal(data, r)
 }
 
 // Clone deep clones this struct.

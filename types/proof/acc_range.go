@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/the729/go-libra/common/bitmap"
-
 	"github.com/the729/go-libra/crypto/sha3libra"
 )
 

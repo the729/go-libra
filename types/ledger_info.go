@@ -2,12 +2,11 @@ package types
 
 import (
 	"encoding/hex"
-	"io"
 
-	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/validator"
+	"github.com/the729/lcs"
 )
 
 // LedgerInfo is a information struct of a version (height) of the ledger.
@@ -44,36 +43,13 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 	return nil
 }
 
-// SerializeTo serializes this struct into a io.Writer.
-func (l *LedgerInfo) SerializeTo(w io.Writer) error {
-	if err := serialization.SimpleSerializer.Write(w, l.Version); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, l.TransactionAccumulatorHash); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, l.ConsensusDataHash); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, l.ConsensusBlockID); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, l.EpochNum); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, l.TimestampUsec); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (l *LedgerInfo) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewLedgerInfo()
-	l.SerializeTo(hasher)
-	hash := hasher.Sum([]byte{})
-
-	return hash
+	if err := lcs.NewEncoder(hasher).Encode(l); err != nil {
+		panic(err)
+	}
+	return hasher.Sum([]byte{})
 }
 
 // FromProto parses a protobuf struct into this struct.

@@ -3,9 +3,8 @@ package validator
 import (
 	"errors"
 
-	"golang.org/x/crypto/ed25519"
-
 	"github.com/the729/go-libra/config"
+	"golang.org/x/crypto/ed25519"
 )
 
 var (

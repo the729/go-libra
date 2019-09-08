@@ -1,11 +1,9 @@
 package types
 
 import (
-	"io"
-
-	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
+	"github.com/the729/lcs"
 )
 
 // TransactionInfo is a information struct of a submitted transaction.
@@ -34,27 +32,10 @@ func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
 	return nil
 }
 
-// SerializeTo serializes this struct into a io.Writer.
-func (t *TransactionInfo) SerializeTo(w io.Writer) error {
-	if err := serialization.SimpleSerializer.Write(w, t.SignedTransactionHash); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, t.StateRootHash); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, t.EventRootHash); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, t.GasUsed); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (t *TransactionInfo) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewTransactionInfo()
-	if err := t.SerializeTo(hasher); err != nil {
+	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
 		panic(err)
 	}
 	return hasher.Sum([]byte{})

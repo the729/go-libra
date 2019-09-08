@@ -4,18 +4,15 @@ import (
 	"errors"
 	"fmt"
 
-	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
+	"github.com/the729/lcs"
 )
 
 // RawAccountBlob is the raw blob of an account.
 type RawAccountBlob []byte
 
-// AccountBlob is the blob of an account.
-//
-// It consists of the raw blob, and the decoded map of resources.
+// AccountBlob is the blob of an account. It is a map of resources.
 type AccountBlob struct {
-	Raw []byte
 	Map map[string][]byte
 }
 
@@ -41,30 +38,16 @@ func (b *AccountBlob) Hash() sha3libra.HashValue {
 	if b == nil {
 		return nil
 	}
-	return RawAccountBlob(b.Raw).Hash()
+	raw, err := lcs.Marshal(b)
+	if err != nil {
+		panic(err)
+	}
+	return RawAccountBlob(raw).Hash()
 }
 
 // ParseToMap parses the raw blob into a map of resources.
-func (b *AccountBlob) ParseToMap() error {
-	data := b.Raw
-	l := int(serialization.SimpleDeserializer.Uint32(data))
-	data = data[4:]
-	m := make(map[string][]byte)
-	for i := 0; i < l; i++ {
-		key, err := serialization.SimpleDeserializer.ByteSlice(data)
-		if err != nil {
-			return errors.New("error deserizaing key")
-		}
-		data = data[len(key)+4:]
-		val, err := serialization.SimpleDeserializer.ByteSlice(data)
-		if err != nil {
-			return errors.New("error deserizaing val")
-		}
-		data = data[len(val)+4:]
-		m[string(key)] = val
-	}
-	b.Map = m
-	return nil
+func (b *AccountBlob) ParseToMap(raw RawAccountBlob) error {
+	return lcs.Unmarshal(raw, b)
 }
 
 // GetResource gets a resource from the account blob by its path.
@@ -78,19 +61,10 @@ func (b *AccountBlob) GetResource(path []byte) (*AccountResource, error) {
 		return nil, errors.New("resource not found")
 	}
 	r := &AccountResource{}
-	err := r.UnmarshalBinary(val)
-	if err != nil {
+	if err := lcs.Unmarshal(val, r); err != nil {
 		return nil, fmt.Errorf("unmarshal resource error: %v", err)
 	}
 	return r, nil
-}
-
-// GetRawBlob returns a copy of raw blob
-func (pb *ProvenAccountBlob) GetRawBlob() []byte {
-	if !pb.proven {
-		panic("not valid proven account blob")
-	}
-	return cloneBytes(pb.accountBlob.Raw)
 }
 
 // GetResource gets a resource from a proven account blob by its path.

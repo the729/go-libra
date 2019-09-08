@@ -5,14 +5,12 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/golang/protobuf/proto"
-	"golang.org/x/crypto/ed25519"
-
-	serialization "github.com/the729/go-libra/common/canonical_serialization"
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
+	"github.com/the729/lcs"
+	"golang.org/x/crypto/ed25519"
 )
 
 // RawTransaction is a raw transaction struct.
@@ -76,24 +74,10 @@ func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
 	}, nil
 }
 
-// SerializeTo serializes this struct into a io.Writer.
-func (t *SignedTransaction) SerializeTo(w io.Writer) error {
-	if err := serialization.SimpleSerializer.Write(w, t.RawTxnBytes); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, t.SenderPublicKey); err != nil {
-		return err
-	}
-	if err := serialization.SimpleSerializer.Write(w, t.SenderSignature); err != nil {
-		return err
-	}
-	return nil
-}
-
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (t *SignedTransaction) Hash() sha3libra.HashValue {
 	hasher := sha3libra.NewSignedTransaction()
-	if err := t.SerializeTo(hasher); err != nil {
+	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
 		panic(err)
 	}
 	return hasher.Sum([]byte{})
