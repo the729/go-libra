@@ -47,6 +47,9 @@ func (r *AccumulatorRange) Verify(firstIndex uint64, hashes []sha3libra.HashValu
 	for firstIter, lastIter := firstBitmap.BitsRev(), lastBitmap.BitsRev(); firstIter.Next() && lastIter.Next(); {
 		fIdx, fBit := firstIter.Bit()
 		lIdx, lBit := lastIter.Bit()
+		if len(firstProof.siblings)-fIdx-1 < 0 {
+			break
+		}
 		fSibling := firstProof.siblings[len(firstProof.siblings)-fIdx-1]
 		lSibling := lastProof.siblings[len(lastProof.siblings)-lIdx-1]
 
@@ -82,10 +85,6 @@ func (r *AccumulatorRange) Verify(firstIndex uint64, hashes []sha3libra.HashValu
 			hashes[i] = hasher.Sum(hashes[i][:0])
 		}
 		hashes = hashes[:len(hashes)/2]
-
-		if len(firstProof.siblings)-fIdx-1 == 0 {
-			break
-		}
 	}
 
 	if len(hashes) != 1 {
