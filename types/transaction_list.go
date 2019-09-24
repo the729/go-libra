@@ -56,18 +56,14 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 
 	tl.Transactions = nil
 	for idx := range pb.Transactions {
-		txn := &SignedTransaction{}
-		if err := txn.FromProto(pb.Transactions[idx]); err != nil {
-			return err
-		}
 		info := &TransactionInfo{}
 		if err := info.FromProto(pb.Infos[idx]); err != nil {
 			return err
 		}
 		item := &SubmittedTransaction{
-			SignedTransaction: txn,
-			Info:              info,
-			Version:           pb.FirstTransactionVersion.Value + uint64(idx),
+			RawSignedTxn: pb.Transactions[idx].SignedTxn,
+			Info:         info,
+			Version:      pb.FirstTransactionVersion.Value + uint64(idx),
 		}
 
 		if eventsList != nil {

@@ -1,11 +1,9 @@
 package utils
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"log"
 
-	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/language/stdscript"
 	"github.com/the729/go-libra/types"
 )
@@ -13,39 +11,43 @@ import (
 // PrintTxn prints a proven transaction, using standard logger
 func PrintTxn(txn *types.ProvenTransaction) {
 	log.Printf("Txn #%d:", txn.GetVersion())
-	rawTxn, _ := txn.GetSignedTxn().UnmarshalRawTransaction()
+	rawTxn := txn.GetSignedTxn().RawTxn
 	log.Printf("    Raw txn:")
-	log.Printf("        Sender account: %v", hex.EncodeToString(rawTxn.SenderAccount))
+	log.Printf("        Sender account: %v", hex.EncodeToString(rawTxn.Sender))
 	log.Printf("        Sender seq #%v", rawTxn.SequenceNumber)
-	switch rawTxn.GetPayload().(type) {
-	case *pbtypes.RawTransaction_Program:
-		log.Printf("        Payload is Program ...")
-	case *pbtypes.RawTransaction_WriteSet:
-		log.Printf("        Payload is WriteSet ...")
+	switch pld := rawTxn.Payload.(type) {
+	case *types.TxnPayloadProgram:
+		log.Printf("        Payload is Program.")
 		return
-	case *pbtypes.RawTransaction_Script:
+	case types.TxnPayloadWriteSet:
+		log.Printf("        Payload is WriteSet.")
+		return
+	case *types.TxnPayloadScript:
 		log.Printf("        Payload is Script ...")
-		return
-	case *pbtypes.RawTransaction_Module:
-		log.Printf("        Payload is Module ...")
-		return
-	}
-	log.Printf("        Program: %v...", hex.EncodeToString(rawTxn.GetProgram().Code[:30]))
-	progName := stdscript.InferProgramName(rawTxn.GetProgram().Code)
-	log.Printf("            (program name: %s)", progName)
-	switch progName {
-	case "peer_to_peer_transfer", "mint":
-		log.Printf("        Arg 0 (receiver address): %v", hex.EncodeToString(rawTxn.GetProgram().Arguments[0].Data))
-		log.Printf("        Arg 1 (amount microLibra): %v", binary.LittleEndian.Uint64(rawTxn.GetProgram().Arguments[1].Data))
-	default:
-		for i, d := range rawTxn.GetProgram().Arguments {
-			log.Printf("        Arg %d: %v", i, hex.EncodeToString(d.Data))
+		log.Printf("        Program: %v...", hex.EncodeToString(pld.Code[:30]))
+		progName := stdscript.InferProgramName(pld.Code)
+		log.Printf("            (program name: %s)", progName)
+		for i, arg := range pld.Args {
+			switch arg := arg.(type) {
+			case types.TxnArgU64:
+				log.Printf("        Arg %d: u64  (%v)", i, arg)
+			case types.TxnArgAddress:
+				log.Printf("        Arg %d: addr (%v)", i, hex.EncodeToString(arg))
+			case types.TxnArgString:
+				log.Printf("        Arg %d: str  (%v)", i, arg)
+			case types.TxnArgBytes:
+				log.Printf("        Arg %d: bytes(%v)", i, hex.EncodeToString(arg))
+			}
 		}
+	case types.TxnPayloadModule:
+		log.Printf("        Payload is Module.")
+		return
 	}
-	log.Printf("    Max gas amount (gas units): %v", rawTxn.GetMaxGasAmount())
-	log.Printf("    Gas unit price (microLibra/unit): %v", rawTxn.GetGasUnitPrice())
-	log.Printf("    Expiration timestamp: %v", rawTxn.GetExpirationTime())
+	log.Printf("    Max gas amount (gas units): %v", rawTxn.MaxGasAmount)
+	log.Printf("    Gas unit price (microLibra/unit): %v", rawTxn.GasUnitPrice)
+	log.Printf("    Expiration timestamp: %v", rawTxn.ExpirationTime)
 	log.Printf("    Gas used (microLibra): %v", txn.GetGasUsed())
+	log.Printf("    Major status: %d - %s", txn.GetMajorStatus(), txn.GetMajorStatus())
 	if txn.GetWithEvents() {
 		log.Printf("    Events: (%d total)", len(txn.GetEvents()))
 		for idx, ev := range txn.GetEvents() {

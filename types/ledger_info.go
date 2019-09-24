@@ -17,6 +17,7 @@ type LedgerInfo struct {
 	ConsensusBlockID           []byte
 	EpochNum                   uint64
 	TimestampUsec              uint64
+	NextValidatorSet           ValidatorSet `lcs:"optional"`
 }
 
 // LedgerInfoWithSignatures is a ledger info with signature from trusted
@@ -40,6 +41,11 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 	l.ConsensusBlockID = pb.ConsensusBlockId
 	l.EpochNum = pb.EpochNum
 	l.TimestampUsec = pb.TimestampUsecs
+	if pb.NextValidatorSet != nil {
+		if err := l.NextValidatorSet.FromProto(pb.NextValidatorSet); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

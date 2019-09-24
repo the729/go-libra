@@ -21,6 +21,8 @@ type TransactionInfo struct {
 
 	// GasUsed is the actual gas used to process this transaction, in microLibra.
 	GasUsed uint64
+
+	MajorStatus VMStatusCode
 }
 
 // FromProto parses a protobuf struct into this struct.
@@ -29,6 +31,7 @@ func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
 	t.StateRootHash = pb.StateRootHash
 	t.EventRootHash = pb.EventRootHash
 	t.GasUsed = pb.GasUsed
+	t.MajorStatus = VMStatusCode(pb.MajorStatus)
 	return nil
 }
 

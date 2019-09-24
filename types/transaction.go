@@ -6,33 +6,30 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
+	"golang.org/x/crypto/ed25519"
+
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/lcs"
-	"golang.org/x/crypto/ed25519"
 )
 
-// RawTransaction is a raw transaction struct.
-type RawTransaction = pbtypes.RawTransaction
-
-// SignedTransaction is a signed transaction, which consists of a serialized raw transaction
+// SignedTransaction is a signed transaction, which consists of a raw transaction
 // and the signature and public key.
 type SignedTransaction struct {
-	// RawTxnBytes is the serialized raw transaction.
-	RawTxnBytes []byte
+	// RawTxn is the raw transaction.
+	RawTxn *RawTransaction
 
-	// SenderPublicKey is the public key used to sign this transaction.
-	SenderPublicKey []byte
+	// PublicKey is the public key of the sender.
+	PublicKey []byte
 
-	// SenderSignature is the signature.
-	SenderSignature []byte
+	// Signature is the signature.
+	Signature []byte
 }
 
 // SubmittedTransaction is a signed transaction with execution outputs.
 // It is not guaranteed to be included in the ledger.
 type SubmittedTransaction struct {
-	*SignedTransaction
+	RawSignedTxn []byte
 
 	// Info is the transaction info.
 	Info *TransactionInfo
@@ -46,57 +43,48 @@ type SubmittedTransaction struct {
 
 // ProvenTransaction is a transaction which has been proven to be included in the ledger.
 type ProvenTransaction struct {
-	proven     bool
-	withEvents bool
-	signedTxn  *SignedTransaction
-	events     EventList
-	version    uint64
-	gasUsed    uint64
+	proven      bool
+	withEvents  bool
+	signedTxn   *SignedTransaction
+	events      EventList
+	version     uint64
+	gasUsed     uint64
+	majorStatus VMStatusCode
 }
 
-// FromProto parses a protobuf struct into this struct.
-func (t *SignedTransaction) FromProto(pb *pbtypes.SignedTransaction) error {
-	if pb == nil {
-		return ErrNilInput
-	}
-	t.RawTxnBytes = pb.GetRawTxnBytes()
-	t.SenderPublicKey = pb.GetSenderPublicKey()
-	t.SenderSignature = pb.GetSenderSignature()
-	return nil
-}
+// // FromProto parses a protobuf struct into this struct.
+// func (t *SignedTransaction) FromProto(pb *pbtypes.SignedTransaction) error {
+// 	if pb == nil {
+// 		return ErrNilInput
+// 	}
+// 	return lcs.Unmarshal(pb.SignedTxn, t)
+// }
 
 // ToProto builds a protobuf struct from this struct.
 func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
-	return &pbtypes.SignedTransaction{
-		RawTxnBytes:     t.RawTxnBytes,
-		SenderPublicKey: t.SenderPublicKey,
-		SenderSignature: t.SenderSignature,
-	}, nil
+	b, err := lcs.Marshal(t)
+	if err != nil {
+		return nil, err
+	}
+	return &pbtypes.SignedTransaction{SignedTxn: b}, nil
 }
 
-// Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (t *SignedTransaction) Hash() sha3libra.HashValue {
-	hasher := sha3libra.NewSignedTransaction()
-	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
-		panic(err)
-	}
-	return hasher.Sum([]byte{})
-}
+// // Hash ouptuts the hash of this struct, using the appropriate hash function.
+// func (t *SignedTransaction) Hash() sha3libra.HashValue {
+// 	hasher := sha3libra.NewSignedTransaction()
+// 	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
+// 		panic(err)
+// 	}
+// 	return hasher.Sum([]byte{})
+// }
 
 // Clone deep clones this struct.
 func (t *SignedTransaction) Clone() *SignedTransaction {
 	out := &SignedTransaction{}
-	out.RawTxnBytes = cloneBytes(t.RawTxnBytes)
-	out.SenderPublicKey = cloneBytes(t.SenderPublicKey)
-	out.SenderSignature = cloneBytes(t.SenderSignature)
+	out.RawTxn = t.RawTxn.Clone()
+	out.PublicKey = cloneBytes(t.PublicKey)
+	out.Signature = cloneBytes(t.Signature)
 	return out
-}
-
-// UnmarshalRawTransaction deserialize the raw transaction bytes.
-func (t *SignedTransaction) UnmarshalRawTransaction() (*RawTransaction, error) {
-	rt := &RawTransaction{}
-	err := proto.Unmarshal(t.RawTxnBytes, rt)
-	return rt, err
 }
 
 // VerifySignature verifies the signature of this transaction.
@@ -106,8 +94,8 @@ func (t *SignedTransaction) VerifySignature() error {
 	// Account address sometimes is different from hash(publickey), e.g.
 	// libracore account 0x0.
 
-	// rawTxn := &pbtypes.RawTransaction{}
-	// if err := proto.Unmarshal(t.RawTxnBytes, rawTxn); err != nil {
+	// rawTxn, err := t.UnmarshalRawTransaction()
+	// if err != nil {
 	// 	return errors.New("invalid raw transaction")
 	// }
 	// addrHasher := sha3.New256()
@@ -119,11 +107,13 @@ func (t *SignedTransaction) VerifySignature() error {
 
 	// 2. verify signature
 	txnHasher := sha3libra.NewRawTransaction()
-	txnHasher.Write(t.RawTxnBytes)
+	if err := lcs.NewEncoder(txnHasher).Encode(t.RawTxn); err != nil {
+		return fmt.Errorf("marshal raw txn error: %v", err)
+	}
 	txnHash := txnHasher.Sum([]byte{})
 
-	k := ed25519.PublicKey(t.SenderPublicKey)
-	if !ed25519.Verify(k, txnHash, t.SenderSignature) {
+	k := ed25519.PublicKey(t.PublicKey)
+	if !ed25519.Verify(k, txnHash, t.Signature) {
 		return errors.New("signature verification fail")
 	}
 
@@ -138,12 +128,13 @@ func (t *SignedTransaction) VerifySignature() error {
 func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
 	// according to https://community.libra.org/t/how-to-verify-a-signedtransaction-thoroughly/1214/3,
 	// it is unnecessary to verify SignedTransaction itself
-	if err := st.SignedTransaction.VerifySignature(); err != nil {
-		return nil, fmt.Errorf("txn(%d) signature verification fail: %v", st.Version, err)
-	}
 
 	// verify SignedTransaction and Events hash from transaction info
-	txnHash := st.SignedTransaction.Hash()
+	hasher := sha3libra.NewSignedTransaction()
+	if _, err := hasher.Write(st.RawSignedTxn); err != nil {
+		panic(err)
+	}
+	txnHash := hasher.Sum([]byte{})
 	if !sha3libra.Equal(txnHash, st.Info.SignedTransactionHash) {
 		return nil, fmt.Errorf("signed txn hash mismatch in txn(%d)", st.Version)
 	}
@@ -157,14 +148,19 @@ func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
 		withEvents = false
 	}
 
+	decodedTxn := &SignedTransaction{}
+	if err := lcs.Unmarshal(st.RawSignedTxn, decodedTxn); err != nil {
+		return nil, fmt.Errorf("lcs unmarshal signedtxn error: %v", err)
+	}
 	return &ProvenTransaction{
 		// this verification alone does not prove ledger inclusion
-		proven:     false,
-		withEvents: withEvents,
-		signedTxn:  st.SignedTransaction.Clone(),
-		events:     st.Events.Clone(),
-		version:    st.Version,
-		gasUsed:    st.Info.GasUsed,
+		proven:      false,
+		withEvents:  withEvents,
+		signedTxn:   decodedTxn,
+		events:      st.Events.Clone(),
+		version:     st.Version,
+		gasUsed:     st.Info.GasUsed,
+		majorStatus: st.Info.MajorStatus,
 	}, nil
 }
 
@@ -211,17 +207,27 @@ func (pt *ProvenTransaction) GetGasUsed() uint64 {
 	return pt.gasUsed
 }
 
+// GetMajorStatus returns the major VM status returned from this transaction.
+func (pt *ProvenTransaction) GetMajorStatus() VMStatusCode {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.majorStatus
+}
+
 // SignRawTransaction signes a raw transaction with a private key.
-func SignRawTransaction(rawTxnBytes []byte, signer ed25519.PrivateKey) *SignedTransaction {
+func SignRawTransaction(rawTxn *RawTransaction, signer ed25519.PrivateKey) *SignedTransaction {
 	hasher := sha3libra.NewRawTransaction()
-	hasher.Write(rawTxnBytes)
+	if err := lcs.NewEncoder(hasher).Encode(rawTxn); err != nil {
+		panic(err)
+	}
 	txnHash := hasher.Sum([]byte{})
 	senderPubKey := signer.Public().(ed25519.PublicKey)
 	sig, _ := signer.Sign(rand.Reader, txnHash, crypto.Hash(0))
 
 	return &SignedTransaction{
-		RawTxnBytes:     rawTxnBytes,
-		SenderPublicKey: senderPubKey,
-		SenderSignature: sig,
+		RawTxn:    rawTxn,
+		PublicKey: senderPubKey,
+		Signature: sig,
 	}
 }

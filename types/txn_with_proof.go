@@ -23,11 +23,10 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 	t.SubmittedTransaction = &SubmittedTransaction{}
 	t.Version = pb.Version
 
-	t.SignedTransaction = &SignedTransaction{}
-	err = t.SignedTransaction.FromProto(pb.SignedTransaction)
-	if err != nil {
-		return err
+	if pb.SignedTransaction == nil {
+		return ErrNilInput
 	}
+	t.RawSignedTxn = pb.SignedTransaction.SignedTxn
 
 	t.Events = make([]*ContractEvent, 0, len(pb.Events.Events))
 	for _, ev := range pb.Events.Events {
