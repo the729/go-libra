@@ -15,8 +15,8 @@ Compatible with testnet 2019/09/28 (commit hash [3dc03ffd4c](https://github.com/
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
-  - Transaction info: ledger history accumulator proof
-  - Transaction list: ledger history accumulator proof on a range of transactions
+  - Transaction info and event: Merkle tree accumulator proof
+  - Transaction list: Merkle tree accumulator proof on a range of transactions
   - Transaction signature: ed25519 signature
   - Account state: sparse Merkle tree proof
   - Events: event list hash based on Merkle tree accumulator
@@ -25,6 +25,7 @@ Compatible with testnet 2019/09/28 (commit hash [3dc03ffd4c](https://github.com/
   - Make P2P transaction, and wait for ledger inclusion
   - Query transaction list by ledger version
   - Query account transaction by sequence number
+  - Query sent or received event list by account
 
 ## Installation
 
