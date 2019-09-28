@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"log"
 	"strconv"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/the729/go-libra/client"
 	"github.com/the729/go-libra/example/utils"
+	"github.com/the729/go-libra/language/stdscript"
+	"github.com/the729/go-libra/types"
+	"github.com/the729/lcs"
 )
 
 func cmdQueryLedgerInfo(ctx *cli.Context) error {
@@ -135,5 +139,85 @@ func cmdQueryTransactionByAccountSeq(ctx *cli.Context) error {
 	}
 
 	utils.PrintTxn(provenTxn)
+	return nil
+}
+
+func cmdQueryEvents(ctx *cli.Context) error {
+	c, err := client.New(ServerAddr, TrustedPeersFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer c.Close()
+
+	wallet, err := LoadAccounts(WalletFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	account, err := wallet.GetAccount(ctx.Args().Get(0))
+	if err != nil {
+		return err
+	}
+
+	evType := ctx.Args().Get(1)
+
+	start, err := strconv.Atoi(ctx.Args().Get(2))
+	if err != nil {
+		return err
+	}
+
+	ordering := ctx.Args().Get(3)
+
+	limit, err := strconv.Atoi(ctx.Args().Get(4))
+	if err != nil {
+		return err
+	}
+
+	ap := &types.AccessPath{
+		Address: account.Address,
+	}
+	switch evType {
+	case "sent":
+		ap.Path = types.AccountSentEventPath()
+	case "received":
+		ap.Path = types.AccountReceivedEventPath()
+	default:
+		return fmt.Errorf("unknown event type: %s, should be either sent or received", evType)
+	}
+
+	var ascending bool
+	switch ordering {
+	case "asc":
+		ascending = true
+	case "desc":
+		ascending = false
+	default:
+		return fmt.Errorf("unknown ordering: %s, should be either asc or desc", evType)
+	}
+	evs, err := c.QueryEventsByAccessPath(ap, uint64(start), ascending, uint64(limit))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i, ev := range evs {
+		log.Printf("#%d: txn #%d event #%d", i, ev.GetTransactionVersion(), ev.GetEventIndex())
+		evBody := ev.GetEvent()
+		log.Printf("    Key: %s", hex.EncodeToString(evBody.Key))
+		log.Printf("    Seq number: %d", evBody.SequenceNumber)
+		if len(evBody.Data) > 30 {
+			log.Printf("    Raw event: %s ...", hex.EncodeToString(evBody.Data[:30]))
+		} else {
+			log.Printf("    Raw event: %s", hex.EncodeToString(evBody.Data))
+		}
+
+		pev := &stdscript.PaymentEvent{}
+		if err := lcs.Unmarshal(evBody.Data, pev); err != nil {
+			log.Printf("        (Unknown event type)")
+		} else {
+			log.Printf("        Amount (microLibra): %d", pev.Amount)
+			log.Printf("        Opponent address: %s", hex.EncodeToString(pev.Address))
+		}
+	}
+
 	return nil
 }

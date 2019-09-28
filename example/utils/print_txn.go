@@ -6,6 +6,7 @@ import (
 
 	"github.com/the729/go-libra/language/stdscript"
 	"github.com/the729/go-libra/types"
+	"github.com/the729/lcs"
 )
 
 // PrintTxn prints a proven transaction, using standard logger
@@ -52,39 +53,20 @@ func PrintTxn(txn *types.ProvenTransaction) {
 		log.Printf("    Events: (%d total)", len(txn.GetEvents()))
 		for idx, ev := range txn.GetEvents() {
 			log.Printf("      #%d:", idx)
-			log.Printf("        Seq #%d", ev.SequenceNumber)
 			log.Printf("        Key: %v", hex.EncodeToString(ev.Key))
-			// if dp, err := ev.AccessPath.DecodePath(); err != nil {
-			// 	log.Printf("        Raw path: %v (can not decode: %v)", hex.EncodeToString(ev.AccessPath.Path), err)
-			// 	log.Printf("        Raw data: %v", hex.EncodeToString(ev.Data))
-			// } else {
-			// 	if tagName := types.InferPathTagName(dp.Tag); tagName == "0x0.LibraAccount.T" {
-			// 		log.Printf("        Path: %v/%v", tagName, strings.Join(dp.Accesses, "/"))
-			// 		if dp.IsEqual(types.AccountSentEventPath()) {
-			// 			log.Printf("            (Event is: sent payment)")
-			// 			log.Printf("        Data:")
-			// 			evBody := &stdscript.SentPaymentEvent{}
-			// 			if err := evBody.UnmarshalBinary(ev.Data); err != nil {
-			// 				log.Printf("        Raw data: %v (cannot decode: %v)", hex.EncodeToString(ev.Data), err)
-			// 			} else {
-			// 				log.Printf("            Payee: %v", hex.EncodeToString(evBody.Payee))
-			// 				log.Printf("            Amount: %v", float64(evBody.Amount)/1000000.0)
-			// 			}
-			// 		} else if dp.IsEqual(types.AccountReceivedEventPath()) {
-			// 			log.Printf("            (Event is: received payment)")
-			// 			log.Printf("        Data:")
-			// 			evBody := &stdscript.ReceivedPaymentEvent{}
-			// 			if err := evBody.UnmarshalBinary(ev.Data); err != nil {
-			// 				log.Printf("        Raw data: %v (cannot decode: %v)", hex.EncodeToString(ev.Data), err)
-			// 			} else {
-			// 				log.Printf("            Payer: %v", hex.EncodeToString(evBody.Payer))
-			// 				log.Printf("            Amount: %v", float64(evBody.Amount)/1000000.0)
-			// 			}
-			// 		}
-			// 	} else {
-			// 		log.Printf("        Path: %v+%v/%v", dp.Tag.TypePrefix(), hex.EncodeToString(dp.Tag.Hash()), strings.Join(dp.Accesses, "/"))
-			// 	}
-			// }
+			log.Printf("        Seq #%d", ev.SequenceNumber)
+			if len(ev.Data) > 30 {
+				log.Printf("        Raw event: %s ...", hex.EncodeToString(ev.Data[:30]))
+			} else {
+				log.Printf("        Raw event: %s", hex.EncodeToString(ev.Data))
+			}
+			pev := &stdscript.PaymentEvent{}
+			if err := lcs.Unmarshal(ev.Data, pev); err != nil {
+				log.Printf("            (Unknown event type)")
+			} else {
+				log.Printf("            Amount (microLibra): %d", pev.Amount)
+				log.Printf("            Opponent address: %s", hex.EncodeToString(pev.Address))
+			}
 		}
 	} else {
 		log.Printf("    Events not present")

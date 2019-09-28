@@ -1,8 +1,12 @@
 package types
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
+	"github.com/the729/go-libra/types/proof"
 	"github.com/the729/lcs"
 )
 
@@ -22,6 +26,37 @@ type ContractEvent struct {
 
 // EventList is a list of events
 type EventList []*ContractEvent
+
+// EventProof is a chain of proof that a event is included in the ledger
+type EventProof struct {
+	// LedgerInfoToTransactionInfoProof is a Merkle Tree accumulator to prove that TransactionInfo
+	// is included in the ledger.
+	LedgerInfoToTransactionInfoProof *proof.Accumulator
+
+	// TransactionInfo is the info of the transaction that leads to this version of the ledger.
+	*TransactionInfo
+
+	// TransactionInfoToEventProof is an accumulator proof from event root hash in TransactionInfo
+	// to actual event.
+	TransactionInfoToEventProof *proof.Accumulator
+}
+
+// EventWithProof is an event with proof
+type EventWithProof struct {
+	TransactionVersion uint64
+	EventIndex         uint64
+	Event              *ContractEvent
+	Proof              *EventProof
+}
+
+// ProvenEvent is an event proven to be included in the ledger.
+type ProvenEvent struct {
+	proven     bool
+	txnVersion uint64
+	eventIndex uint64
+	event      *ContractEvent
+	ledgerInfo *ProvenLedgerInfo
+}
 
 // Clone deep clones this struct.
 func (eh *EventHandle) Clone() *EventHandle {
@@ -81,4 +116,98 @@ func (el EventList) Clone() EventList {
 		out = append(out, e.Clone())
 	}
 	return out
+}
+
+// FromProto parses a protobuf struct into this struct.
+func (ep *EventProof) FromProto(pb *pbtypes.EventProof) error {
+	var err error
+	if pb == nil {
+		return ErrNilInput
+	}
+
+	ep.LedgerInfoToTransactionInfoProof = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
+	err = ep.LedgerInfoToTransactionInfoProof.FromProto(pb.LedgerInfoToTransactionInfoProof)
+	if err != nil {
+		return err
+	}
+	ep.TransactionInfo = &TransactionInfo{}
+	err = ep.TransactionInfo.FromProto(pb.TransactionInfo)
+	if err != nil {
+		return err
+	}
+	ep.TransactionInfoToEventProof = &proof.Accumulator{Hasher: sha3libra.NewEventAccumulator()}
+	err = ep.TransactionInfoToEventProof.FromProto(pb.TransactionInfoToEventProof)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// FromProto parses a protobuf struct into this struct.
+func (ep *EventWithProof) FromProto(pb *pbtypes.EventWithProof) error {
+	if pb == nil {
+		return ErrNilInput
+	}
+	ep.TransactionVersion = pb.TransactionVersion
+	ep.EventIndex = pb.EventIndex
+	ep.Event = &ContractEvent{}
+	if err := ep.Event.FromProto(pb.Event); err != nil {
+		return err
+	}
+	ep.Proof = &EventProof{}
+	if err := ep.Proof.FromProto(pb.Proof); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Verify the proof of the event, and output a ProvenEvent if successful.
+func (ep *EventWithProof) Verify(provenLedgerInfo *ProvenLedgerInfo) (*ProvenEvent, error) {
+	var err error
+
+	eventHash := ep.Event.Hash()
+	err = ep.Proof.TransactionInfoToEventProof.Verify(ep.EventIndex, eventHash, ep.Proof.EventRootHash)
+	if err != nil {
+		return nil, fmt.Errorf("cannot verify event from transaction info: %v", err)
+	}
+
+	if ep.TransactionVersion > provenLedgerInfo.GetVersion() {
+		return nil, errors.New("event txn version > ledger version")
+	}
+
+	err = ep.Proof.LedgerInfoToTransactionInfoProof.Verify(
+		ep.TransactionVersion, ep.Proof.TransactionInfo.Hash(),
+		provenLedgerInfo.GetTransactionAccumulatorHash(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("cannot verify transaction info from ledger info: %v", err)
+	}
+
+	return &ProvenEvent{
+		proven:     true,
+		txnVersion: ep.TransactionVersion,
+		eventIndex: ep.EventIndex,
+		event:      ep.Event.Clone(),
+	}, nil
+}
+
+func (pe *ProvenEvent) GetTransactionVersion() uint64 {
+	if !pe.proven {
+		panic("not valid proven event")
+	}
+	return pe.txnVersion
+}
+
+func (pe *ProvenEvent) GetEventIndex() uint64 {
+	if !pe.proven {
+		panic("not valid proven event")
+	}
+	return pe.eventIndex
+}
+
+func (pe *ProvenEvent) GetEvent() *ContractEvent {
+	if !pe.proven {
+		panic("not valid proven event")
+	}
+	return pe.event.Clone()
 }

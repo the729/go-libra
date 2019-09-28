@@ -66,6 +66,12 @@ func main() {
 					Aliases: []string{"ts"},
 					Action:  cmdQueryTransactionByAccountSeq,
 				},
+				{
+					Name:    "events",
+					Usage:   "address_prefix sent|received start_seq asc|desc limit",
+					Aliases: []string{"ev"},
+					Action:  cmdQueryEvents,
+				},
 			},
 		},
 		{
