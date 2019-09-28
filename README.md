@@ -11,7 +11,7 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 ## Features
 
-Compatible with testnet 2019/09/18 (commit hash [146714289c](https://github.com/libra/libra/commit/146714289c8424aff0098650d22736cf5fc3466a)).
+Compatible with testnet 2019/09/28 (commit hash [3dc03ffd4c](https://github.com/libra/libra/commit/3dc03ffd4ca2ee367d57a22114dae6ac2cf5936e)).
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
@@ -23,7 +23,7 @@ Compatible with testnet 2019/09/18 (commit hash [146714289c](https://github.com/
 - RPC functions
   - Query account states
   - Make P2P transaction, and wait for ledger inclusion
-  - Query transactions by ledger version
+  - Query transaction list by ledger version
   - Query account transaction by sequence number
 
 ## Installation

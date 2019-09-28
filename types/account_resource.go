@@ -2,12 +2,13 @@ package types
 
 // AccountResource is the Libra coin resource of an account.
 type AccountResource struct {
-	AuthenticationKey             []byte
-	Balance                       uint64
-	DelegatedWithdrawalCapability bool
-	ReceivedEvents                *EventHandle
-	SentEvents                    *EventHandle
-	SequenceNumber                uint64
+	AuthenticationKey              []byte
+	Balance                        uint64
+	DelegatedKeyRotationCapability bool
+	DelegatedWithdrawalCapability  bool
+	ReceivedEvents                 *EventHandle
+	SentEvents                     *EventHandle
+	SequenceNumber                 uint64
 }
 
 // ProvenAccountResource is the Libra coin resource of an account which is proven
