@@ -81,13 +81,13 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 
 	tl.Proof = &proof.AccumulatorRange{}
 	if pb.ProofOfFirstTransaction != nil {
-		tl.Proof.First = &proof.Accumulator{}
+		tl.Proof.First = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
 		if err := tl.Proof.First.FromProto(pb.ProofOfFirstTransaction); err != nil {
 			return err
 		}
 	}
 	if pb.ProofOfLastTransaction != nil {
-		tl.Proof.Last = &proof.Accumulator{}
+		tl.Proof.Last = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
 		if err := tl.Proof.Last.FromProto(pb.ProofOfLastTransaction); err != nil {
 			return err
 		}

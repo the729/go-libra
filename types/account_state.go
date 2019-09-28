@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof"
 )
@@ -23,12 +24,12 @@ type AccountStateWithProof struct {
 // AccountStateProof is a chain of proof that a certain account state is included
 // in the ledger, or the account does not exist.
 type AccountStateProof struct {
-	// TransactionInfo is the info of the transaction that leads to this version of the ledger.
-	*TransactionInfo
-
 	// LedgerInfoToTransactionInfoProof is a Merkle Tree accumulator to prove that TransactionInfo
 	// is included in the ledger.
 	LedgerInfoToTransactionInfoProof *proof.Accumulator
+
+	// TransactionInfo is the info of the transaction that leads to this version of the ledger.
+	*TransactionInfo
 
 	// TransactionInfoToAccountProof is a Sparse Merkle Tree proof that the account state is part of
 	// the whole ledger state.
@@ -74,7 +75,7 @@ func (ap *AccountStateProof) FromProto(pb *pbtypes.AccountStateProof) error {
 		return ErrNilInput
 	}
 
-	ap.LedgerInfoToTransactionInfoProof = &proof.Accumulator{}
+	ap.LedgerInfoToTransactionInfoProof = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
 	err = ap.LedgerInfoToTransactionInfoProof.FromProto(pb.LedgerInfoToTransactionInfoProof)
 	if err != nil {
 		return err

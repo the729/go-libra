@@ -2,6 +2,7 @@ package proof
 
 import (
 	"errors"
+	"hash"
 
 	"github.com/the729/go-libra/common/bitmap"
 	"github.com/the729/go-libra/crypto/sha3libra"
@@ -9,7 +10,8 @@ import (
 )
 
 type Accumulator struct {
-	siblings []sha3libra.HashValue
+	Hasher   hash.Hash
+	Siblings []sha3libra.HashValue
 }
 
 func (a *Accumulator) FromProto(pb *pbtypes.AccumulatorProof) error {
@@ -28,33 +30,37 @@ func (a *Accumulator) FromProto(pb *pbtypes.AccumulatorProof) error {
 			siblings = append(siblings, sha3libra.AccumulatorPlaceholderHash)
 		}
 	}
-	a.siblings = siblings
+	a.Siblings = siblings
 	return nil
 }
 
 func (a *Accumulator) Verify(elemIndex uint64, elemHash, expectedRootHash sha3libra.HashValue) error {
+	if a.Hasher == nil {
+		return errors.New("nil hasher")
+	}
+
 	bm := bitmap.NewFromUint64(elemIndex)
-	if bm.Cap() < len(a.siblings) {
+	if bm.Cap() < len(a.Siblings) {
 		return errors.New("merkle tree proof has too many siblings")
 	}
 
 	// log.Printf("target hash: %s", hex.EncodeToString(expectedRootHash))
 	hash := elemHash
 	// log.Printf("initial hash: %s", hex.EncodeToString(hash))
-	hasher := sha3libra.NewTransactionAccumulator()
+	hasher := a.Hasher
 	for i := bm.BitsRev(); i.Next(); {
 		idx, b := i.Bit()
 		hasher.Reset()
 		if b {
-			hasher.Write(a.siblings[len(a.siblings)-idx-1])
+			hasher.Write(a.Siblings[len(a.Siblings)-idx-1])
 			hasher.Write(hash)
 		} else {
 			hasher.Write(hash)
-			hasher.Write(a.siblings[len(a.siblings)-idx-1])
+			hasher.Write(a.Siblings[len(a.Siblings)-idx-1])
 		}
 		hash = hasher.Sum([]byte{})
 		// log.Printf("new hash: %s", hex.EncodeToString(hash))
-		if len(a.siblings)-idx-1 == 0 {
+		if len(a.Siblings)-idx-1 == 0 {
 			break
 		}
 	}

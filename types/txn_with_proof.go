@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof"
 )
@@ -43,7 +44,7 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 		return err
 	}
 
-	t.LedgerInfoToTransactionInfoProof = &proof.Accumulator{}
+	t.LedgerInfoToTransactionInfoProof = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
 	err = t.LedgerInfoToTransactionInfoProof.FromProto(pb.Proof.LedgerInfoToTransactionInfoProof)
 	if err != nil {
 		return err

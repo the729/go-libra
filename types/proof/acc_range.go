@@ -34,7 +34,7 @@ func (r *AccumulatorRange) Verify(firstIndex uint64, hashes []sha3libra.HashValu
 		}
 		lastProof = firstProof
 	}
-	if len(firstProof.siblings) != len(lastProof.siblings) {
+	if len(firstProof.Siblings) != len(lastProof.Siblings) {
 		return errors.New("mismatch first proof and last proof sibling counts")
 	}
 
@@ -47,11 +47,11 @@ func (r *AccumulatorRange) Verify(firstIndex uint64, hashes []sha3libra.HashValu
 	for firstIter, lastIter := firstBitmap.BitsRev(), lastBitmap.BitsRev(); firstIter.Next() && lastIter.Next(); {
 		fIdx, fBit := firstIter.Bit()
 		lIdx, lBit := lastIter.Bit()
-		if len(firstProof.siblings)-fIdx-1 < 0 {
+		if len(firstProof.Siblings)-fIdx-1 < 0 {
 			break
 		}
-		fSibling := firstProof.siblings[len(firstProof.siblings)-fIdx-1]
-		lSibling := lastProof.siblings[len(lastProof.siblings)-lIdx-1]
+		fSibling := firstProof.Siblings[len(firstProof.Siblings)-fIdx-1]
+		lSibling := lastProof.Siblings[len(lastProof.Siblings)-lIdx-1]
 
 		// log.Printf("hashes:")
 		// for _, h := range hashes {
