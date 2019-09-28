@@ -30,23 +30,40 @@ type RawTransaction struct {
 	ExpirationTime uint64
 }
 
+// TransactionArgument is the enum type of TransactionArgument
 type TransactionArgument interface {
 	isTransactionArgument()
 	Clone() TransactionArgument
 }
+
+// TxnArgU64 is uint64 transaction argument
 type TxnArgU64 uint64
+
+// TxnArgAddress is transaction argument of account address type
 type TxnArgAddress AccountAddress
+
+// TxnArgString is string transaction argument
 type TxnArgString string
+
+// TxnArgBytes is byte array transaction argument
 type TxnArgBytes []byte
 
-func (TxnArgU64) isTransactionArgument()           {}
-func (TxnArgAddress) isTransactionArgument()       {}
-func (TxnArgString) isTransactionArgument()        {}
-func (TxnArgBytes) isTransactionArgument()         {}
-func (v TxnArgU64) Clone() TransactionArgument     { return v }
+func (TxnArgU64) isTransactionArgument()     {}
+func (TxnArgAddress) isTransactionArgument() {}
+func (TxnArgString) isTransactionArgument()  {}
+func (TxnArgBytes) isTransactionArgument()   {}
+
+// Clone the argument
+func (v TxnArgU64) Clone() TransactionArgument { return v }
+
+// Clone the argument
 func (v TxnArgAddress) Clone() TransactionArgument { return TxnArgAddress(cloneBytes(v)) }
-func (v TxnArgString) Clone() TransactionArgument  { return v }
-func (v TxnArgBytes) Clone() TransactionArgument   { return TxnArgBytes(cloneBytes(v)) }
+
+// Clone the argument
+func (v TxnArgString) Clone() TransactionArgument { return v }
+
+// Clone the argument
+func (v TxnArgBytes) Clone() TransactionArgument { return TxnArgBytes(cloneBytes(v)) }
 
 var txnArgEnumDef = []lcs.EnumVariant{
 	{
@@ -71,23 +88,34 @@ var txnArgEnumDef = []lcs.EnumVariant{
 	},
 }
 
+// WriteOpWithPath is write op with access path
 type WriteOpWithPath struct {
 	AccessPath *AccessPath
 	WriteOp    WriteOp `lcs:"enum:WriteOp"`
 }
 
+// WriteOp is an enum type of either value or deletion
 type WriteOp interface {
 	isWriteOp()
 	Clone() WriteOp
 }
+
+// WriteOpValue is a variant of WriteOp
 type WriteOpValue []byte
+
+// WriteOpDeletion is a variant of WriteOp
 type WriteOpDeletion struct{}
 
-func (WriteOpValue) isWriteOp()          {}
-func (WriteOpDeletion) isWriteOp()       {}
-func (v WriteOpValue) Clone() WriteOp    { return WriteOpValue(cloneBytes(v)) }
+func (WriteOpValue) isWriteOp()    {}
+func (WriteOpDeletion) isWriteOp() {}
+
+// Clone the WriteOp
+func (v WriteOpValue) Clone() WriteOp { return WriteOpValue(cloneBytes(v)) }
+
+// Clone the WriteOp
 func (v WriteOpDeletion) Clone() WriteOp { return v }
 
+// EnumTypes defines enum variants for lcs
 func (*WriteOpWithPath) EnumTypes() []lcs.EnumVariant {
 	return []lcs.EnumVariant{
 		{
@@ -102,22 +130,29 @@ func (*WriteOpWithPath) EnumTypes() []lcs.EnumVariant {
 		},
 	}
 }
+
+// Clone the WriteOpWithPath
 func (v *WriteOpWithPath) Clone() *WriteOpWithPath {
 	return &WriteOpWithPath{AccessPath: v.AccessPath.Clone(), WriteOp: v.WriteOp.Clone()}
 }
 
+// TransactionPayload is the enum type of transaction payload
 type TransactionPayload interface {
 	isTransactionPayload()
 	Clone() TransactionPayload
 }
 
+// TxnPayloadProgram is variant of TransactionPayload. It is DEPRECATED
 type TxnPayloadProgram struct {
 	Code    []byte
 	Args    []TransactionArgument `lcs:"enum:TransactionArgument"`
 	Modules [][]byte
 }
 
+// EnumTypes defines enum variants for lcs
 func (*TxnPayloadProgram) EnumTypes() []lcs.EnumVariant { return txnArgEnumDef }
+
+// Clone the transaction payload
 func (v *TxnPayloadProgram) Clone() TransactionPayload {
 	c := cloneBytes(v.Code)
 	args := make([]TransactionArgument, 0, len(v.Args))
@@ -131,8 +166,10 @@ func (v *TxnPayloadProgram) Clone() TransactionPayload {
 	return &TxnPayloadProgram{Code: c, Args: args, Modules: mods}
 }
 
+// TxnPayloadWriteSet is variant of TransactionPayload
 type TxnPayloadWriteSet []*WriteOpWithPath
 
+// Clone the transaction payload
 func (v TxnPayloadWriteSet) Clone() TransactionPayload {
 	n := make([]*WriteOpWithPath, 0, len(v))
 	for _, wop := range v {
@@ -141,12 +178,16 @@ func (v TxnPayloadWriteSet) Clone() TransactionPayload {
 	return TxnPayloadWriteSet(n)
 }
 
+// TxnPayloadScript is variant of TransactionPayload
 type TxnPayloadScript struct {
 	Code []byte
 	Args []TransactionArgument `lcs:"enum:TransactionArgument"`
 }
 
+// EnumTypes defines enum variants for lcs
 func (*TxnPayloadScript) EnumTypes() []lcs.EnumVariant { return txnArgEnumDef }
+
+// Clone the transaction payload
 func (v *TxnPayloadScript) Clone() TransactionPayload {
 	c := cloneBytes(v.Code)
 	args := make([]TransactionArgument, 0, len(v.Args))
@@ -156,8 +197,10 @@ func (v *TxnPayloadScript) Clone() TransactionPayload {
 	return &TxnPayloadScript{Code: c, Args: args}
 }
 
+// TxnPayloadModule is variant of TransactionPayload
 type TxnPayloadModule []byte
 
+// Clone the transaction payload
 func (v TxnPayloadModule) Clone() TransactionPayload { return TxnPayloadModule(cloneBytes(v)) }
 
 func (*TxnPayloadProgram) isTransactionPayload() {}
@@ -165,6 +208,7 @@ func (TxnPayloadWriteSet) isTransactionPayload() {}
 func (*TxnPayloadScript) isTransactionPayload()  {}
 func (TxnPayloadModule) isTransactionPayload()   {}
 
+// EnumTypes defines enum variants for lcs
 func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
 	return []lcs.EnumVariant{
 		{
@@ -190,6 +234,7 @@ func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
 	}
 }
 
+// Clone the raw transaction
 func (rt *RawTransaction) Clone() *RawTransaction {
 	return &RawTransaction{
 		Sender:         cloneBytes(rt.Sender),

@@ -191,6 +191,7 @@ func (ep *EventWithProof) Verify(provenLedgerInfo *ProvenLedgerInfo) (*ProvenEve
 	}, nil
 }
 
+// GetTransactionVersion returns the transaction version
 func (pe *ProvenEvent) GetTransactionVersion() uint64 {
 	if !pe.proven {
 		panic("not valid proven event")
@@ -198,6 +199,7 @@ func (pe *ProvenEvent) GetTransactionVersion() uint64 {
 	return pe.txnVersion
 }
 
+// GetEventIndex returns the index of the event in all output events of the transaction
 func (pe *ProvenEvent) GetEventIndex() uint64 {
 	if !pe.proven {
 		panic("not valid proven event")
@@ -205,6 +207,7 @@ func (pe *ProvenEvent) GetEventIndex() uint64 {
 	return pe.eventIndex
 }
 
+// GetEvent returns a copy of the actual event struct
 func (pe *ProvenEvent) GetEvent() *ContractEvent {
 	if !pe.proven {
 		panic("not valid proven event")
