@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"log"
@@ -26,7 +27,7 @@ func cmdQueryLedgerInfo(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	ledgerInfo, err := c.QueryLedgerInfo(knownVersion)
+	ledgerInfo, err := c.QueryLedgerInfo(context.Background(), knownVersion)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	accountState, err := c.QueryAccountState(account.Address)
+	accountState, err := c.QueryAccountState(context.Background(), account.Address)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func cmdQueryTransactionRange(ctx *cli.Context) error {
 		log.Printf("Limit>100, set to 100.")
 		limit = 100
 	}
-	provenTxnList, err := c.QueryTransactionRange(uint64(start), uint64(limit), true)
+	provenTxnList, err := c.QueryTransactionRange(context.Background(), uint64(start), uint64(limit), true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,7 +134,7 @@ func cmdQueryTransactionByAccountSeq(ctx *cli.Context) error {
 		return err
 	}
 
-	provenTxn, err := c.QueryTransactionByAccountSeq(account.Address, uint64(sequence), true)
+	provenTxn, err := c.QueryTransactionByAccountSeq(context.Background(), account.Address, uint64(sequence), true)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -194,7 +195,7 @@ func cmdQueryEvents(ctx *cli.Context) error {
 	default:
 		return fmt.Errorf("unknown ordering: %s, should be either asc or desc", evType)
 	}
-	evs, err := c.QueryEventsByAccessPath(ap, uint64(start), ascending, uint64(limit))
+	evs, err := c.QueryEventsByAccessPath(context.Background(), ap, uint64(start), ascending, uint64(limit))
 	if err != nil {
 		log.Fatal(err)
 	}

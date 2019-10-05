@@ -4,18 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
 )
 
 // QueryEventsByAccessPath queries list of events by access path does necessary crypto verifications.
-func (c *Client) QueryEventsByAccessPath(ap *types.AccessPath, start uint64, ascending bool, limit uint64) ([]*types.ProvenEvent, error) {
-	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	resp, err := c.ac.UpdateToLatestLedger(ctx1, &pbtypes.UpdateToLatestLedgerRequest{
+func (c *Client) QueryEventsByAccessPath(ctx context.Context, ap *types.AccessPath, start uint64, ascending bool, limit uint64) ([]*types.ProvenEvent, error) {
+	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
 		RequestedItems: []*pbtypes.RequestItem{
 			{
 				RequestedItems: &pbtypes.RequestItem_GetEventsByEventAccessPathRequest{

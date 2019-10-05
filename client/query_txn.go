@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
@@ -12,11 +11,8 @@ import (
 
 // QueryTransactionRange queries a list of transactions from RPC server, and does necessary
 // crypto verifications.
-func (c *Client) QueryTransactionRange(start, limit uint64, withEvents bool) (*types.ProvenTransactionList, error) {
-	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	resp, err := c.ac.UpdateToLatestLedger(ctx1, &pbtypes.UpdateToLatestLedgerRequest{
+func (c *Client) QueryTransactionRange(ctx context.Context, start, limit uint64, withEvents bool) (*types.ProvenTransactionList, error) {
+	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
 		RequestedItems: []*pbtypes.RequestItem{
 			{
 				RequestedItems: &pbtypes.RequestItem_GetTransactionsRequest{
@@ -62,11 +58,8 @@ func (c *Client) QueryTransactionRange(start, limit uint64, withEvents bool) (*t
 
 // QueryTransactionByAccountSeq queries the transaction that is sent from a specific account at a specific sequence number,
 // and does necessary crypto verifications.
-func (c *Client) QueryTransactionByAccountSeq(addr types.AccountAddress, sequence uint64, withEvents bool) (*types.ProvenTransaction, error) {
-	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	resp, err := c.ac.UpdateToLatestLedger(ctx1, &pbtypes.UpdateToLatestLedgerRequest{
+func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.AccountAddress, sequence uint64, withEvents bool) (*types.ProvenTransaction, error) {
+	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
 		RequestedItems: []*pbtypes.RequestItem{
 			{
 				RequestedItems: &pbtypes.RequestItem_GetAccountTransactionBySequenceNumberRequest{

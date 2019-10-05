@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/the729/go-libra/client"
@@ -19,7 +20,7 @@ func main() {
 	}
 	defer c.Close()
 
-	provenTxnList, err := c.QueryTransactionRange(2397, 2, true)
+	provenTxnList, err := c.QueryTransactionRange(context.TODO(), 2397, 2, true)
 	if err != nil {
 		log.Fatal(err)
 	}

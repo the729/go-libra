@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/hex"
 	"log"
 	"strconv"
@@ -65,7 +66,7 @@ func cmdTransfer(ctx *cli.Context) error {
 	log.Printf("Max gas: %d, Gas price: %d, Expiration: %v", maxGasAmount, gasUnitPrice, expiration)
 
 	log.Printf("Get current account sequence of sender...")
-	seq, err := c.GetAccountSequenceNumber(sender.Address)
+	seq, err := c.GetAccountSequenceNumber(context.Background(), sender.Address)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,13 +81,13 @@ func cmdTransfer(ctx *cli.Context) error {
 	}
 
 	log.Printf("Submit transaction...")
-	err = c.SubmitRawTransaction(rawTxn, sender.PrivateKey)
+	err = c.SubmitRawTransaction(context.Background(), rawTxn, sender.PrivateKey)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("Waiting until transaction is included in ledger...")
-	err = c.PollSequenceUntil(sender.Address, seq+1, expiration)
+	err = c.PollSequenceUntil(context.Background(), sender.Address, seq+1, expiration)
 	if err != nil {
 		log.Fatal(err)
 	}

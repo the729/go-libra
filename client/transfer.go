@@ -41,13 +41,10 @@ func NewRawP2PTransaction(
 }
 
 // SubmitRawTransaction signes and submits a raw transaction.
-func (c *Client) SubmitRawTransaction(rawTxn *types.RawTransaction, privateKey ed25519.PrivateKey) error {
-	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (c *Client) SubmitRawTransaction(ctx context.Context, rawTxn *types.RawTransaction, privateKey ed25519.PrivateKey) error {
 	signedTxn := types.SignRawTransaction(rawTxn, privateKey)
 	pbSignedTxn, _ := signedTxn.ToProto()
-	resp, err := c.ac.SubmitTransaction(ctx1, &pbac.SubmitTransactionRequest{
+	resp, err := c.ac.SubmitTransaction(ctx, &pbac.SubmitTransactionRequest{
 		SignedTxn: pbSignedTxn,
 	})
 	if err != nil {
@@ -71,9 +68,9 @@ func (c *Client) SubmitRawTransaction(rawTxn *types.RawTransaction, privateKey e
 
 // PollSequenceUntil blocks to repeatedly poll the sequence number of a specific account, until the sequence number
 // is greater or equal to specified target sequence number, or the ledger state passes specified expiration time.
-func (c *Client) PollSequenceUntil(addr types.AccountAddress, targetSeq uint64, expiration time.Time) error {
+func (c *Client) PollSequenceUntil(ctx context.Context, addr types.AccountAddress, targetSeq uint64, expiration time.Time) error {
 	for range time.Tick(1 * time.Second) {
-		paccount, err := c.QueryAccountState(addr)
+		paccount, err := c.QueryAccountState(ctx, addr)
 		if err != nil {
 			return err
 		}

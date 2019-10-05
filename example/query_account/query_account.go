@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/the729/go-libra/client"
@@ -21,7 +22,7 @@ func main() {
 	addrStr := "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
 	addr := client.MustToAddress(addrStr)
 
-	provenState, err := c.QueryAccountState(addr)
+	provenState, err := c.QueryAccountState(context.TODO(), addr)
 	if err != nil {
 		log.Fatal(err)
 	}

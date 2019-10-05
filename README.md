@@ -50,6 +50,7 @@ Godoc reference to [client package](https://godoc.org/github.com/the729/go-libra
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/the729/go-libra/client"
@@ -72,7 +73,7 @@ func main() {
 	addr := client.MustToAddress(addrStr)
 
 	// provenState is cryptographically proven state of account
-	provenState, err := c.QueryAccountState(addr)
+	provenState, err := c.QueryAccountState(context.TODO(), addr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,13 +112,13 @@ if err != nil {
 }
 
 // Sign and submit transaction
-err = c.SubmitRawTransaction(rawTxn, priKey)
+err = c.SubmitRawTransaction(context.TODO(), rawTxn, priKey)
 if err != nil {
 	log.Fatal(err)
 }
 
 // Wait until transaction is included in ledger, or timeout
-err = c.PollSequenceUntil(senderAddr, seq+1, expiration)
+err = c.PollSequenceUntil(context.TODO(), senderAddr, seq+1, expiration)
 if err != nil {
 	log.Fatal(err)
 }

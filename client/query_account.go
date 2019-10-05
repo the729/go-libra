@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types"
@@ -12,11 +11,8 @@ import (
 
 // QueryAccountState queries account state from RPC server by account address, and does necessary
 // crypto verifications.
-func (c *Client) QueryAccountState(addr types.AccountAddress) (*types.ProvenAccountState, error) {
-	ctx1, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	resp, err := c.ac.UpdateToLatestLedger(ctx1, &pbtypes.UpdateToLatestLedgerRequest{
+func (c *Client) QueryAccountState(ctx context.Context, addr types.AccountAddress) (*types.ProvenAccountState, error) {
+	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
 		ClientKnownVersion: 0,
 		RequestedItems: []*pbtypes.RequestItem{
 			&pbtypes.RequestItem{
@@ -66,8 +62,8 @@ func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.ProvenAccountBl
 
 // GetAccountSequenceNumber queries sequence number of an account from RPC server, and does necessary
 // crypto verifications.
-func (c *Client) GetAccountSequenceNumber(addr types.AccountAddress) (uint64, error) {
-	paccount, err := c.QueryAccountState(addr)
+func (c *Client) GetAccountSequenceNumber(ctx context.Context, addr types.AccountAddress) (uint64, error) {
+	paccount, err := c.QueryAccountState(ctx, addr)
 	if err != nil {
 		return 0, err
 	}
