@@ -15,7 +15,7 @@ type LedgerInfo struct {
 	TransactionAccumulatorHash []byte
 	ConsensusDataHash          []byte
 	ConsensusBlockID           []byte
-	EpochNum                   uint64
+	Epoch                      uint64
 	TimestampUsec              uint64
 	NextValidatorSet           ValidatorSet `lcs:"optional"`
 }
@@ -39,7 +39,7 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 	l.TransactionAccumulatorHash = pb.TransactionAccumulatorHash
 	l.ConsensusDataHash = pb.ConsensusDataHash
 	l.ConsensusBlockID = pb.ConsensusBlockId
-	l.EpochNum = pb.EpochNum
+	l.Epoch = pb.Epoch
 	l.TimestampUsec = pb.TimestampUsecs
 	if pb.NextValidatorSet != nil {
 		if err := l.NextValidatorSet.FromProto(pb.NextValidatorSet); err != nil {
@@ -83,7 +83,7 @@ func (l *LedgerInfoWithSignatures) Verify(v validator.Verifier) (*ProvenLedgerIn
 			TransactionAccumulatorHash: cloneBytes(l.LedgerInfo.TransactionAccumulatorHash),
 			ConsensusDataHash:          cloneBytes(l.LedgerInfo.ConsensusDataHash),
 			ConsensusBlockID:           cloneBytes(l.LedgerInfo.ConsensusBlockID),
-			EpochNum:                   l.LedgerInfo.EpochNum,
+			Epoch:                      l.LedgerInfo.Epoch,
 			TimestampUsec:              l.LedgerInfo.TimestampUsec,
 		},
 	}, nil
@@ -110,7 +110,7 @@ func (pl *ProvenLedgerInfo) GetEpochNum() uint64 {
 	if !pl.proven {
 		panic("not valid proven ledger info")
 	}
-	return pl.ledgerInfo.EpochNum
+	return pl.ledgerInfo.Epoch
 }
 
 // GetTimestampUsec returns the timestamp of this version, in microseconds.

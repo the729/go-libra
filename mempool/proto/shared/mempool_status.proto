@@ -3,7 +3,7 @@
 
 syntax = "proto3";
 
-package mempool;
+package mempool_status;
 option go_package = "github.com/the729/go-libra/generated/pbmpshared";
 
 enum MempoolAddTransactionStatusCode {

@@ -61,7 +61,7 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 			return err
 		}
 		item := &SubmittedTransaction{
-			RawSignedTxn: pb.Transactions[idx].SignedTxn,
+			RawSignedTxn: pb.Transactions[idx].Transaction,
 			Info:         info,
 			Version:      pb.FirstTransactionVersion.Value + uint64(idx),
 		}

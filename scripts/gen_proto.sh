@@ -33,8 +33,8 @@ libra_rust=$1
 if [[ ! -z "$libra_rust" ]]; then
     echo "Copying .proto files from Libra Core: ${libra_rust}"
     copy_proto "types/src/proto" "types/proto" "$go_module_name/generated/pbtypes"
-    copy_proto "mempool/src/proto/shared" "mempool/proto/shared" "$go_module_name/generated/pbmpshared"
-    copy_proto "admission_control/admission_control_proto/src/proto" "admission_control/proto" "$go_module_name/generated/pbac"
+    copy_proto "mempool/mempool-shared-proto/src/proto" "mempool/proto/shared" "$go_module_name/generated/pbmpshared"
+    copy_proto "admission_control/admission-control-proto/src/proto" "admission_control/proto" "$go_module_name/generated/pbac"
 fi
 
 cd $proj_path

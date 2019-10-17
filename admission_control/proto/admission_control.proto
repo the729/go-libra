@@ -11,6 +11,14 @@ import "mempool_status.proto";
 import "transaction.proto";
 import "vm_errors.proto";
 
+// The request for submitting a transaction to an upstream validator or full node.
+message AdmissionControlMsg {
+  oneof message {
+    SubmitTransactionRequest submit_transaction_request = 1;
+    SubmitTransactionResponse submit_transaction_response = 2;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // ---------------- Submit transaction
 // -----------------------------------------------------------------------------
@@ -58,7 +66,7 @@ message SubmitTransactionResponse {
   oneof status {
     types.VMStatus vm_status = 1;
     AdmissionControlStatus ac_status = 2;
-    mempool.MempoolAddTransactionStatus mempool_status = 3;
+    mempool_status.MempoolAddTransactionStatus mempool_status = 3;
   }
   // Public key(id) of the validator that processed this transaction
   bytes validator_id = 4;
