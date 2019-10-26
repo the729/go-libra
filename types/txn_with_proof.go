@@ -27,7 +27,10 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 	if pb.SignedTransaction == nil {
 		return ErrNilInput
 	}
-	t.RawSignedTxn = pb.SignedTransaction.SignedTxn
+
+	// TODO: this is a hack to make raw signed txn to raw abstract txn
+	rawTxn := append([]byte{0, 0, 0, 0}, pb.SignedTransaction.SignedTxn...)
+	t.RawSignedTxn = rawTxn
 
 	t.Events = make([]*ContractEvent, 0, len(pb.Events.Events))
 	for _, ev := range pb.Events.Events {
