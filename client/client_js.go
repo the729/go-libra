@@ -1,4 +1,4 @@
-// +build !js
+// +build js
 
 /*
 Package client implements a gRPC client to Libra RPC service.
@@ -17,8 +17,6 @@ package client
 import (
 	"fmt"
 
-	"google.golang.org/grpc"
-
 	"github.com/the729/go-libra/config"
 	"github.com/the729/go-libra/generated/pbac"
 	"github.com/the729/go-libra/types/validator"
@@ -27,43 +25,25 @@ import (
 // Client is a Libra client.
 // It has a gRPC client to a Libra RPC server, with public keys to trusted peers.
 type Client struct {
-	conn     *grpc.ClientConn
 	ac       pbac.AdmissionControlClient
 	verifier validator.Verifier
 }
 
 // New creates a new Libra Client.
-func New(ServerAddr, TrustedPeerFile string) (*Client, error) {
+func New(ServerAddr, TrustedPeerData string) (*Client, error) {
 	c := &Client{}
-	if err := c.loadTrustedPeers(TrustedPeerFile); err != nil {
+	if err := c.loadTrustedPeers(TrustedPeerData); err != nil {
 		return nil, err
 	}
-	if err := c.connect(ServerAddr); err != nil {
-		return nil, err
-	}
+	c.ac = pbac.NewAdmissionControlClient(ServerAddr)
 	return c, nil
 }
 
-func (c *Client) connect(server string) error {
-	// Set up a connection to the server.
-	conn, err := grpc.Dial(server, grpc.WithInsecure())
-	if err != nil {
-		return fmt.Errorf("grpc dial error: %v", err)
-	}
+// Close the client (do nothing).
+func (c *Client) Close() {}
 
-	acClient := pbac.NewAdmissionControlClient(conn)
-	c.conn = conn
-	c.ac = acClient
-	return nil
-}
-
-// Close the client.
-func (c *Client) Close() {
-	c.conn.Close()
-}
-
-func (c *Client) loadTrustedPeers(file string) error {
-	peerconf, err := config.LoadTrustedPeersFromFile(file)
+func (c *Client) loadTrustedPeers(tomlData string) error {
+	peerconf, err := config.LoadTrustedPeers(tomlData)
 	if err != nil {
 		return fmt.Errorf("load conf err: %v", err)
 	}
