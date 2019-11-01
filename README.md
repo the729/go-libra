@@ -11,7 +11,7 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 ## Features
 
-Compatible with testnet 2019/10/22 (commit hash [fe4dc18e](https://github.com/libra/libra/commit/fe4dc18e916a285698cbc6847540051b3020687f)).
+Compatible with testnet 2019/10/30 (commit hash [51dd2b4261](https://github.com/libra/libra/commit/51dd2b4261d6b80ee8207c02bfd6beb8f84b1ae5)).
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
