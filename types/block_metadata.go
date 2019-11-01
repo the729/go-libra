@@ -6,5 +6,5 @@ type BlockMetaData struct {
 	ID                 sha3libra.HashValue
 	TimestampUSec      uint64
 	PreviousBlockVotes map[string][]byte
-	Proposer           AccountAddress
+	Proposer           AccountAddress `lcs:"len=32"`
 }

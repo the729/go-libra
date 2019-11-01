@@ -15,23 +15,20 @@ type Accumulator struct {
 }
 
 func (a *Accumulator) FromProto(pb *pbtypes.AccumulatorProof) error {
-	bm := bitmap.NewFromUint64(pb.Bitmap)
-	if len(pb.NonDefaultSiblings) != bm.OnesCount() {
-		return errors.New("wrong count of non-default siblings")
-	}
+	a.Siblings = siblingsWithPlaceholder(pb.Siblings)
+	return nil
+}
 
-	siblings := make([]sha3libra.HashValue, 0, bm.Cap())
-	for i, j, seenOne := bm.Bits(), 0, false; i.Next(); {
-		if _, b := i.Bit(); b {
-			seenOne = true
-			siblings = append(siblings, pb.NonDefaultSiblings[j])
-			j++
-		} else if seenOne {
+func siblingsWithPlaceholder(pbSiblings [][]byte) []sha3libra.HashValue {
+	siblings := make([]sha3libra.HashValue, 0, len(pbSiblings))
+	for _, sibling := range pbSiblings {
+		if len(sibling) == 0 {
 			siblings = append(siblings, sha3libra.AccumulatorPlaceholderHash)
+		} else {
+			siblings = append(siblings, sibling)
 		}
 	}
-	a.Siblings = siblings
-	return nil
+	return siblings
 }
 
 func (a *Accumulator) Verify(elemIndex uint64, elemHash, expectedRootHash sha3libra.HashValue) error {
@@ -50,19 +47,19 @@ func (a *Accumulator) Verify(elemIndex uint64, elemHash, expectedRootHash sha3li
 	hasher := a.Hasher
 	for i := bm.BitsRev(); i.Next(); {
 		idx, b := i.Bit()
+		if idx >= len(a.Siblings) {
+			break
+		}
 		hasher.Reset()
 		if b {
-			hasher.Write(a.Siblings[len(a.Siblings)-idx-1])
+			hasher.Write(a.Siblings[idx])
 			hasher.Write(hash)
 		} else {
 			hasher.Write(hash)
-			hasher.Write(a.Siblings[len(a.Siblings)-idx-1])
+			hasher.Write(a.Siblings[idx])
 		}
 		hash = hasher.Sum([]byte{})
 		// log.Printf("new hash: %s", hex.EncodeToString(hash))
-		if len(a.Siblings)-idx-1 == 0 {
-			break
-		}
 	}
 	if !sha3libra.Equal(hash, expectedRootHash) {
 		return errors.New("root hashes do not match")

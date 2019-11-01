@@ -5,7 +5,7 @@ import "github.com/the729/lcs"
 // Transaction is an abstraction of user transaction and system transaction
 // such as WriteSet and BlockMetaData
 type Transaction struct {
-	Transaction isTransaction `lcs:"enum:transaction"`
+	Transaction isTransaction `lcs:"enum=transaction"`
 }
 
 type isTransaction interface {

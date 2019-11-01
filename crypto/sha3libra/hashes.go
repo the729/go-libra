@@ -47,6 +47,7 @@ func NewSparseMerkleInternal() hash.Hash   { return newHasher([]byte("SparseMerk
 func NewSparseMerkleLeaf() hash.Hash       { return newHasher([]byte("SparseMerkleLeaf")) }
 func NewAccountStateBlob() hash.Hash       { return newHasher([]byte("AccountStateBlob")) }
 func NewTransactionInfo() hash.Hash        { return newHasher([]byte("TransactionInfo")) }
+func NewTransaction() hash.Hash            { return newHasher([]byte("TRANSACTION")) }
 func NewRawTransaction() hash.Hash         { return newHasher([]byte("RawTransaction")) }
 func NewSignedTransaction() hash.Hash      { return newHasher([]byte("SignedTransaction")) }
 func NewBlock() hash.Hash                  { return newHasher([]byte("BlockId")) }

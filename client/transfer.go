@@ -28,7 +28,7 @@ func NewRawP2PTransaction(
 		Payload: &types.TxnPayloadScript{
 			Code: stdscript.PeerToPeerTransfer,
 			Args: []types.TransactionArgument{
-				types.TxnArgAddress(receiverAddress),
+				types.TxnArgAddress{receiverAddress},
 				types.TxnArgU64(amount),
 			},
 		},
@@ -45,7 +45,7 @@ func (c *Client) SubmitRawTransaction(ctx context.Context, rawTxn *types.RawTran
 	signedTxn := types.SignRawTransaction(rawTxn, privateKey)
 	pbSignedTxn, _ := signedTxn.ToProto()
 	resp, err := c.ac.SubmitTransaction(ctx, &pbac.SubmitTransactionRequest{
-		SignedTxn: pbSignedTxn,
+		Transaction: pbSignedTxn,
 	})
 	if err != nil {
 		return fmt.Errorf("submit transaction error: %v", err)

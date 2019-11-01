@@ -7,13 +7,13 @@ import (
 // RawTransaction is a raw transaction struct.
 type RawTransaction struct {
 	// Sender address.
-	Sender AccountAddress
+	Sender AccountAddress `lcs:"len=32"`
 
 	// SequenceNumber of this transaction corresponding to sender's account.
 	SequenceNumber uint64
 
 	// Payload is the transaction script to execute.
-	Payload TransactionPayload `lcs:"enum:TransactionPayload"`
+	Payload TransactionPayload `lcs:"enum=TransactionPayload"`
 
 	// Maximal total gas specified by wallet to spend for this transaction.
 	MaxGasAmount uint64
@@ -40,7 +40,9 @@ type TransactionArgument interface {
 type TxnArgU64 uint64
 
 // TxnArgAddress is transaction argument of account address type
-type TxnArgAddress AccountAddress
+type TxnArgAddress struct {
+	AccountAddress `lcs:"len=32"`
+}
 
 // TxnArgString is string transaction argument
 type TxnArgString string
@@ -57,7 +59,7 @@ func (TxnArgBytes) isTransactionArgument()   {}
 func (v TxnArgU64) Clone() TransactionArgument { return v }
 
 // Clone the argument
-func (v TxnArgAddress) Clone() TransactionArgument { return TxnArgAddress(cloneBytes(v)) }
+func (v TxnArgAddress) Clone() TransactionArgument { return TxnArgAddress{cloneBytes(v.AccountAddress)} }
 
 // Clone the argument
 func (v TxnArgString) Clone() TransactionArgument { return v }
@@ -74,7 +76,7 @@ var txnArgEnumDef = []lcs.EnumVariant{
 	{
 		Name:     "TransactionArgument",
 		Value:    1,
-		Template: TxnArgAddress(nil),
+		Template: TxnArgAddress{},
 	},
 	{
 		Name:     "TransactionArgument",
@@ -91,7 +93,7 @@ var txnArgEnumDef = []lcs.EnumVariant{
 // WriteOpWithPath is write op with access path
 type WriteOpWithPath struct {
 	AccessPath *AccessPath
-	WriteOp    WriteOp `lcs:"enum:WriteOp"`
+	WriteOp    WriteOp `lcs:"enum=WriteOp"`
 }
 
 // WriteOp is an enum type of either value or deletion
@@ -145,7 +147,7 @@ type TransactionPayload interface {
 // TxnPayloadProgram is variant of TransactionPayload. It is DEPRECATED
 type TxnPayloadProgram struct {
 	Code    []byte
-	Args    []TransactionArgument `lcs:"enum:TransactionArgument"`
+	Args    []TransactionArgument `lcs:"enum=TransactionArgument"`
 	Modules [][]byte
 }
 
@@ -181,7 +183,7 @@ func (v TxnPayloadWriteSet) Clone() TransactionPayload {
 // TxnPayloadScript is variant of TransactionPayload
 type TxnPayloadScript struct {
 	Code []byte
-	Args []TransactionArgument `lcs:"enum:TransactionArgument"`
+	Args []TransactionArgument `lcs:"enum=TransactionArgument"`
 }
 
 // EnumTypes defines enum variants for lcs

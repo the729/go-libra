@@ -21,6 +21,7 @@ type EventHandle struct {
 type ContractEvent struct {
 	Key            EventKey
 	SequenceNumber uint64
+	TypeTag        TypeTag
 	Data           []byte
 }
 
@@ -74,6 +75,9 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 	e.Key = pb.Key
 	e.SequenceNumber = pb.SequenceNumber
 	e.Data = pb.EventData
+	if err := lcs.Unmarshal(pb.TypeTag, &e.TypeTag); err != nil {
+		return err
+	}
 
 	return nil
 }

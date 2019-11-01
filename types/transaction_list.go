@@ -38,7 +38,7 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 		return ErrNilInput
 	}
 
-	if len(pb.Transactions) != len(pb.Infos) {
+	if len(pb.Transactions) != len(pb.Proof.TransactionInfos) {
 		return errors.New("mismatch length: txns and infos")
 	}
 
@@ -57,7 +57,7 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 	tl.Transactions = nil
 	for idx := range pb.Transactions {
 		info := &TransactionInfo{}
-		if err := info.FromProto(pb.Infos[idx]); err != nil {
+		if err := info.FromProto(pb.Proof.TransactionInfos[idx]); err != nil {
 			return err
 		}
 		item := &SubmittedTransaction{
@@ -80,17 +80,8 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 	}
 
 	tl.Proof = &proof.AccumulatorRange{}
-	if pb.ProofOfFirstTransaction != nil {
-		tl.Proof.First = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
-		if err := tl.Proof.First.FromProto(pb.ProofOfFirstTransaction); err != nil {
-			return err
-		}
-	}
-	if pb.ProofOfLastTransaction != nil {
-		tl.Proof.Last = &proof.Accumulator{Hasher: sha3libra.NewTransactionAccumulator()}
-		if err := tl.Proof.Last.FromProto(pb.ProofOfLastTransaction); err != nil {
-			return err
-		}
+	if err := tl.Proof.FromProto(pb.Proof.LedgerInfoToTransactionInfosProof); err != nil {
+		return err
 	}
 	return nil
 }
@@ -122,7 +113,7 @@ func (tl *TransactionListWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*Prove
 	for _, t := range tl.Transactions {
 		provenTxn, err := t.Verify()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("transaction in list verification failed: %v", err)
 		}
 		hashes = append(hashes, t.Info.Hash())
 		provenTxn.proven = true

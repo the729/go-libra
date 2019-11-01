@@ -8,7 +8,7 @@ import (
 // PaymentEvent is a standard p2p sent or received payment event
 type PaymentEvent struct {
 	Amount  uint64
-	Address types.AccountAddress
+	Address types.AccountAddress `lcs:"len=32"`
 }
 
 // UnmarshalBinary unmarshals raw bytes into this struct.

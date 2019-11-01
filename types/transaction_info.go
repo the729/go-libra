@@ -8,8 +8,8 @@ import (
 
 // TransactionInfo is a information struct of a submitted transaction.
 type TransactionInfo struct {
-	// SignedTransactionHash is the hash of this transaction.
-	SignedTransactionHash []byte
+	// TransactionHash is the hash of this transaction.
+	TransactionHash []byte
 
 	// StateRootHash is the root hash of a Merkle Tree accumulator built form states of all
 	// existing accounts in the ledger.
@@ -27,7 +27,7 @@ type TransactionInfo struct {
 
 // FromProto parses a protobuf struct into this struct.
 func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
-	t.SignedTransactionHash = pb.SignedTransactionHash
+	t.TransactionHash = pb.TransactionHash
 	t.StateRootHash = pb.StateRootHash
 	t.EventRootHash = pb.EventRootHash
 	t.GasUsed = pb.GasUsed

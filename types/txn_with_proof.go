@@ -8,15 +8,15 @@ import (
 	"github.com/the729/go-libra/types/proof"
 )
 
-// SignedTransactionWithProof is a submitted transaction with a Merkle Tree accumulator proof
+// TransactionWithProof is a submitted transaction with a Merkle Tree accumulator proof
 // to prove its inclusion in a version of the ledger.
-type SignedTransactionWithProof struct {
+type TransactionWithProof struct {
 	*SubmittedTransaction
 	LedgerInfoToTransactionInfoProof *proof.Accumulator
 }
 
 // FromProto parses a protobuf struct into this struct.
-func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWithProof) error {
+func (t *TransactionWithProof) FromProto(pb *pbtypes.TransactionWithProof) error {
 	var err error
 	if pb == nil {
 		return ErrNilInput
@@ -24,13 +24,10 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 	t.SubmittedTransaction = &SubmittedTransaction{}
 	t.Version = pb.Version
 
-	if pb.SignedTransaction == nil {
+	if pb.Transaction == nil {
 		return ErrNilInput
 	}
-
-	// TODO: this is a hack to make raw signed txn to raw abstract txn
-	rawTxn := append([]byte{0, 0, 0, 0}, pb.SignedTransaction.SignedTxn...)
-	t.RawSignedTxn = rawTxn
+	t.RawSignedTxn = pb.Transaction.Transaction
 
 	t.Events = make([]*ContractEvent, 0, len(pb.Events.Events))
 	for _, ev := range pb.Events.Events {
@@ -56,7 +53,7 @@ func (t *SignedTransactionWithProof) FromProto(pb *pbtypes.SignedTransactionWith
 }
 
 // Verify the proof of the transaction, and output a ProvenTransaction if successful.
-func (t *SignedTransactionWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*ProvenTransaction, error) {
+func (t *TransactionWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*ProvenTransaction, error) {
 	pTxn, err := t.SubmittedTransaction.Verify()
 	if err != nil {
 		return nil, err

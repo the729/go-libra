@@ -67,7 +67,7 @@ func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &pbtypes.SignedTransaction{SignedTxn: b}, nil
+	return &pbtypes.SignedTransaction{TxnBytes: b}, nil
 }
 
 // // Hash ouptuts the hash of this struct, using the appropriate hash function.
@@ -141,22 +141,21 @@ func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
 		withEvents = false
 	}
 
+	// verify Transaction hash from transaction info
+	hasher := sha3libra.NewTransaction()
+	if _, err := hasher.Write(st.RawSignedTxn); err != nil {
+		panic(err)
+	}
+	txnHash := hasher.Sum([]byte{})
+	if !sha3libra.Equal(txnHash, st.Info.TransactionHash) {
+		return nil, fmt.Errorf("txn hash mismatch in txn(%d)", st.Version)
+	}
+
 	decodedTxn := &Transaction{}
 	if err := lcs.Unmarshal(st.RawSignedTxn, decodedTxn); err != nil {
 		return nil, fmt.Errorf("lcs unmarshal signedtxn error: %v", err)
 	}
-	signedUserTxn, isUserTxn := decodedTxn.Transaction.(*SignedTransaction)
-	if isUserTxn {
-		// verify SignedTransaction hash from transaction info
-		hasher := sha3libra.NewSignedTransaction()
-		if err := lcs.NewEncoder(hasher).Encode(signedUserTxn); err != nil {
-			panic(err)
-		}
-		txnHash := hasher.Sum([]byte{})
-		if !sha3libra.Equal(txnHash, st.Info.SignedTransactionHash) {
-			return nil, fmt.Errorf("signed txn hash mismatch in txn(%d)", st.Version)
-		}
-	}
+	signedUserTxn, _ := decodedTxn.Transaction.(*SignedTransaction)
 
 	return &ProvenTransaction{
 		// this verification alone does not prove ledger inclusion

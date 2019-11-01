@@ -92,7 +92,7 @@ func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.Ac
 		return nil, errors.New("nil response")
 	}
 
-	if resp1.SignedTransactionWithProof == nil {
+	if resp1.TransactionWithProof == nil {
 		state := &types.AccountStateWithProof{}
 		err = state.FromProto(resp1.ProofOfCurrentSequenceNumber)
 		if err != nil {
@@ -115,8 +115,8 @@ func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.Ac
 		return nil, fmt.Errorf("sequence too large, should < %v", pres.GetSequenceNumber())
 	}
 
-	txn := &types.SignedTransactionWithProof{}
-	if err = txn.FromProto(resp1.SignedTransactionWithProof); err != nil {
+	txn := &types.TransactionWithProof{}
+	if err = txn.FromProto(resp1.TransactionWithProof); err != nil {
 		return nil, err
 	}
 

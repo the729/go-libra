@@ -55,27 +55,12 @@ func (m *SparseMerkle) FromProto(pb *pbtypes.SparseMerkleProof) error {
 		}
 	}
 
-	bm := bitmap.NewFromByteSlice(pb.Bitmap)
-	if bm.TrailingZeros() >= 8 {
-		return errors.New("bitmap last byte should not be 0")
-	}
-	if len(pb.NonDefaultSiblings) != bm.OnesCount() {
-		return errors.New("wrong count of non-default siblings")
-	}
-
-	// Iterate from the MSB of the first byte to the rightmost 1-bit in the bitmap. If a bit is
-	// set, the corresponding sibling is non-default and we take the sibling from
-	// proto_siblings. Otherwise the sibling on this position is default.
-
-	// Since we already checked len(NonDefaultSiblings), we can safely stop loop when we consumed
-	// all NonDefaultSiblings.
-	siblings := make([]sha3libra.HashValue, 0, bm.Cap())
-	for i, j := bm.Bits(), 0; i.Next() && j < bm.OnesCount(); {
-		if _, b := i.Bit(); b {
-			siblings = append(siblings, pb.NonDefaultSiblings[j])
-			j++
-		} else {
+	siblings := make([]sha3libra.HashValue, 0, len(pb.Siblings))
+	for _, sibling := range pb.Siblings {
+		if len(sibling) == 0 {
 			siblings = append(siblings, sha3libra.SparseMerklePlaceholderHash)
+		} else {
+			siblings = append(siblings, sibling)
 		}
 	}
 	m.siblings = siblings
@@ -122,6 +107,7 @@ func (m *SparseMerkle) verify(elemKey, expectedRootHash sha3libra.HashValue) err
 		return errors.New("merkle tree proof has too many siblings")
 	}
 
+	siblings := m.siblings
 	// log.Printf("target hash: %s", hex.EncodeToString(expectedRootHash))
 	hash := m.leaf.Hash()
 	// log.Printf("initial hash: %s", hex.EncodeToString(hash))
@@ -133,16 +119,18 @@ func (m *SparseMerkle) verify(elemKey, expectedRootHash sha3libra.HashValue) err
 		}
 		hasher := sha3libra.NewSparseMerkleInternal()
 		if b {
-			// log.Printf("hash: %s with left sibling %s", hex.EncodeToString(hash), hex.EncodeToString(m.siblings[bm.Cap()-idx-1]))
-			hasher.Write(m.siblings[bm.Cap()-idx-1])
+			// log.Printf("%d hash: %s with left sibling %s", idx, hex.EncodeToString(hash), hex.EncodeToString(m.siblings[j]))
+			hasher.Write(siblings[0])
 			hasher.Write(hash)
 		} else {
-			// log.Printf("hash: %s with right sibling %s", hex.EncodeToString(hash), hex.EncodeToString(m.siblings[bm.Cap()-idx-1]))
+			// log.Printf("%d hash: %s with right sibling %s", idx, hex.EncodeToString(hash), hex.EncodeToString(m.siblings[j]))
 			hasher.Write(hash)
-			hasher.Write(m.siblings[bm.Cap()-idx-1])
+			hasher.Write(siblings[0])
 		}
+		siblings = siblings[1:]
 		hash = hasher.Sum([]byte{})
 	}
+	// log.Printf("final hash: %s", hex.EncodeToString(hash))
 	if !sha3libra.Equal(hash, expectedRootHash) {
 		return errors.New("root hashes do not match")
 	}

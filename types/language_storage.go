@@ -16,14 +16,76 @@ type AccessPathTag interface {
 	TypePrefix() byte
 }
 
+type isTypeTag interface {
+	isTypeTag()
+}
+
+// TypeTagBool is bool
+type TypeTagBool bool
+
+// TypeTagU64 is uint64
+type TypeTagU64 uint64
+
+// TypeTagBytes is byte slice
+type TypeTagBytes []byte
+
+// TypeTagAddress is account address type
+type TypeTagAddress struct {
+	AccountAddress `lcs:"len=32"`
+}
+
+// TypeTagStructTag is StructTag
+type TypeTagStructTag = StructTag
+
+func (TypeTagBool) isTypeTag()       {}
+func (TypeTagU64) isTypeTag()        {}
+func (TypeTagBytes) isTypeTag()      {}
+func (TypeTagAddress) isTypeTag()    {}
+func (*TypeTagStructTag) isTypeTag() {}
+
+var typeTagEnumDef = []lcs.EnumVariant{
+	{
+		Name:     "TypeTag",
+		Value:    0,
+		Template: TypeTagBool(false),
+	},
+	{
+		Name:     "TypeTag",
+		Value:    1,
+		Template: TypeTagU64(0),
+	},
+	{
+		Name:     "TypeTag",
+		Value:    2,
+		Template: TypeTagBytes(nil),
+	},
+	{
+		Name:     "TypeTag",
+		Value:    3,
+		Template: TypeTagAddress{},
+	},
+	{
+		Name:     "TypeTag",
+		Value:    4,
+		Template: (*TypeTagStructTag)(nil),
+	},
+}
+
+type TypeTag struct {
+	TypeTag isTypeTag `lcs:"enum=TypeTag"`
+}
+
+// EnumTypes defines enum variants for lcs
+func (*TypeTag) EnumTypes() []lcs.EnumVariant { return typeTagEnumDef }
+
 // StructTag is a tag to form a resource path.
 //
 // StructTag implements AccessPathTag interface
 type StructTag struct {
-	Address    AccountAddress
+	Address    AccountAddress `lcs:"len=32"`
 	Module     string
 	Name       string
-	TypeParams []*StructTag
+	TypeParams []TypeTag
 }
 
 // Hash outputs the hash of this struct, using the appropriate hash function.

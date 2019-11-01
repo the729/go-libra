@@ -33,7 +33,7 @@ func PrintTxn(txn *types.ProvenTransaction) {
 			case types.TxnArgU64:
 				log.Printf("        Arg %d: u64  (%v)", i, arg)
 			case types.TxnArgAddress:
-				log.Printf("        Arg %d: addr (%v)", i, hex.EncodeToString(arg))
+				log.Printf("        Arg %d: addr (%v)", i, hex.EncodeToString(arg.AccountAddress))
 			case types.TxnArgString:
 				log.Printf("        Arg %d: str  (%v)", i, arg)
 			case types.TxnArgBytes:
