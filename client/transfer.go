@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"golang.org/x/crypto/ed25519"
@@ -83,7 +82,7 @@ func (c *Client) PollSequenceUntil(ctx context.Context, addr types.AccountAddres
 				return err
 			}
 			seq := resource.GetSequenceNumber()
-			log.Printf("sequence number: %d, ledger version: %d", seq, ledgerInfo.GetVersion())
+			// log.Printf("sequence number: %d, ledger version: %d", seq, ledgerInfo.GetVersion())
 			if seq >= targetSeq {
 				return nil
 			}
