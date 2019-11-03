@@ -187,5 +187,5 @@ func (pas *ProvenAccountState) IsNil() bool {
 	if !pas.proven {
 		panic("not valid proven account state")
 	}
-	return pas.accountState.RawBlob == nil
+	return len(pas.accountState.RawBlob) == 0
 }

@@ -35,7 +35,7 @@ func main() {
 	expiration := time.Now().Add(1 * time.Minute)
 
 	log.Printf("Get current account sequence of sender...")
-	seq, err := c.GetAccountSequenceNumber(context.TODO(), senderAddr)
+	seq, err := c.QueryAccountSequenceNumber(context.TODO(), senderAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,13 +50,13 @@ func main() {
 	}
 
 	log.Printf("Submit transaction...")
-	err = c.SubmitRawTransaction(context.TODO(), rawTxn, priKey)
+	expectedSeq, err := c.SubmitRawTransaction(context.TODO(), rawTxn, priKey)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Printf("Waiting until transaction is included in ledger...")
-	err = c.PollSequenceUntil(context.TODO(), senderAddr, seq+1, expiration)
+	err = c.PollSequenceUntil(context.TODO(), senderAddr, expectedSeq, expiration)
 	if err != nil {
 		log.Fatal(err)
 	}

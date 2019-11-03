@@ -41,35 +41,37 @@ func NewRawP2PTransaction(
 }
 
 // SubmitRawTransaction signes and submits a raw transaction.
-func (c *Client) SubmitRawTransaction(ctx context.Context, rawTxn *types.RawTransaction, privateKey ed25519.PrivateKey) error {
+func (c *Client) SubmitRawTransaction(ctx context.Context, rawTxn *types.RawTransaction, privateKey ed25519.PrivateKey) (uint64, error) {
 	signedTxn := types.SignRawTransaction(rawTxn, privateKey)
 	pbSignedTxn, _ := signedTxn.ToProto()
 	resp, err := c.ac.SubmitTransaction(ctx, &pbac.SubmitTransactionRequest{
 		Transaction: pbSignedTxn,
 	})
 	if err != nil {
-		return fmt.Errorf("submit transaction error: %v", err)
+		return 0, fmt.Errorf("submit transaction error: %v", err)
 	}
 
 	// log.Printf("Result: ")
 	// spew.Dump(resp)
 	if vmStatus := resp.GetVmStatus(); vmStatus != nil {
-		return fmt.Errorf("vm error: %s", vmStatus)
+		return 0, fmt.Errorf("vm error: %s", vmStatus)
 	}
 	if mpStatus := resp.GetMempoolStatus(); mpStatus != nil {
-		return fmt.Errorf("mempool error: %s", mpStatus)
+		return 0, fmt.Errorf("mempool error: %s", mpStatus)
 	}
 	if acStatus := resp.GetAcStatus(); acStatus.Code != pbac.AdmissionControlStatusCode_Accepted {
-		return fmt.Errorf("ac error: %s", acStatus)
+		return 0, fmt.Errorf("ac error: %s", acStatus)
 	}
 
-	return nil
+	return rawTxn.SequenceNumber + 1, nil
 }
 
 // PollSequenceUntil blocks to repeatedly poll the sequence number of a specific account, until the sequence number
 // is greater or equal to specified target sequence number, or the ledger state passes specified expiration time.
 func (c *Client) PollSequenceUntil(ctx context.Context, addr types.AccountAddress, targetSeq uint64, expiration time.Time) error {
-	for range time.Tick(1 * time.Second) {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
 		paccount, err := c.QueryAccountState(ctx, addr)
 		if err != nil {
 			return err

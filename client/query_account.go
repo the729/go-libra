@@ -60,9 +60,9 @@ func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.ProvenAccountBl
 	return res, nil
 }
 
-// GetAccountSequenceNumber queries sequence number of an account from RPC server, and does necessary
+// QueryAccountSequenceNumber queries sequence number of an account from RPC server, and does necessary
 // crypto verifications.
-func (c *Client) GetAccountSequenceNumber(ctx context.Context, addr types.AccountAddress) (uint64, error) {
+func (c *Client) QueryAccountSequenceNumber(ctx context.Context, addr types.AccountAddress) (uint64, error) {
 	paccount, err := c.QueryAccountState(ctx, addr)
 	if err != nil {
 		return 0, err
