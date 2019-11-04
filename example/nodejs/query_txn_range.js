@@ -1,4 +1,4 @@
-var libra = require("../../gopherjs-libra/gopherjs-libra.js").libra;
+const { libra } = require("../../gopherjs-libra/gopherjs-libra.js");
 
 const defaultServer = "http://hk2.wutj.info:38080";
 
