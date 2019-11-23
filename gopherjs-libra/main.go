@@ -11,7 +11,13 @@ import (
 )
 
 func main() {
-	js.Module.Get("exports").Set("libra", map[string]interface{}{
+	var exports *js.Object
+	if js.Module == js.Undefined {
+		exports = js.Global
+	} else {
+		exports = js.Module.Get("exports")
+	}
+	exports.Set("libra", map[string]interface{}{
 		"client":                   newClient,
 		"trustedPeersFile":         trustedPeersFile,
 		"accountResourcePath":      types.AccountResourcePath,
