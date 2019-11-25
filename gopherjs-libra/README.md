@@ -41,7 +41,7 @@ client.queryTransactionRange(100, 2, true)
 
 # Examples
 
-Several examples are included in [`example/nodejs`](example/nodejs) folder.
+Several examples are included in [`example/nodejs`](https://github.com/the729/go-libra/tree/js/example/nodejs) folder.
 
 # API Reference
 
