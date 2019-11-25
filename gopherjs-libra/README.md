@@ -1,0 +1,194 @@
+A Libra js client library with crypto verifications, for Nodejs and browsers.
+
+# Usage
+
+In order to work with browsers, `gopherjs-libra` uses gRPC-Web which is not directly compatible with gRPC. A proxy is needed to forward gRPC-Web requests to gRPC backends. You can setup an Envoy proxy (https://grpc.io/docs/tutorials/basic/web/), or use my demo proxy shown in the examples. 
+
+## Node.js
+
+```bash
+npm install gopherjs-libra
+```
+
+```js
+const { libra } = require("gopherjs-libra");
+
+const defaultServer = "http://hk2.wutj.info:38080";
+
+var client = libra.client(defaultServer, libra.trustedPeersFile)
+client.queryTransactionRange(100, 2, true)
+    .then(r => {
+        r.getTransactions().map(txn => {
+            console.log("Txn #", txn.getVersion())
+            console.log("    Gas used (microLibra): ", txn.getGasUsed())
+            console.log("    Major status: ", txn.getMajorStatus())
+        })
+    })
+    .catch(e => {
+        console.log("Error: ", e)
+    })
+```
+
+## Browser
+
+```html
+<script src="gopherjs-libra.js"></script>
+<script>
+    var defaultServer = "http://hk2.wutj.info:38080";
+    var client = libra.client(defaultServer, libra.trustedPeersFile);
+</script>
+```
+
+# Examples
+
+Several examples are included in [`example/nodejs`](example/nodejs) folder.
+
+# API Reference
+
+## .client(server, trustedPeers)
+
+Create a client using specified server and trusted peers. 
+
+### Arguments
+ - server (string): gRPC-Web server URL.
+ - trustedPeers (string): a TOML formated string containing configurations of trusted peers. You can use `libra.trustedPeersFile`.
+
+Returns a Libra Client instance. 
+
+## .trustedPeersFile
+
+A constant string. TOML formated string of the default trusted peers of the libra testnet.
+
+## .accountResourcePath()
+
+Returns a `Uint8Array`: the raw path to the Libra account resource, which is `0x01+hash(0x0.LibraAccount.T)`.
+
+## .accountSentEventPath()
+
+Returns a `Uint8Array`: the raw path to Libra coin sent events, which is `0x01+hash(0x0.LibraAccount.T)/sent_events_count/`.
+
+## .accountReceivedEventPath()
+
+Returns a `Uint8Array`: the raw path to Libra coin received events, which is `0x01+hash(0x0.LibraAccount.T)/received_events_count/`.
+
+## Client.queryAccountState(address)
+
+### Arguments
+ - address (Uint8Array): raw address bytes. 
+
+Returns a promise that resolves to a `provenAccountState` object.
+
+## Client.queryAccountSequenceNumber(address)
+
+### Arguments
+ - address (Uint8Array): raw address bytes. 
+
+Returns a promise that resolves to the sequence number (integer).
+
+## Client.pollSequenceUntil(address, seq, expire)
+
+Polls an account until its sequence number is greater or equal to the given seq.
+
+### Arguments
+ - address (Uint8Array): raw address bytes. 
+ - seq (integer): expected sequence number.
+ - expire (integer): expiration unix timestamp in seconds. The polling fails until the ledger timestamp is greater than `expire`.
+
+Returns a promise that resolves when the expected sequence number is reached.
+
+## Client.submitP2PTransaction(rawTxn)
+
+### Arguments
+ - rawTxn (Object): the raw transaction object
+   - senderAddr (Uint8Array)
+   - recvAddr (Uint8Array)
+   - senderPrivateKey (Uint8Array)
+   - senderSeq (integer)
+   - amountMicro (integer): amount to transfer in micro libra
+   - maxGasAmount (integer): max gas amount in micro libra
+   - gasUnitPrice (integer): micro libra per gas
+   - expirationTimestamp (integer): transaction expiration unix timestamp
+
+Returns a promise that resolves to the expected sequence number of this transaction. Use `pollSequenceUntil` afterward to make sure the transaction is included in the ledger.
+
+## Client.queryTransactionByAccountSeq(address, seq, withEvents)
+
+### Arguments
+ - address (Uint8Array): raw address bytes. 
+ - seq (integer): sequence number to query.
+ - withEvents (bool): whether to includes events in the returned value.
+
+Returns a promise that resolves to a `provenTransaction` object.
+
+## Client.queryTransactionRange(start, limit, withEvents)
+
+### Arguments
+ - start (integer): first transaction to return.
+ - limit (integer): max number of transactions to return.
+ - withEvents (bool): whether to includes events in the returned value.
+
+Returns a promise that resolves to a `provenTransactionList` objects.
+
+## Client.queryEventsByAccessPath(address, path, start, ascending, limit)
+
+### Arguments
+ - address (Uint8Array): raw address bytes. 
+ - path (Uint8Array): `accountSentEventPath()` or `accountReceivedEventPath()`.
+ - start (integer): the index of the first event.
+ - limit (integer): max number of events to return.
+ - ascending (bool): whether return events in ascending order.
+
+Returns a promise that resolves to a list of `provenEvent` objects.
+
+## Object: provenAccountState
+
+### .getVersion()
+
+Returns the ledger version.
+
+### .getAccountBlob()
+
+Returns libra account blob `provenAccountBlob`.
+
+### .isNil()
+
+Returns `true` if the address is not included in the ledger.
+
+## Object: provenAccountBlob
+
+### .getAddress()
+
+Returns address (Uint8Array).
+
+### getResource(path)
+
+Returns `provenAccountResource` on the given path. Use `accountResourcePath()` as the path.
+
+## Object: provenAccountResource
+
+### .getAddress()
+### .getBalance()
+### .getSequenceNumber()
+### .getSentEvents()
+### .getReceivedEvents()
+### .getDelegatedWithdrawalCapability()
+
+## Object: provenTransaction
+
+### .getVersion()
+### .getMajorStatus()
+### .getGasUsed()
+### .getWithEvents()
+### .getEvents()
+### .getSignedTxn()
+
+## Object: provenTransactionList
+
+### .getLedgerInfo()
+### .getTransactions()
+
+## Object: provenEvent
+
+### .getTransactionVersion()
+### .getEventIndex()
+### .getEvent()
