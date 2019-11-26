@@ -1,6 +1,6 @@
 {
   "name": "gopherjs-libra",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Libra js client library with crypto verifications",
   "main": "gopherjs-libra.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "github.com/the729/go-libra"
+    "url": "https://github.com/the729/go-libra.git"
   },
   "keywords": [
     "libra",

@@ -41,7 +41,22 @@ client.queryTransactionRange(100, 2, true)
 
 # Examples
 
-Several examples are included in [`example/nodejs`](https://github.com/the729/go-libra/tree/js/example/nodejs) folder.
+Several examples are included in [`example/nodejs`](https://github.com/the729/go-libra/tree/master/example/nodejs) folder.
+
+## Generating Libra Accounts
+
+This library does not handle account generation based on mnemonic. You will have to manage your public-private key pairs with other wallet libraries. 
+
+For example, to simply generate a new account:
+```js
+const { sign } = require("tweetnacl");
+const { libra } = require("gopherjs-libra");
+
+keyPair = sign.keyPair();
+address = libra.pubkeyToAddress(keyPair.publicKey);
+// address is a libra account address (Uint8Array, 32-byte)
+// keyPair.secretKey is the corresponding private key (Uint8Array, 64-byte)
+```
 
 # API Reference
 
@@ -71,39 +86,50 @@ Returns a `Uint8Array`: the raw path to Libra coin sent events, which is `0x01+h
 
 Returns a `Uint8Array`: the raw path to Libra coin received events, which is `0x01+hash(0x0.LibraAccount.T)/received_events_count/`.
 
-## Client.queryAccountState(address)
+## .pubkeyToAddress(publicKey)
 
 ### Arguments
+ - publicKey (Uint8Array): 32-byte ed25519 public key.
+
+Returns SHA3 hash of input public key, which is used as Libra account address.
+
+## Object: Client
+
+Client represents a Libra client.
+
+### Client.queryAccountState(address)
+
+Argument:
  - address (Uint8Array): raw address bytes. 
 
 Returns a promise that resolves to a `provenAccountState` object.
 
-## Client.queryAccountSequenceNumber(address)
+### Client.queryAccountSequenceNumber(address)
 
-### Arguments
+Argument:
  - address (Uint8Array): raw address bytes. 
 
 Returns a promise that resolves to the sequence number (integer).
 
-## Client.pollSequenceUntil(address, seq, expire)
+### Client.pollSequenceUntil(address, seq, expire)
 
 Polls an account until its sequence number is greater or equal to the given seq.
 
-### Arguments
+Arguments:
  - address (Uint8Array): raw address bytes. 
  - seq (integer): expected sequence number.
  - expire (integer): expiration unix timestamp in seconds. The polling fails until the ledger timestamp is greater than `expire`.
 
 Returns a promise that resolves when the expected sequence number is reached.
 
-## Client.submitP2PTransaction(rawTxn)
+### Client.submitP2PTransaction(rawTxn)
 
-### Arguments
- - rawTxn (Object): the raw transaction object
-   - senderAddr (Uint8Array)
-   - recvAddr (Uint8Array)
-   - senderPrivateKey (Uint8Array)
-   - senderSeq (integer)
+Arguments:
+ - rawTxn (Object): the raw transaction object, with following keys
+   - senderAddr (Uint8Array): sender address
+   - recvAddr (Uint8Array): receiver address
+   - senderPrivateKey (Uint8Array): sender ed25519 secret key (64 bytes)
+   - senderSeq (integer): current sender account sequence number
    - amountMicro (integer): amount to transfer in micro libra
    - maxGasAmount (integer): max gas amount in micro libra
    - gasUnitPrice (integer): micro libra per gas
@@ -111,27 +137,27 @@ Returns a promise that resolves when the expected sequence number is reached.
 
 Returns a promise that resolves to the expected sequence number of this transaction. Use `pollSequenceUntil` afterward to make sure the transaction is included in the ledger.
 
-## Client.queryTransactionByAccountSeq(address, seq, withEvents)
+### Client.queryTransactionByAccountSeq(address, seq, withEvents)
 
-### Arguments
+Arguments:
  - address (Uint8Array): raw address bytes. 
  - seq (integer): sequence number to query.
  - withEvents (bool): whether to includes events in the returned value.
 
 Returns a promise that resolves to a `provenTransaction` object.
 
-## Client.queryTransactionRange(start, limit, withEvents)
+### Client.queryTransactionRange(start, limit, withEvents)
 
-### Arguments
+Arguments:
  - start (integer): first transaction to return.
  - limit (integer): max number of transactions to return.
  - withEvents (bool): whether to includes events in the returned value.
 
 Returns a promise that resolves to a `provenTransactionList` objects.
 
-## Client.queryEventsByAccessPath(address, path, start, ascending, limit)
+### Client.queryEventsByAccessPath(address, path, start, ascending, limit)
 
-### Arguments
+Arguments:
  - address (Uint8Array): raw address bytes. 
  - path (Uint8Array): `accountSentEventPath()` or `accountReceivedEventPath()`.
  - start (integer): the index of the first event.
@@ -141,6 +167,8 @@ Returns a promise that resolves to a `provenTransactionList` objects.
 Returns a promise that resolves to a list of `provenEvent` objects.
 
 ## Object: provenAccountState
+
+A `provenAccountState` represents an account state that is proven to be included in the ledger at a certain version (or proven included if isNil()).
 
 ### .getVersion()
 
@@ -152,7 +180,7 @@ Returns libra account blob `provenAccountBlob`.
 
 ### .isNil()
 
-Returns `true` if the address is not included in the ledger.
+Returns `true` if the address is proven not included in the ledger.
 
 ## Object: provenAccountBlob
 

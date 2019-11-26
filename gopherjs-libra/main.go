@@ -23,6 +23,7 @@ func main() {
 		"accountResourcePath":      types.AccountResourcePath,
 		"accountSentEventPath":     types.AccountSentEventPath,
 		"accountReceivedEventPath": types.AccountReceivedEventPath,
+		"pubkeyToAddress":          client.PubkeyMustToAddress,
 	})
 }
 
