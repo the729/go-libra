@@ -17,6 +17,7 @@ type ProvenAccountResource struct {
 	proven          bool
 	accountResource AccountResource
 	addr            AccountAddress
+	ledgerInfo      *ProvenLedgerInfo
 }
 
 // Clone deep clones this struct.
@@ -29,6 +30,14 @@ func (r *AccountResource) Clone() *AccountResource {
 	out.SentEvents = r.SentEvents.Clone()
 	out.SequenceNumber = r.SequenceNumber
 	return out
+}
+
+// GetLedgerInfo returns the ledger info.
+func (pr *ProvenAccountResource) GetLedgerInfo() *ProvenLedgerInfo {
+	if !pr.proven {
+		panic("not valid proven account resource")
+	}
+	return pr.ledgerInfo
 }
 
 // GetBalance returns Libra coin balance in microLibra.

@@ -192,7 +192,16 @@ func (ep *EventWithProof) Verify(provenLedgerInfo *ProvenLedgerInfo) (*ProvenEve
 		txnVersion: ep.TransactionVersion,
 		eventIndex: ep.EventIndex,
 		event:      ep.Event.Clone(),
+		ledgerInfo: provenLedgerInfo,
 	}, nil
+}
+
+// GetLedgerInfo returns the ledger info.
+func (pe *ProvenEvent) GetLedgerInfo() *ProvenLedgerInfo {
+	if !pe.proven {
+		panic("not valid proven event")
+	}
+	return pe.ledgerInfo
 }
 
 // GetTransactionVersion returns the transaction version

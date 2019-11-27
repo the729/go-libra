@@ -1,6 +1,6 @@
 {
   "name": "gopherjs-libra",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Libra js client library with crypto verifications",
   "main": "gopherjs-libra.js",
   "scripts": {

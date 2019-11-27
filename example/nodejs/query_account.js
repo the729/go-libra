@@ -26,6 +26,7 @@ client.queryAccountState(addr)
         console.log("Sent Events: ", r.getSentEvents())
         console.log("Received Events: ", r.getReceivedEvents())
         console.log("DelegatedWithdrawalCapability: ", r.getDelegatedWithdrawalCapability())
+        console.log("Proven at ledger version / time: ", r.getLedgerInfo().getVersion(), r.getLedgerInfo().getTimestampUsec() / 1000000)
     })
     .catch(e => {
         console.log("Error: ", e)

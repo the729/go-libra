@@ -68,5 +68,6 @@ func (t *TransactionWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*ProvenTran
 	}
 
 	pTxn.proven = true
+	pTxn.ledgerInfo = ledgerInfo
 	return pTxn, nil
 }

@@ -173,8 +173,9 @@ func (pas *ProvenAccountState) GetAccountBlob() *ProvenAccountBlob {
 		return nil
 	}
 	pab := &ProvenAccountBlob{
-		proven: true,
-		addr:   cloneBytes(pas.addr),
+		proven:     true,
+		addr:       cloneBytes(pas.addr),
+		ledgerInfo: pas.ledgerInfo,
 	}
 	if err := pab.accountBlob.ParseToMap(cloneBytes(pas.accountState.RawBlob)); err != nil {
 		panic(err)

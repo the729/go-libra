@@ -21,6 +21,9 @@ client.queryEventsByAccessPath(addr, libra.accountSentEventPath(), 0, true, 10)
             console.log("    Seq num: ", evBody.SequenceNumber)
             console.log("    Raw data: ", toHexString(evBody.Data))
         })
+        if (r.length > 0) {
+            console.log("Proven at ledger version / time: ", r[0].getLedgerInfo().getVersion(), r[0].getLedgerInfo().getTimestampUsec() / 1000000)
+        }
     })
     .catch(e => {
         console.log("Error: ", e)

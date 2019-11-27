@@ -21,6 +21,7 @@ type ProvenAccountBlob struct {
 	proven      bool
 	accountBlob AccountBlob
 	addr        AccountAddress
+	ledgerInfo  *ProvenLedgerInfo
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
@@ -67,6 +68,14 @@ func (b *AccountBlob) GetResource(path []byte) (*AccountResource, error) {
 	return r, nil
 }
 
+// GetLedgerInfo returns the ledger info.
+func (pb *ProvenAccountBlob) GetLedgerInfo() *ProvenLedgerInfo {
+	if !pb.proven {
+		panic("not valid proven account blob")
+	}
+	return pb.ledgerInfo
+}
+
 // GetResource gets a resource from a proven account blob by its path.
 //
 // To get Libra coin account resource, use AccountResourcePath() to generate the path.
@@ -79,8 +88,9 @@ func (pb *ProvenAccountBlob) GetResource(path []byte) (*ProvenAccountResource, e
 		return nil, err
 	}
 	par := &ProvenAccountResource{
-		proven: true,
-		addr:   cloneBytes(pb.addr),
+		proven:     true,
+		addr:       cloneBytes(pb.addr),
+		ledgerInfo: pb.ledgerInfo,
 	}
 	par.accountResource = *(ar.Clone())
 	return par, nil

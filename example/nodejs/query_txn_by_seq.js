@@ -19,6 +19,7 @@ client.queryTransactionByAccountSeq(addr, 0, true)
         console.log("    Major status: ", r.getMajorStatus())
         console.log("    Events: ", r.getEvents())
         console.log("    Signed Txn: ", r.getSignedTxn())
+        console.log("Proven at ledger version / time: ", r.getLedgerInfo().getVersion(), r.getLedgerInfo().getTimestampUsec() / 1000000)
     })
     .catch(e => {
         console.log("Error: ", e)

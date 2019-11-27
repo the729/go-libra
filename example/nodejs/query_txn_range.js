@@ -10,6 +10,7 @@ client.queryTransactionRange(100, 2, true)
             console.log("    Gas used (microLibra): ", txn.getGasUsed())
             console.log("    Major status: ", txn.getMajorStatus())
         })
+        console.log("Proven at ledger version / time: ", r.getLedgerInfo().getVersion(), r.getLedgerInfo().getTimestampUsec() / 1000000)
     })
     .catch(e => {
         console.log("Error: ", e)

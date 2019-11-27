@@ -51,15 +51,8 @@ type ProvenTransaction struct {
 	version     uint64
 	gasUsed     uint64
 	majorStatus VMStatusCode
+	ledgerInfo  *ProvenLedgerInfo
 }
-
-// // FromProto parses a protobuf struct into this struct.
-// func (t *SignedTransaction) FromProto(pb *pbtypes.SignedTransaction) error {
-// 	if pb == nil {
-// 		return ErrNilInput
-// 	}
-// 	return lcs.Unmarshal(pb.SignedTxn, t)
-// }
 
 // ToProto builds a protobuf struct from this struct.
 func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
@@ -167,6 +160,14 @@ func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
 		gasUsed:     st.Info.GasUsed,
 		majorStatus: st.Info.MajorStatus,
 	}, nil
+}
+
+// GetLedgerInfo returns the ledger info.
+func (pt *ProvenTransaction) GetLedgerInfo() *ProvenLedgerInfo {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return pt.ledgerInfo
 }
 
 // GetSignedTxn returns a copy of the underlying signed transaction.

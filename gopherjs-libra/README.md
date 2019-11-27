@@ -166,9 +166,24 @@ Arguments:
 
 Returns a promise that resolves to a list of `provenEvent` objects.
 
+## Object: provenLedgerInfo
+
+A `provenLedgerInfo` represents a proven state of the ledger at some version and some time. It is proven by quorum of trusted validators. It is the source of trust for all the following structures.
+
+The member functions are self-descriptive. 
+
+### .getVersion()
+### .getTimestampUsec()
+### .getTransactionAccumulatorHash()
+### .getEpochNum()
+
 ## Object: provenAccountState
 
 A `provenAccountState` represents an account state that is proven to be included in the ledger at a certain version (or proven included if isNil()).
+
+### .getLedgerInfo()
+
+Returns the `provenLedgerInfo` which proofs this object.
 
 ### .getVersion()
 
@@ -184,6 +199,10 @@ Returns `true` if the address is proven not included in the ledger.
 
 ## Object: provenAccountBlob
 
+### .getLedgerInfo()
+
+Returns the `provenLedgerInfo` which proofs this object.
+
 ### .getAddress()
 
 Returns address (Uint8Array).
@@ -194,6 +213,7 @@ Returns `provenAccountResource` on the given path. Use `accountResourcePath()` a
 
 ## Object: provenAccountResource
 
+### .getLedgerInfo()
 ### .getAddress()
 ### .getBalance()
 ### .getSequenceNumber()
@@ -203,6 +223,7 @@ Returns `provenAccountResource` on the given path. Use `accountResourcePath()` a
 
 ## Object: provenTransaction
 
+### .getLedgerInfo()
 ### .getVersion()
 ### .getMajorStatus()
 ### .getGasUsed()
@@ -217,6 +238,7 @@ Returns `provenAccountResource` on the given path. Use `accountResourcePath()` a
 
 ## Object: provenEvent
 
+### .getLedgerInfo()
 ### .getTransactionVersion()
 ### .getEventIndex()
 ### .getEvent()

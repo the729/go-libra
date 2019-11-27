@@ -19,12 +19,14 @@ type jsProvenAccountState struct {
 	getVersion     interface{} `js:"getVersion"`
 	getAccountBlob interface{} `js:"getAccountBlob"`
 	isNil          interface{} `js:"isNil"`
+	getLedgerInfo  interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenAccountBlob struct {
 	*js.Object
-	getAddress  interface{} `js:"getAddress"`
-	getResource interface{} `js:"getResource"`
+	getAddress    interface{} `js:"getAddress"`
+	getResource   interface{} `js:"getResource"`
+	getLedgerInfo interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenAccountResource struct {
@@ -35,6 +37,7 @@ type jsProvenAccountResource struct {
 	getSentEvents                    interface{} `js:"getSentEvents"`
 	getReceivedEvents                interface{} `js:"getReceivedEvents"`
 	getDelegatedWithdrawalCapability interface{} `js:"getDelegatedWithdrawalCapability"`
+	getLedgerInfo                    interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenTransaction struct {
@@ -45,6 +48,7 @@ type jsProvenTransaction struct {
 	getWithEvents  interface{} `js:"getWithEvents"`
 	getSignedTxn   interface{} `js:"getSignedTxn"`
 	getEvents      interface{} `js:"getEvents"`
+	getLedgerInfo  interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenTransactionList struct {
@@ -58,6 +62,7 @@ type jsProvenEvent struct {
 	getTransactionVersion interface{} `js:"getTransactionVersion"`
 	getEventIndex         interface{} `js:"getEventIndex"`
 	getEvent              interface{} `js:"getEvent"`
+	getLedgerInfo         interface{} `js:"getLedgerInfo"`
 }
 
 func wrapProvenLedgerInfo(g *types.ProvenLedgerInfo) *js.Object {
@@ -82,6 +87,9 @@ func wrapProvenAccountState(g *types.ProvenAccountState) *js.Object {
 		return wrapProvenAccountBlob(g.GetAccountBlob())
 	}
 	j.isNil = g.IsNil
+	j.getLedgerInfo = func() *js.Object {
+		return wrapProvenLedgerInfo(g.GetLedgerInfo())
+	}
 	return j.Object
 }
 
@@ -98,6 +106,9 @@ func wrapProvenAccountBlob(g *types.ProvenAccountBlob) *js.Object {
 		}
 		return wrapProvenAccountResource(r), nil
 	})
+	j.getLedgerInfo = func() *js.Object {
+		return wrapProvenLedgerInfo(g.GetLedgerInfo())
+	}
 	return j.Object
 }
 
@@ -112,6 +123,9 @@ func wrapProvenAccountResource(g *types.ProvenAccountResource) *js.Object {
 	j.getSentEvents = g.GetSentEvents
 	j.getReceivedEvents = g.GetReceivedEvents
 	j.getDelegatedWithdrawalCapability = g.GetDelegatedWithdrawalCapability
+	j.getLedgerInfo = func() *js.Object {
+		return wrapProvenLedgerInfo(g.GetLedgerInfo())
+	}
 	return j.Object
 }
 
@@ -126,6 +140,9 @@ func wrapProvenTransaction(g *types.ProvenTransaction) *js.Object {
 	j.getWithEvents = g.GetWithEvents
 	j.getEvents = g.GetEvents
 	j.getSignedTxn = g.GetSignedTxn
+	j.getLedgerInfo = func() *js.Object {
+		return wrapProvenLedgerInfo(g.GetLedgerInfo())
+	}
 	return j.Object
 }
 
@@ -155,5 +172,8 @@ func wrapProvenEvent(g *types.ProvenEvent) *js.Object {
 	j.getTransactionVersion = g.GetTransactionVersion
 	j.getEventIndex = g.GetEventIndex
 	j.getEvent = g.GetEvent
+	j.getLedgerInfo = func() *js.Object {
+		return wrapProvenLedgerInfo(g.GetLedgerInfo())
+	}
 	return j.Object
 }
