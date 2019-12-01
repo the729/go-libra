@@ -8,21 +8,30 @@ import (
 	"github.com/the729/go-libra/generated/pbtypes"
 )
 
+// LeafNode of a sparse Merkle tree.
 type LeafNode struct {
 	Key       sha3libra.HashValue
 	ValueHash sha3libra.HashValue
 }
 
+// SparseMerkle is a proof that an element exists in a sparse Merkle tree,
+// or an element key does not exist in the tree.
 type SparseMerkle struct {
-	leaf     *LeafNode
-	siblings []sha3libra.HashValue
+	// If Leaf == nil, this struct can only prove non-existance.
+	// Otherwise, this struct can prove existance of the Leaf, or non-existance
+	// of other elements.
+	Leaf *LeafNode
+
+	// Sibling hashes from root to leaf.
+	Siblings []sha3libra.HashValue
 }
 
-type InternalNode struct {
-	Left  sha3libra.HashValue
-	Right sha3libra.HashValue
-}
+// type InternalNode struct {
+// 	Left  sha3libra.HashValue
+// 	Right sha3libra.HashValue
+// }
 
+// Hash of the struct.
 func (n *LeafNode) Hash() sha3libra.HashValue {
 	if n == nil {
 		return sha3libra.SparseMerklePlaceholderHash
@@ -33,57 +42,52 @@ func (n *LeafNode) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
-func (n *InternalNode) Hash() sha3libra.HashValue {
-	if n == nil {
-		return sha3libra.SparseMerklePlaceholderHash
-	}
-	hasher := sha3libra.NewSparseMerkleLeaf()
-	hasher.Write(n.Left)
-	hasher.Write(n.Right)
-	return hasher.Sum([]byte{})
-}
+// func (n *InternalNode) Hash() sha3libra.HashValue {
+// 	if n == nil {
+// 		return sha3libra.SparseMerklePlaceholderHash
+// 	}
+// 	hasher := sha3libra.NewSparseMerkleLeaf()
+// 	hasher.Write(n.Left)
+// 	hasher.Write(n.Right)
+// 	return hasher.Sum([]byte{})
+// }
 
+// FromProto parses a protobuf struct into this struct.
 func (m *SparseMerkle) FromProto(pb *pbtypes.SparseMerkleProof) error {
-	m.leaf = nil
+	m.Leaf = nil
 	if pb.Leaf != nil {
 		if len(pb.Leaf) != 2*sha3libra.HashSize {
 			return errors.New("leaf wrong length")
 		}
-		m.leaf = &LeafNode{
+		m.Leaf = &LeafNode{
 			Key:       pb.Leaf[0:sha3libra.HashSize],
 			ValueHash: pb.Leaf[sha3libra.HashSize:],
 		}
 	}
 
-	siblings := make([]sha3libra.HashValue, 0, len(pb.Siblings))
-	for _, sibling := range pb.Siblings {
-		if len(sibling) == 0 {
-			siblings = append(siblings, sha3libra.SparseMerklePlaceholderHash)
-		} else {
-			siblings = append(siblings, sibling)
-		}
-	}
-	m.siblings = siblings
+	m.Siblings = siblingsWithPlaceholder(pb.Siblings, sha3libra.SparseMerklePlaceholderHash)
 	return nil
 }
 
+// VerifyInclusion verifies that an element represented as LeafNode exists in the sparse Merkle tree.
 func (m *SparseMerkle) VerifyInclusion(elem *LeafNode, expectedRootHash sha3libra.HashValue) error {
-	if m.leaf == nil {
+	if m.Leaf == nil {
 		return errors.New("leaf is empty, cannot prove inclusion")
 	}
-	if !sha3libra.Equal(elem.Key, m.leaf.Key) || !sha3libra.Equal(elem.ValueHash, m.leaf.ValueHash) {
+	if !sha3libra.Equal(elem.Key, m.Leaf.Key) || !sha3libra.Equal(elem.ValueHash, m.Leaf.ValueHash) {
 		return errors.New("mismatch element and leaf")
 	}
 	return m.verify(elem.Key, expectedRootHash)
 }
 
+// VerifyNonInclusion verifies that a given element key does not exist in the sparse Merkle tree.
 func (m *SparseMerkle) VerifyNonInclusion(elemKey, expectedRootHash sha3libra.HashValue) error {
-	if m.leaf != nil {
-		if sha3libra.Equal(elemKey, m.leaf.Key) {
+	if m.Leaf != nil {
+		if sha3libra.Equal(elemKey, m.Leaf.Key) {
 			return errors.New("key exists in proof")
 		}
 		commonBits := 0
-		for i, j := bitmap.NewFromByteSlice(elemKey).Bits(), bitmap.NewFromByteSlice(m.leaf.Key).Bits(); i.Next() && j.Next(); {
+		for i, j := bitmap.NewFromByteSlice(elemKey).Bits(), bitmap.NewFromByteSlice(m.Leaf.Key).Bits(); i.Next() && j.Next(); {
 			_, b1 := i.Bit()
 			_, b2 := j.Bit()
 			if b1 != b2 {
@@ -91,7 +95,7 @@ func (m *SparseMerkle) VerifyNonInclusion(elemKey, expectedRootHash sha3libra.Ha
 			}
 			commonBits++
 		}
-		if commonBits < len(m.siblings) {
+		if commonBits < len(m.Siblings) {
 			return errors.New("key would not have ended up in the subtree where the provided key in proof is the only existing key, if it existed")
 		}
 	}
@@ -103,17 +107,17 @@ func (m *SparseMerkle) verify(elemKey, expectedRootHash sha3libra.HashValue) err
 	if bm.Cap() != sha3libra.HashSize*8 {
 		return errors.New("wrong element key size")
 	}
-	if bm.Cap() < len(m.siblings) {
+	if bm.Cap() < len(m.Siblings) {
 		return errors.New("merkle tree proof has too many siblings")
 	}
 
-	siblings := m.siblings
+	siblings := m.Siblings
 	// log.Printf("target hash: %s", hex.EncodeToString(expectedRootHash))
-	hash := m.leaf.Hash()
+	hash := m.Leaf.Hash()
 	// log.Printf("initial hash: %s", hex.EncodeToString(hash))
 	for i := bm.BitsRev(); i.Next(); {
 		idx, b := i.Bit()
-		if idx < bm.Cap()-len(m.siblings) {
+		if idx < bm.Cap()-len(m.Siblings) {
 			// skip bits after len(siblings)
 			continue
 		}
