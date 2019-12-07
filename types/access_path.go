@@ -13,7 +13,7 @@ import (
 
 // AccessPath is access path to an event.
 type AccessPath struct {
-	Address AccountAddress
+	Address AccountAddress `lcs:"len=32"`
 	Path    []byte
 }
 
