@@ -1,9 +1,11 @@
-// +build js
+// +build !js
 
 package client
 
 import (
 	"fmt"
+
+	"google.golang.org/grpc"
 
 	"github.com/the729/go-libra/config"
 	"github.com/the729/go-libra/generated/pbac"
@@ -11,12 +13,18 @@ import (
 )
 
 func (c *Client) connect(server string) error {
-	c.ac = pbac.NewAdmissionControlClient(server)
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(server, grpc.WithInsecure())
+	if err != nil {
+		return fmt.Errorf("grpc dial error: %v", err)
+	}
+	c.closeFunc = func() { conn.Close() }
+	c.ac = pbac.NewAdmissionControlClient(conn)
 	return nil
 }
 
-func (c *Client) loadTrustedPeers(tomlData string) error {
-	peerconf, err := config.LoadTrustedPeers(tomlData)
+func (c *Client) loadTrustedPeers(file string) error {
+	peerconf, err := config.LoadTrustedPeersFromFile(file)
 	if err != nil {
 		return fmt.Errorf("load conf err: %v", err)
 	}
