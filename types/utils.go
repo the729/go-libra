@@ -1,5 +1,10 @@
 package types
 
+import "github.com/the729/go-libra/crypto/sha3libra"
+
+// HashValue is equivalent to sha3libra.HashValue, which is []byte
+type HashValue = sha3libra.HashValue
+
 func cloneBytes(b []byte) []byte {
 	if b == nil {
 		return nil

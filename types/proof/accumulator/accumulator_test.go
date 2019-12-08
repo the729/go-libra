@@ -10,8 +10,6 @@ import (
 	"github.com/the729/go-libra/crypto/sha3libra"
 )
 
-type HashValue = sha3libra.HashValue
-
 func getTestHash(idx int) HashValue {
 	v := make([]byte, sha3libra.HashSize)
 	binary.LittleEndian.PutUint64(v, uint64(idx))

@@ -15,7 +15,7 @@ const (
 type AccountAddress []byte
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (a AccountAddress) Hash() sha3libra.HashValue {
+func (a AccountAddress) Hash() HashValue {
 	hasher := sha3libra.NewAccountAddress()
 	hasher.Write(a)
 	return hasher.Sum([]byte{})

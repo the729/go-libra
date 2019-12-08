@@ -47,7 +47,7 @@ type ProvenTransaction struct {
 	proven      bool
 	withEvents  bool
 	signedTxn   *SignedTransaction
-	txnHash     sha3libra.HashValue
+	txnHash     HashValue
 	events      EventList
 	version     uint64
 	gasUsed     uint64
@@ -65,7 +65,7 @@ func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
 }
 
 // // Hash ouptuts the hash of this struct, using the appropriate hash function.
-// func (t *SignedTransaction) Hash() sha3libra.HashValue {
+// func (t *SignedTransaction) Hash() HashValue {
 // 	hasher := sha3libra.NewSignedTransaction()
 // 	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
 // 		panic(err)
@@ -185,7 +185,7 @@ func (pt *ProvenTransaction) GetSignedTxn() *SignedTransaction {
 }
 
 // GetHash returns a copy of the transaction info hash
-func (pt *ProvenTransaction) GetHash() sha3libra.HashValue {
+func (pt *ProvenTransaction) GetHash() HashValue {
 	if !pt.proven {
 		panic("not valid proven transaction")
 	}

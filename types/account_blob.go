@@ -25,7 +25,7 @@ type ProvenAccountBlob struct {
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (b RawAccountBlob) Hash() sha3libra.HashValue {
+func (b RawAccountBlob) Hash() HashValue {
 	if b == nil {
 		return nil
 	}
@@ -35,7 +35,7 @@ func (b RawAccountBlob) Hash() sha3libra.HashValue {
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (b *AccountBlob) Hash() sha3libra.HashValue {
+func (b *AccountBlob) Hash() HashValue {
 	if b == nil {
 		return nil
 	}

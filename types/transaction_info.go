@@ -36,7 +36,7 @@ func (t *TransactionInfo) FromProto(pb *pbtypes.TransactionInfo) error {
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (t *TransactionInfo) Hash() sha3libra.HashValue {
+func (t *TransactionInfo) Hash() HashValue {
 	hasher := sha3libra.NewTransactionInfo()
 	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
 		panic(err)

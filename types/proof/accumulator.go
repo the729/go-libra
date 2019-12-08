@@ -9,10 +9,13 @@ import (
 	"github.com/the729/go-libra/generated/pbtypes"
 )
 
+// HashValue is equivalent to sha3libra.HashValue, which is []byte
+type HashValue = sha3libra.HashValue
+
 // Accumulator is a proof of a single element's existance in a Merkle tree accumulator.
 type Accumulator struct {
 	Hasher   hash.Hash
-	Siblings []sha3libra.HashValue
+	Siblings []HashValue
 }
 
 // FromProto parses a protobuf struct into this struct, and fills all placeholder
@@ -23,8 +26,8 @@ func (a *Accumulator) FromProto(pb *pbtypes.AccumulatorProof) error {
 }
 
 // siblingsWithPlaceholder fills in placeholders and forms a dense list of hash siblings
-func siblingsWithPlaceholder(pbSiblings [][]byte, placeholder []byte) []sha3libra.HashValue {
-	siblings := make([]sha3libra.HashValue, 0, len(pbSiblings))
+func siblingsWithPlaceholder(pbSiblings [][]byte, placeholder []byte) []HashValue {
+	siblings := make([]HashValue, 0, len(pbSiblings))
 	for _, sibling := range pbSiblings {
 		if len(sibling) == 0 {
 			siblings = append(siblings, placeholder)
@@ -41,7 +44,7 @@ func siblingsWithPlaceholder(pbSiblings [][]byte, placeholder []byte) []sha3libr
 //  - elemIndex: index of the element.
 //  - elemHash: hash of the element.
 //  - expectedRootHash: expected root hash of the Merkle tree accumulator.
-func (a *Accumulator) Verify(elemIndex uint64, elemHash, expectedRootHash sha3libra.HashValue) error {
+func (a *Accumulator) Verify(elemIndex uint64, elemHash, expectedRootHash HashValue) error {
 	if a.Hasher == nil {
 		return errors.New("nil hasher")
 	}

@@ -15,19 +15,22 @@ const (
 	MaxAccumulatorLeaves uint64 = 1 << MaxAccumulatorProofDepth
 )
 
+// HashValue is equivalent to sha3libra.HashValue, which is []byte
+type HashValue = sha3libra.HashValue
+
 // Accumulator is the state of a Merkle tree accumulator.
 type Accumulator struct {
 	Hasher hash.Hash
 
 	// FrozenSubtreeRoots are hashes of all full subtrees, from left to right.
-	FrozenSubtreeRoots []sha3libra.HashValue
+	FrozenSubtreeRoots []HashValue
 
 	// Total number of leaves
 	NumLeaves uint64
 }
 
 // RootHash computes root hash of current accumulator
-func (a *Accumulator) RootHash() (sha3libra.HashValue, error) {
+func (a *Accumulator) RootHash() (HashValue, error) {
 	if len(a.FrozenSubtreeRoots) == 0 {
 		return sha3libra.AccumulatorPlaceholderHash, nil
 	}
@@ -62,7 +65,7 @@ func (a *Accumulator) RootHash() (sha3libra.HashValue, error) {
 }
 
 // AppendOne appends a leaf to the accumulator
-func (a *Accumulator) AppendOne(leafHash sha3libra.HashValue) error {
+func (a *Accumulator) AppendOne(leafHash HashValue) error {
 	a.FrozenSubtreeRoots = append(a.FrozenSubtreeRoots, leafHash)
 
 	numTrailingOnes := bits.TrailingZeros64(^a.NumLeaves)
@@ -84,7 +87,7 @@ func (a *Accumulator) AppendOne(leafHash sha3libra.HashValue) error {
 
 // AppendSubtrees appends a list of new leaves to the existing accumulator. The new leaves
 // are represented as subtrees.
-func (a *Accumulator) AppendSubtrees(subtrees []sha3libra.HashValue, numNewLeaves uint64) error {
+func (a *Accumulator) AppendSubtrees(subtrees []HashValue, numNewLeaves uint64) error {
 	if numNewLeaves > MaxAccumulatorLeaves-a.NumLeaves {
 		return errors.New("too many new leaves")
 	}

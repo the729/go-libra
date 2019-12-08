@@ -27,7 +27,7 @@ type LedgerInfo struct {
 // validators.
 type LedgerInfoWithSignatures struct {
 	*LedgerInfo
-	Sigs map[string]sha3libra.HashValue
+	Sigs map[string]HashValue
 }
 
 // ProvenLedgerInfo is a ledger info proven to be history state of the ledger.
@@ -54,7 +54,7 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (l *LedgerInfo) Hash() sha3libra.HashValue {
+func (l *LedgerInfo) Hash() HashValue {
 	hasher := sha3libra.NewLedgerInfo()
 	if err := lcs.NewEncoder(hasher).Encode(l); err != nil {
 		panic(err)
@@ -67,7 +67,7 @@ func (l *LedgerInfoWithSignatures) FromProto(pb *pbtypes.LedgerInfoWithSignature
 	l.LedgerInfo = &LedgerInfo{}
 	l.LedgerInfo.FromProto(pb.LedgerInfo)
 
-	sigs := make(map[string]sha3libra.HashValue)
+	sigs := make(map[string]HashValue)
 	for _, s := range pb.Signatures {
 		sigs[hex.EncodeToString(s.ValidatorId)] = s.Signature
 	}
@@ -127,7 +127,7 @@ func (pl *ProvenLedgerInfo) GetTimestampUsec() uint64 {
 
 // VerifyConsistency verifies a new version of ledger is consistent with a known version.
 // If successful, it outputs the new accumulator states (i.e. numLeaves and subtrees).
-func (pl *ProvenLedgerInfo) VerifyConsistency(numLeaves uint64, oldSubtrees, newSubtrees [][]byte) (uint64, [][]byte, error) {
+func (pl *ProvenLedgerInfo) VerifyConsistency(numLeaves uint64, oldSubtrees, newSubtrees []HashValue) (uint64, []HashValue, error) {
 	acc1 := accumulator.Accumulator{
 		Hasher:             sha3libra.NewTransactionAccumulator(),
 		FrozenSubtreeRoots: cloneSubtrees(oldSubtrees),

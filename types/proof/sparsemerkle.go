@@ -10,8 +10,8 @@ import (
 
 // LeafNode of a sparse Merkle tree.
 type LeafNode struct {
-	Key       sha3libra.HashValue
-	ValueHash sha3libra.HashValue
+	Key       HashValue
+	ValueHash HashValue
 }
 
 // SparseMerkle is a proof that an element exists in a sparse Merkle tree,
@@ -23,16 +23,16 @@ type SparseMerkle struct {
 	Leaf *LeafNode
 
 	// Sibling hashes from root to leaf.
-	Siblings []sha3libra.HashValue
+	Siblings []HashValue
 }
 
 // type InternalNode struct {
-// 	Left  sha3libra.HashValue
-// 	Right sha3libra.HashValue
+// 	Left  HashValue
+// 	Right HashValue
 // }
 
 // Hash of the struct.
-func (n *LeafNode) Hash() sha3libra.HashValue {
+func (n *LeafNode) Hash() HashValue {
 	if n == nil {
 		return sha3libra.SparseMerklePlaceholderHash
 	}
@@ -42,7 +42,7 @@ func (n *LeafNode) Hash() sha3libra.HashValue {
 	return hasher.Sum([]byte{})
 }
 
-// func (n *InternalNode) Hash() sha3libra.HashValue {
+// func (n *InternalNode) Hash() HashValue {
 // 	if n == nil {
 // 		return sha3libra.SparseMerklePlaceholderHash
 // 	}
@@ -70,7 +70,7 @@ func (m *SparseMerkle) FromProto(pb *pbtypes.SparseMerkleProof) error {
 }
 
 // VerifyInclusion verifies that an element represented as LeafNode exists in the sparse Merkle tree.
-func (m *SparseMerkle) VerifyInclusion(elem *LeafNode, expectedRootHash sha3libra.HashValue) error {
+func (m *SparseMerkle) VerifyInclusion(elem *LeafNode, expectedRootHash HashValue) error {
 	if m.Leaf == nil {
 		return errors.New("leaf is empty, cannot prove inclusion")
 	}
@@ -81,7 +81,7 @@ func (m *SparseMerkle) VerifyInclusion(elem *LeafNode, expectedRootHash sha3libr
 }
 
 // VerifyNonInclusion verifies that a given element key does not exist in the sparse Merkle tree.
-func (m *SparseMerkle) VerifyNonInclusion(elemKey, expectedRootHash sha3libra.HashValue) error {
+func (m *SparseMerkle) VerifyNonInclusion(elemKey, expectedRootHash HashValue) error {
 	if m.Leaf != nil {
 		if sha3libra.Equal(elemKey, m.Leaf.Key) {
 			return errors.New("key exists in proof")
@@ -102,7 +102,7 @@ func (m *SparseMerkle) VerifyNonInclusion(elemKey, expectedRootHash sha3libra.Ha
 	return m.verify(elemKey, expectedRootHash)
 }
 
-func (m *SparseMerkle) verify(elemKey, expectedRootHash sha3libra.HashValue) error {
+func (m *SparseMerkle) verify(elemKey, expectedRootHash HashValue) error {
 	bm := bitmap.NewFromByteSlice(elemKey)
 	if bm.Cap() != sha3libra.HashSize*8 {
 		return errors.New("wrong element key size")

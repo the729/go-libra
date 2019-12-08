@@ -12,8 +12,8 @@ import (
 // AccumulatorRange is a proof that a consecutive list of elements exist in a
 // Merkle tree accumulator.
 type AccumulatorRange struct {
-	LeftSiblings  []sha3libra.HashValue // hash siblings of the first element
-	RightSiblings []sha3libra.HashValue // hash siblings of the last element
+	LeftSiblings  []HashValue // hash siblings of the first element
+	RightSiblings []HashValue // hash siblings of the last element
 }
 
 // FromProto parses a protobuf struct into this struct, and fills all placeholder
@@ -31,7 +31,7 @@ func (r *AccumulatorRange) FromProto(pb *pbtypes.AccumulatorRangeProof) error {
 //  - hashes: hashes of the consecutive list of elements. len(hashes) determines
 //    the number of elements.
 //  - expectedRootHash: expected root hash of the Merkle tree accumulator.
-func (r *AccumulatorRange) Verify(firstIndex uint64, hashes []sha3libra.HashValue, expectedRootHash sha3libra.HashValue) error {
+func (r *AccumulatorRange) Verify(firstIndex uint64, hashes []HashValue, expectedRootHash HashValue) error {
 	if len(hashes) == 0 {
 		if len(r.LeftSiblings) == 0 && len(r.RightSiblings) == 0 {
 			return nil

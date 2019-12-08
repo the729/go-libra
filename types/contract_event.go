@@ -84,7 +84,7 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (e *ContractEvent) Hash() sha3libra.HashValue {
+func (e *ContractEvent) Hash() HashValue {
 	hasher := sha3libra.NewContractEvent()
 	if err := lcs.NewEncoder(hasher).Encode(e); err != nil {
 		panic(err)
@@ -102,7 +102,7 @@ func (e *ContractEvent) Clone() *ContractEvent {
 }
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
-func (el EventList) Hash() sha3libra.HashValue {
+func (el EventList) Hash() HashValue {
 	nodeHasher := sha3libra.NewEventAccumulator()
 	acc := accumulator.Accumulator{Hasher: nodeHasher}
 	for _, e := range el {

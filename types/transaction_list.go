@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof"
 )
@@ -107,7 +106,7 @@ func (tl *TransactionListWithProof) Verify(ledgerInfo *ProvenLedgerInfo) (*Prove
 		return nil, errors.New("nil proof")
 	}
 
-	hashes := make([]sha3libra.HashValue, 0)
+	hashes := make([]HashValue, 0)
 	provenTxns := make([]*ProvenTransaction, 0, len(tl.Transactions))
 	// 1. verify signed transactions, and events
 	for _, t := range tl.Transactions {

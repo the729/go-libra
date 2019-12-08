@@ -12,7 +12,7 @@ const (
 
 // AccessPathTag is an interface that can be used to construct the root of an access path
 type AccessPathTag interface {
-	Hash() sha3libra.HashValue
+	Hash() HashValue
 	TypePrefix() byte
 }
 
@@ -89,7 +89,7 @@ type StructTag struct {
 }
 
 // Hash outputs the hash of this struct, using the appropriate hash function.
-func (t *StructTag) Hash() sha3libra.HashValue {
+func (t *StructTag) Hash() HashValue {
 	hasher := sha3libra.NewAccessPath()
 	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
 		panic(err)
@@ -102,12 +102,12 @@ func (t *StructTag) TypePrefix() byte { return ResourceTag }
 
 // RawTag is a tag with raw hash values. It implements AccessPathTag interface.
 type RawTag struct {
-	HashVal sha3libra.HashValue
+	HashVal HashValue
 	TypeVal byte
 }
 
 // Hash returns HashVal
-func (t *RawTag) Hash() sha3libra.HashValue { return t.HashVal }
+func (t *RawTag) Hash() HashValue { return t.HashVal }
 
 // TypePrefix returns TypeVal
 func (t *RawTag) TypePrefix() byte { return t.TypeVal }
