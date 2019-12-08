@@ -15,6 +15,7 @@ Compatible with testnet 2019/10/30 (commit hash [51dd2b4261](https://github.com/
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
+  - Ledger consistency verification: detects reset or hard-forks
   - Transaction info and event: Merkle tree accumulator proof
   - Transaction list: Merkle tree accumulator proof on a range of transactions
   - Transaction signature: ed25519 signature

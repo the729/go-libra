@@ -9,6 +9,17 @@ Features include:
   - Sign and submit raw transactions
 
 All queries are cryptographically verified to proof their inclusion and integrity in the blockchain.
+
+The client can also keep track of the consistency of the ledger. This function will detect hard forks or
+block chain reset.
+
+When a client is newly constructed, it knows only the genesis block (version 0) of the ledger. The hash of
+the genesis block is hardcoded. After each query to the ledger, the client updates its knowledge about the latest
+version and the Merkle tree accumulator.
+
+You should extract the known-version state of a client instance before destroying it, by calling GetKnownVersion(),
+and saving the result somewhere. Later, when a new client instance is constructed, you should use SetKnownVersion()
+to restore the known-version state.
 */
 package client
 
