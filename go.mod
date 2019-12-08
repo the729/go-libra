@@ -7,9 +7,15 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.3.2
+	github.com/gopherjs/gopherjs v0.0.0-20191106031601-ce3c9ade29de
+	github.com/johanbrandhorst/protobuf v0.7.1
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/miratronix/jopher v0.0.0-20190201205607-eb39a429828a
+	github.com/onsi/ginkgo v1.10.3 // indirect
+	github.com/onsi/gomega v1.7.1 // indirect
+	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.4.0
-	github.com/the729/lcs v0.1.1
+	github.com/the729/lcs v0.1.2
 	github.com/urfave/cli v1.22.1
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
 	golang.org/x/net v0.0.0-20190923162816-aa69164e4478 // indirect
