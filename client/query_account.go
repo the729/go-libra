@@ -12,8 +12,13 @@ import (
 // QueryAccountState queries account state from RPC server by account address, and does necessary
 // crypto verifications.
 func (c *Client) QueryAccountState(ctx context.Context, addr types.AccountAddress) (*types.ProvenAccountState, error) {
+	c.accMu.RLock()
+	frozenSubtreeRoots := cloneSubtrees(c.acc.FrozenSubtreeRoots)
+	numLeaves := c.acc.NumLeaves
+	c.accMu.RUnlock()
+
 	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
-		ClientKnownVersion: 0,
+		ClientKnownVersion: numLeaves - 1,
 		RequestedItems: []*pbtypes.RequestItem{
 			&pbtypes.RequestItem{
 				RequestedItems: &pbtypes.RequestItem_GetAccountStateRequest{
@@ -30,11 +35,9 @@ func (c *Client) QueryAccountState(ctx context.Context, addr types.AccountAddres
 	// respj, _ := json.MarshalIndent(resp, "", "    ")
 	// log.Println(string(respj))
 
-	li := &types.LedgerInfoWithSignatures{}
-	li.FromProto(resp.LedgerInfoWithSigs)
-	pli, err := li.Verify(c.verifier)
+	pli, err := c.verifyLedgerInfoAndConsistency(resp, numLeaves, frozenSubtreeRoots)
 	if err != nil {
-		return nil, fmt.Errorf("ledger info verification failed: %v", err)
+		return nil, err
 	}
 
 	account := &types.AccountStateWithProof{}

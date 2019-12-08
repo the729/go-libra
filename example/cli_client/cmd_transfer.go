@@ -18,6 +18,8 @@ func cmdTransfer(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 	defer c.Close()
+	loadKnownVersion(c, KnownVersionFile)
+	defer saveKnownVersion(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {

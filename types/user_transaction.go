@@ -47,6 +47,7 @@ type ProvenTransaction struct {
 	proven      bool
 	withEvents  bool
 	signedTxn   *SignedTransaction
+	txnHash     sha3libra.HashValue
 	events      EventList
 	version     uint64
 	gasUsed     uint64
@@ -155,6 +156,7 @@ func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
 		proven:      false,
 		withEvents:  withEvents,
 		signedTxn:   signedUserTxn,
+		txnHash:     st.Info.Hash(),
 		events:      st.Events.Clone(),
 		version:     st.Version,
 		gasUsed:     st.Info.GasUsed,
@@ -180,6 +182,14 @@ func (pt *ProvenTransaction) GetSignedTxn() *SignedTransaction {
 		return nil
 	}
 	return pt.signedTxn.Clone()
+}
+
+// GetHash returns a copy of the transaction info hash
+func (pt *ProvenTransaction) GetHash() sha3libra.HashValue {
+	if !pt.proven {
+		panic("not valid proven transaction")
+	}
+	return cloneBytes(pt.txnHash)
 }
 
 // GetWithEvents returns whether this proven transaction has output events included.

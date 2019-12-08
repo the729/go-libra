@@ -11,7 +11,13 @@ import (
 
 // QueryEventsByAccessPath queries list of events by access path does necessary crypto verifications.
 func (c *Client) QueryEventsByAccessPath(ctx context.Context, ap *types.AccessPath, start uint64, ascending bool, limit uint64) ([]*types.ProvenEvent, error) {
+	c.accMu.RLock()
+	frozenSubtreeRoots := cloneSubtrees(c.acc.FrozenSubtreeRoots)
+	numLeaves := c.acc.NumLeaves
+	c.accMu.RUnlock()
+
 	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
+		ClientKnownVersion: numLeaves - 1,
 		RequestedItems: []*pbtypes.RequestItem{
 			{
 				RequestedItems: &pbtypes.RequestItem_GetEventsByEventAccessPathRequest{
@@ -32,13 +38,10 @@ func (c *Client) QueryEventsByAccessPath(ctx context.Context, ap *types.AccessPa
 		return nil, err
 	}
 
-	li := &types.LedgerInfoWithSignatures{}
-	li.FromProto(resp.LedgerInfoWithSigs)
-	pli, err := li.Verify(c.verifier)
+	pli, err := c.verifyLedgerInfoAndConsistency(resp, numLeaves, frozenSubtreeRoots)
 	if err != nil {
-		return nil, fmt.Errorf("ledger info verification failed: %v", err)
+		return nil, err
 	}
-	// log.Printf("Ledger info: version %d, time %d", li.LedgerInfo.Version, li.LedgerInfo.TimestampUsec)
 
 	resp1 := resp.ResponseItems[0].GetGetEventsByEventAccessPathResponse()
 	if resp1 == nil {

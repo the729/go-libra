@@ -2,9 +2,12 @@ package types
 
 import (
 	"encoding/hex"
+	"errors"
+	"fmt"
 
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
+	"github.com/the729/go-libra/types/proof/accumulator"
 	"github.com/the729/go-libra/types/validator"
 	"github.com/the729/lcs"
 )
@@ -30,6 +33,7 @@ type LedgerInfoWithSignatures struct {
 // ProvenLedgerInfo is a ledger info proven to be history state of the ledger.
 type ProvenLedgerInfo struct {
 	proven     bool
+	acc        accumulator.Accumulator
 	ledgerInfo LedgerInfo
 }
 
@@ -119,4 +123,26 @@ func (pl *ProvenLedgerInfo) GetTimestampUsec() uint64 {
 		panic("not valid proven ledger info")
 	}
 	return pl.ledgerInfo.TimestampUsec
+}
+
+// VerifyConsistency verifies a new version of ledger is consistent with a known version.
+// If successful, it outputs the new accumulator states (i.e. numLeaves and subtrees).
+func (pl *ProvenLedgerInfo) VerifyConsistency(numLeaves uint64, oldSubtrees, newSubtrees [][]byte) (uint64, [][]byte, error) {
+	acc1 := accumulator.Accumulator{
+		Hasher:             sha3libra.NewTransactionAccumulator(),
+		FrozenSubtreeRoots: cloneSubtrees(oldSubtrees),
+		NumLeaves:          numLeaves,
+	}
+	err := acc1.AppendSubtrees(newSubtrees, pl.ledgerInfo.Version+1-numLeaves)
+	if err != nil {
+		return 0, nil, fmt.Errorf("append subtree error: %s", err)
+	}
+	hash, err := acc1.RootHash()
+	if err != nil {
+		return 0, nil, fmt.Errorf("new accumulator invalid: %s", err)
+	}
+	if !sha3libra.Equal(hash, pl.ledgerInfo.TransactionAccumulatorHash) {
+		return 0, nil, errors.New("hash mismatch, ledger not consistent")
+	}
+	return acc1.NumLeaves, acc1.FrozenSubtreeRoots, nil
 }

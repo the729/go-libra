@@ -22,12 +22,10 @@ func cmdQueryLedgerInfo(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 	defer c.Close()
+	loadKnownVersion(c, KnownVersionFile)
+	defer saveKnownVersion(c, KnownVersionFile)
 
-	knownVersion, err := strconv.ParseUint(ctx.Args().Get(0), 10, 64)
-	if err != nil {
-		return err
-	}
-	ledgerInfo, err := c.QueryLedgerInfo(context.Background(), knownVersion)
+	ledgerInfo, err := c.QueryLedgerInfo(context.Background())
 	if err != nil {
 		return err
 	}
@@ -42,6 +40,8 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 	defer c.Close()
+	loadKnownVersion(c, KnownVersionFile)
+	defer saveKnownVersion(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {
@@ -88,6 +88,8 @@ func cmdQueryTransactionRange(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 	defer c.Close()
+	loadKnownVersion(c, KnownVersionFile)
+	defer saveKnownVersion(c, KnownVersionFile)
 
 	start, err := strconv.Atoi(ctx.Args().Get(0))
 	if err != nil {
@@ -118,6 +120,8 @@ func cmdQueryTransactionByAccountSeq(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 	defer c.Close()
+	loadKnownVersion(c, KnownVersionFile)
+	defer saveKnownVersion(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {
@@ -149,6 +153,8 @@ func cmdQueryEvents(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 	defer c.Close()
+	loadKnownVersion(c, KnownVersionFile)
+	defer saveKnownVersion(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {

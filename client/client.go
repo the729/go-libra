@@ -15,12 +15,16 @@ All queries are cryptographically verified to proof their inclusion and integrit
 package client
 
 import (
+	"encoding/hex"
 	"fmt"
+	"sync"
 
 	"google.golang.org/grpc"
 
 	"github.com/the729/go-libra/config"
+	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbac"
+	"github.com/the729/go-libra/types/proof/accumulator"
 	"github.com/the729/go-libra/types/validator"
 )
 
@@ -30,6 +34,8 @@ type Client struct {
 	conn     *grpc.ClientConn
 	ac       pbac.AdmissionControlClient
 	verifier validator.Verifier
+	acc      *accumulator.Accumulator
+	accMu    sync.RWMutex
 }
 
 // New creates a new Libra Client.
@@ -41,6 +47,14 @@ func New(ServerAddr, TrustedPeerFile string) (*Client, error) {
 	if err := c.connect(ServerAddr); err != nil {
 		return nil, err
 	}
+
+	genesisHash, _ := hex.DecodeString("b1f2c172f22b8a9e7fd89a64f75b3b10d64431ccbb1f89a00aff5725e4284fb1")
+	c.acc = &accumulator.Accumulator{
+		Hasher:             sha3libra.NewTransactionAccumulator(),
+		FrozenSubtreeRoots: [][]byte{genesisHash},
+		NumLeaves:          1,
+	}
+
 	return c, nil
 }
 

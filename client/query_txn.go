@@ -12,7 +12,13 @@ import (
 // QueryTransactionRange queries a list of transactions from RPC server, and does necessary
 // crypto verifications.
 func (c *Client) QueryTransactionRange(ctx context.Context, start, limit uint64, withEvents bool) (*types.ProvenTransactionList, error) {
+	c.accMu.RLock()
+	frozenSubtreeRoots := cloneSubtrees(c.acc.FrozenSubtreeRoots)
+	numLeaves := c.acc.NumLeaves
+	c.accMu.RUnlock()
+
 	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
+		ClientKnownVersion: numLeaves - 1,
 		RequestedItems: []*pbtypes.RequestItem{
 			{
 				RequestedItems: &pbtypes.RequestItem_GetTransactionsRequest{
@@ -32,13 +38,10 @@ func (c *Client) QueryTransactionRange(ctx context.Context, start, limit uint64,
 	// b, err := json.MarshalIndent(resp, "", "    ")
 	// log.Printf("resp: %s", string(b))
 
-	li := &types.LedgerInfoWithSignatures{}
-	li.FromProto(resp.LedgerInfoWithSigs)
-	pli, err := li.Verify(c.verifier)
+	pli, err := c.verifyLedgerInfoAndConsistency(resp, numLeaves, frozenSubtreeRoots)
 	if err != nil {
-		return nil, fmt.Errorf("ledger info verification failed: %v", err)
+		return nil, err
 	}
-	// log.Printf("Ledger info: version %d, time %d", li.LedgerInfo.Version, li.LedgerInfo.TimestampUsec)
 
 	txnList := &types.TransactionListWithProof{}
 	err = txnList.FromProtoResponse(resp.ResponseItems[0].GetGetTransactionsResponse())
@@ -59,7 +62,13 @@ func (c *Client) QueryTransactionRange(ctx context.Context, start, limit uint64,
 // QueryTransactionByAccountSeq queries the transaction that is sent from a specific account at a specific sequence number,
 // and does necessary crypto verifications.
 func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.AccountAddress, sequence uint64, withEvents bool) (*types.ProvenTransaction, error) {
+	c.accMu.RLock()
+	frozenSubtreeRoots := cloneSubtrees(c.acc.FrozenSubtreeRoots)
+	numLeaves := c.acc.NumLeaves
+	c.accMu.RUnlock()
+
 	resp, err := c.ac.UpdateToLatestLedger(ctx, &pbtypes.UpdateToLatestLedgerRequest{
+		ClientKnownVersion: numLeaves - 1,
 		RequestedItems: []*pbtypes.RequestItem{
 			{
 				RequestedItems: &pbtypes.RequestItem_GetAccountTransactionBySequenceNumberRequest{
@@ -79,13 +88,10 @@ func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.Ac
 	// b, err := json.MarshalIndent(resp, "", "    ")
 	// log.Printf("resp: %s", string(b))
 
-	li := &types.LedgerInfoWithSignatures{}
-	li.FromProto(resp.LedgerInfoWithSigs)
-	pli, err := li.Verify(c.verifier)
+	pli, err := c.verifyLedgerInfoAndConsistency(resp, numLeaves, frozenSubtreeRoots)
 	if err != nil {
-		return nil, fmt.Errorf("ledger info verification failed: %v", err)
+		return nil, err
 	}
-	// log.Printf("Ledger info: version %d, time %d", li.LedgerInfo.Version, li.LedgerInfo.TimestampUsec)
 
 	resp1 := resp.ResponseItems[0].GetGetAccountTransactionBySequenceNumberResponse()
 	if resp1 == nil {

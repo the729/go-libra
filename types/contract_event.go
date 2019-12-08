@@ -7,6 +7,7 @@ import (
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof"
+	"github.com/the729/go-libra/types/proof/accumulator"
 	"github.com/the729/lcs"
 )
 
@@ -103,11 +104,15 @@ func (e *ContractEvent) Clone() *ContractEvent {
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (el EventList) Hash() sha3libra.HashValue {
 	nodeHasher := sha3libra.NewEventAccumulator()
-	hasher := sha3libra.NewAccumulator(nodeHasher)
+	acc := accumulator.Accumulator{Hasher: nodeHasher}
 	for _, e := range el {
-		hasher.Write(e.Hash())
+		acc.AppendOne(e.Hash())
 	}
-	return hasher.Sum([]byte{})
+	hash, err := acc.RootHash()
+	if err != nil {
+		panic(err)
+	}
+	return hash
 }
 
 // Clone deep clones this struct.

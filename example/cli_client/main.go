@@ -11,9 +11,10 @@ const (
 	defaultServer    = "ac.testnet.libra.org:8000"
 	trustedPeersFile = "../trusted_peers.config.toml"
 	walletFile       = "wallet.toml"
+	knownVersionFile = "known_version.toml"
 )
 
-var ServerAddr, TrustedPeersFile, WalletFile string
+var ServerAddr, TrustedPeersFile, WalletFile, KnownVersionFile string
 
 func main() {
 	app := cli.NewApp()
@@ -36,6 +37,12 @@ func main() {
 			Usage:       "load or store account private keys in `FILE`",
 			Destination: &WalletFile,
 		},
+		cli.StringFlag{
+			Name:        "known_version, k",
+			Value:       knownVersionFile,
+			Usage:       "load or store known version state in `FILE`",
+			Destination: &KnownVersionFile,
+		},
 	}
 	app.Commands = []cli.Command{
 		{
@@ -44,7 +51,7 @@ func main() {
 			Subcommands: []cli.Command{
 				{
 					Name:    "ledger_info",
-					Usage:   "known_version",
+					Usage:   "",
 					Aliases: []string{"l"},
 					Action:  cmdQueryLedgerInfo,
 				},

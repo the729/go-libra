@@ -13,7 +13,7 @@ import (
 func PrintTxn(txn *types.ProvenTransaction) {
 	log.Printf("Txn #%d:", txn.GetVersion())
 	rawTxn := txn.GetSignedTxn().RawTxn
-	log.Printf("    Raw txn:")
+	log.Printf("    Raw txn: hash=%x", txn.GetHash())
 	log.Printf("        Sender account: %v", hex.EncodeToString(rawTxn.Sender))
 	log.Printf("        Sender seq #%v", rawTxn.SequenceNumber)
 	switch pld := rawTxn.Payload.(type) {

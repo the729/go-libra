@@ -16,9 +16,11 @@ package client
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/the729/go-libra/config"
 	"github.com/the729/go-libra/generated/pbac"
+	"github.com/the729/go-libra/types/proof/accumulator"
 	"github.com/the729/go-libra/types/validator"
 )
 
@@ -27,6 +29,8 @@ import (
 type Client struct {
 	ac       pbac.AdmissionControlClient
 	verifier validator.Verifier
+	acc      *accumulator.Accumulator
+	accMu    sync.RWMutex
 }
 
 // New creates a new Libra Client.

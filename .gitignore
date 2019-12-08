@@ -11,8 +11,9 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-wallet.toml*
+wallet.toml
 example/cli_client/cli_client
+known_version.toml
 
 ignore/
 node_modules/
