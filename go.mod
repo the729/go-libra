@@ -15,7 +15,7 @@ require (
 	github.com/onsi/gomega v1.7.1 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.4.0
-	github.com/the729/lcs v0.1.2
+	github.com/the729/lcs v0.1.3
 	github.com/urfave/cli v1.22.1
 	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
 	golang.org/x/net v0.0.0-20190923162816-aa69164e4478 // indirect
