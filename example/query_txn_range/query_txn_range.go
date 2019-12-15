@@ -10,7 +10,7 @@ import (
 
 const (
 	defaultServer    = "ac.testnet.libra.org:8000"
-	trustedPeersFile = "../trusted_peers.config.toml"
+	trustedPeersFile = "../consensus_peers.config.toml"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	}
 	defer c.Close()
 
-	provenTxnList, err := c.QueryTransactionRange(context.TODO(), 2397, 2, true)
+	provenTxnList, err := c.QueryTransactionRange(context.TODO(), 8207475, 2, true)
 	if err != nil {
 		log.Fatal(err)
 	}

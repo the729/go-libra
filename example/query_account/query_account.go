@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/hex"
 	"log"
 
 	"github.com/the729/go-libra/client"
@@ -9,7 +10,7 @@ import (
 
 const (
 	defaultServer    = "ac.testnet.libra.org:8000"
-	trustedPeersFile = "../trusted_peers.config.toml"
+	trustedPeersFile = "../consensus_peers.config.toml"
 )
 
 func main() {
@@ -32,16 +33,18 @@ func main() {
 		return
 	}
 
-	provenResource, err := c.GetLibraCoinResourceFromAccountBlob(provenState.GetAccountBlob())
+	resource, err := c.GetLibraCoinResourceFromAccountBlob(provenState.GetAccountBlob())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Balance (microLibra): %d", provenResource.GetBalance())
-	log.Printf("Sequence Number: %d", provenResource.GetSequenceNumber())
-	log.Printf("SentEventsCount: %d", provenResource.GetSentEvents().Count)
-	log.Printf("    Key: %x", provenResource.GetSentEvents().Key)
-	log.Printf("ReceivedEventsCount: %d", provenResource.GetReceivedEvents().Count)
-	log.Printf("    Key: %x", provenResource.GetReceivedEvents().Key)
-	log.Printf("DelegatedWithdrawalCapability: %v", provenResource.GetDelegatedWithdrawalCapability())
+	log.Printf("Balance (microLibra): %d", resource.GetBalance())
+	log.Printf("Sequence Number: %d", resource.GetSequenceNumber())
+	log.Printf("SentEventsCount: %d", resource.GetSentEvents().Count)
+	log.Printf("    Key: %x", resource.GetSentEvents().Key)
+	log.Printf("ReceivedEventsCount: %d", resource.GetReceivedEvents().Count)
+	log.Printf("    Key: %x", resource.GetReceivedEvents().Key)
+	log.Printf("DelegatedWithdrawalCapability: %v", resource.GetDelegatedWithdrawalCapability())
+	log.Printf("Authentication key: %v", hex.EncodeToString(resource.GetAuthenticationKey()))
+	log.Printf("Event generator: %v", resource.GetEventGenerator())
 }

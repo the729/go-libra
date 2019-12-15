@@ -11,7 +11,7 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 ## Features
 
-Compatible with testnet 2019/10/30 (commit hash [51dd2b4261](https://github.com/libra/libra/commit/51dd2b4261d6b80ee8207c02bfd6beb8f84b1ae5)).
+Compatible with testnet 2019/12/11 (commit hash [01538332bb](https://github.com/libra/libra/commit/01538332bba5df5fa3aadf2c1058bc6d23a393d8)).
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
@@ -59,7 +59,7 @@ import (
 
 const (
 	defaultServer    = "ac.testnet.libra.org:8000"
-	trustedPeersFile = "../trusted_peers.config.toml"
+	trustedPeersFile = "../consensus_peers.config.toml"
 )
 
 func main() {
