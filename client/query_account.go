@@ -23,7 +23,7 @@ func (c *Client) QueryAccountState(ctx context.Context, addr types.AccountAddres
 			&pbtypes.RequestItem{
 				RequestedItems: &pbtypes.RequestItem_GetAccountStateRequest{
 					GetAccountStateRequest: &pbtypes.GetAccountStateRequest{
-						Address: addr,
+						Address: addr[:],
 					},
 				},
 			},

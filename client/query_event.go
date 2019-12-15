@@ -23,7 +23,7 @@ func (c *Client) QueryEventsByAccessPath(ctx context.Context, ap *types.AccessPa
 				RequestedItems: &pbtypes.RequestItem_GetEventsByEventAccessPathRequest{
 					GetEventsByEventAccessPathRequest: &pbtypes.GetEventsByEventAccessPathRequest{
 						AccessPath: &pbtypes.AccessPath{
-							Address: ap.Address,
+							Address: ap.Address[:],
 							Path:    ap.Path,
 						},
 						StartEventSeqNum: start,

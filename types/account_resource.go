@@ -9,6 +9,7 @@ type AccountResource struct {
 	ReceivedEvents                 *EventHandle
 	SentEvents                     *EventHandle
 	SequenceNumber                 uint64
+	EventGenerator                 uint64
 }
 
 // ProvenAccountResource is the Libra coin resource of an account which is proven
@@ -29,6 +30,7 @@ func (r *AccountResource) Clone() *AccountResource {
 	out.ReceivedEvents = r.ReceivedEvents.Clone()
 	out.SentEvents = r.SentEvents.Clone()
 	out.SequenceNumber = r.SequenceNumber
+	out.EventGenerator = r.EventGenerator
 	return out
 }
 
@@ -54,6 +56,14 @@ func (pr *ProvenAccountResource) GetSequenceNumber() uint64 {
 		panic("not valid proven account resource")
 	}
 	return pr.accountResource.SequenceNumber
+}
+
+// GetEventGenerator returns event generator of the account.
+func (pr *ProvenAccountResource) GetEventGenerator() uint64 {
+	if !pr.proven {
+		panic("not valid proven account resource")
+	}
+	return pr.accountResource.EventGenerator
 }
 
 // GetAuthenticationKey returns a copy of the hash of public key current in use.
@@ -97,5 +107,5 @@ func (pr *ProvenAccountResource) GetAddress() AccountAddress {
 	if !pr.proven {
 		panic("not valid proven account resource")
 	}
-	return AccountAddress(cloneBytes(pr.addr))
+	return pr.addr
 }

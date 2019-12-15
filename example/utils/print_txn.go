@@ -12,14 +12,15 @@ import (
 // PrintTxn prints a proven transaction, using standard logger
 func PrintTxn(txn *types.ProvenTransaction) {
 	log.Printf("Txn #%d:", txn.GetVersion())
+	if txn.GetSignedTxn() == nil {
+		log.Printf("    is not a user transaction.")
+		return
+	}
 	rawTxn := txn.GetSignedTxn().RawTxn
 	log.Printf("    Raw txn: hash=%x", txn.GetHash())
-	log.Printf("        Sender account: %v", hex.EncodeToString(rawTxn.Sender))
+	log.Printf("        Sender account: %v", hex.EncodeToString(rawTxn.Sender[:]))
 	log.Printf("        Sender seq #%v", rawTxn.SequenceNumber)
 	switch pld := rawTxn.Payload.(type) {
-	case *types.TxnPayloadProgram:
-		log.Printf("        Payload is Program.")
-		return
 	case types.TxnPayloadWriteSet:
 		log.Printf("        Payload is WriteSet.")
 		return
@@ -33,7 +34,7 @@ func PrintTxn(txn *types.ProvenTransaction) {
 			case types.TxnArgU64:
 				log.Printf("        Arg %d: u64  (%v)", i, arg)
 			case types.TxnArgAddress:
-				log.Printf("        Arg %d: addr (%v)", i, hex.EncodeToString(arg.AccountAddress))
+				log.Printf("        Arg %d: addr (%v)", i, hex.EncodeToString(arg[:]))
 			case types.TxnArgString:
 				log.Printf("        Arg %d: str  (%v)", i, arg)
 			case types.TxnArgBytes:
@@ -65,7 +66,7 @@ func PrintTxn(txn *types.ProvenTransaction) {
 				log.Printf("            (Unknown event type)")
 			} else {
 				log.Printf("            Amount (microLibra): %d", pev.Amount)
-				log.Printf("            Opponent address: %s", hex.EncodeToString(pev.Address))
+				log.Printf("            Opponent address: %s", hex.EncodeToString(pev.Address[:]))
 			}
 		}
 	} else {

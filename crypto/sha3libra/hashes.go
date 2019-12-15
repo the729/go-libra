@@ -38,21 +38,37 @@ func newHasher(salt []byte) hash.Hash {
 	return hasher
 }
 
-func NewAccessPath() hash.Hash             { return newHasher([]byte("VM_ACCESS_PATH")) }
-func NewAccountAddress() hash.Hash         { return newHasher([]byte("AccountAddress")) }
-func NewLedgerInfo() hash.Hash             { return newHasher([]byte("LedgerInfo")) }
+func NewStructTag() hash.Hash {
+	return newHasher([]byte("StructTag::libra_types::language_storage"))
+}
+func NewAccountAddress() hash.Hash {
+	return newHasher([]byte("AccountAddress::libra_types::account_address"))
+}
+func NewLedgerInfo() hash.Hash             { return newHasher([]byte("LedgerInfo::libra_types::ledger_info")) }
 func NewTransactionAccumulator() hash.Hash { return newHasher([]byte("TransactionAccumulator")) }
 func NewEventAccumulator() hash.Hash       { return newHasher([]byte("EventAccumulator")) }
 func NewSparseMerkleInternal() hash.Hash   { return newHasher([]byte("SparseMerkleInternal")) }
-func NewSparseMerkleLeaf() hash.Hash       { return newHasher([]byte("SparseMerkleLeaf")) }
-func NewAccountStateBlob() hash.Hash       { return newHasher([]byte("AccountStateBlob")) }
-func NewTransactionInfo() hash.Hash        { return newHasher([]byte("TransactionInfo")) }
-func NewTransaction() hash.Hash            { return newHasher([]byte("TRANSACTION")) }
-func NewRawTransaction() hash.Hash         { return newHasher([]byte("RawTransaction")) }
-func NewSignedTransaction() hash.Hash      { return newHasher([]byte("SignedTransaction")) }
-func NewBlock() hash.Hash                  { return newHasher([]byte("BlockId")) }
-func NewPacemakerTimeout() hash.Hash       { return newHasher([]byte("PacemakerTimeout")) }
-func NewTimeoutMsg() hash.Hash             { return newHasher([]byte("TimeoutMsg")) }
-func NewVoteMsg() hash.Hash                { return newHasher([]byte("VoteMsg")) }
-func NewContractEvent() hash.Hash          { return newHasher([]byte("ContractEvent")) }
-func NewDiscoveryMsg() hash.Hash           { return newHasher([]byte("DiscoveryMsg")) }
+func NewSparseMerkleLeaf() hash.Hash {
+	return newHasher([]byte("SparseMerkleLeafNode::libra_types::proof"))
+}
+func NewAccountStateBlob() hash.Hash {
+	return newHasher([]byte("AccountStateBlob::libra_types::account_state_blob"))
+}
+func NewTransactionInfo() hash.Hash {
+	return newHasher([]byte("TransactionInfo::libra_types::transaction"))
+}
+func NewTransaction() hash.Hash { return newHasher([]byte("Transaction::libra_types::transaction")) }
+func NewRawTransaction() hash.Hash {
+	return newHasher([]byte("RawTransaction::libra_types::transaction"))
+}
+func NewSignedTransaction() hash.Hash {
+	return newHasher([]byte("SignedTransaction::libra_types::transaction"))
+}
+func NewBlock() hash.Hash            { return newHasher([]byte("BlockId")) }
+func NewPacemakerTimeout() hash.Hash { return newHasher([]byte("PacemakerTimeout")) }
+func NewTimeoutMsg() hash.Hash       { return newHasher([]byte("TimeoutMsg")) }
+func NewVoteMsg() hash.Hash          { return newHasher([]byte("VoteMsg")) }
+func NewContractEvent() hash.Hash {
+	return newHasher([]byte("ContractEvent::libra_types::contract_event"))
+}
+func NewDiscoveryMsg() hash.Hash { return newHasher([]byte("DiscoveryMsg")) }

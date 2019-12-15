@@ -3,9 +3,8 @@ package types
 // AccountResourceTag returns the path tag to the Account resource, which is 0x01+hash(0x0.LibraAccount.T)
 func AccountResourceTag() AccessPathTag {
 	return &StructTag{
-		Address: make([]byte, 32),
-		Module:  "LibraAccount",
-		Name:    "T",
+		Module: "LibraAccount",
+		Name:   "T",
 	}
 }
 

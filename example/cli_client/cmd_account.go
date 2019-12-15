@@ -39,8 +39,8 @@ func cmdCreateAccounts(ctx *cli.Context) error {
 		hasher.Write(pubkey)
 		account := &AccountConfig{
 			PrivateKey: crypto.PrivateKey(prikey),
-			Address:    hasher.Sum([]byte{}),
 		}
+		hasher.Sum(account.Address[:0])
 		wallet.Accounts = append(wallet.Accounts, account)
 	}
 
@@ -88,7 +88,7 @@ func cmdMint(ctx *cli.Context) error {
 	}
 	amountMicro := uint64(amount) * 1000000
 
-	faucetURL := fmt.Sprintf("http://faucet.testnet.libra.org/?amount=%d&address=%s", amountMicro, hex.EncodeToString(receiver.Address))
+	faucetURL := fmt.Sprintf("http://faucet.testnet.libra.org/?amount=%d&address=%s", amountMicro, hex.EncodeToString(receiver.Address[:]))
 	log.Printf("Going to POST to faucet service: %s", faucetURL)
 
 	resp, err := http.PostForm(faucetURL, nil)

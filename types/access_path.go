@@ -13,7 +13,7 @@ import (
 
 // AccessPath is access path to an event.
 type AccessPath struct {
-	Address AccountAddress `lcs:"len=32"`
+	Address AccountAddress
 	Path    []byte
 }
 
@@ -22,7 +22,7 @@ func (ap *AccessPath) FromProto(pb *pbtypes.AccessPath) error {
 	if pb == nil {
 		return ErrNilInput
 	}
-	ap.Address = pb.Address
+	copy(ap.Address[:], pb.Address)
 	ap.Path = pb.Path
 	return nil
 }
@@ -30,7 +30,7 @@ func (ap *AccessPath) FromProto(pb *pbtypes.AccessPath) error {
 // Clone deep clones this struct.
 func (ap *AccessPath) Clone() *AccessPath {
 	out := &AccessPath{}
-	out.Address = cloneBytes(ap.Address)
+	out.Address = ap.Address
 	out.Path = cloneBytes(ap.Path)
 	return out
 }

@@ -14,13 +14,14 @@ import (
 
 // LedgerInfo is a information struct of a version (height) of the ledger.
 type LedgerInfo struct {
-	Version                    uint64
-	TransactionAccumulatorHash []byte
-	ConsensusDataHash          []byte
-	ConsensusBlockID           []byte
 	Epoch                      uint64
+	Round                      uint64
+	ConsensusBlockID           []byte
+	TransactionAccumulatorHash []byte
+	Version                    uint64
 	TimestampUsec              uint64
 	NextValidatorSet           ValidatorSet `lcs:"optional"`
+	ConsensusDataHash          []byte
 }
 
 // LedgerInfoWithSignatures is a ledger info with signature from trusted
@@ -44,6 +45,7 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 	l.ConsensusDataHash = pb.ConsensusDataHash
 	l.ConsensusBlockID = pb.ConsensusBlockId
 	l.Epoch = pb.Epoch
+	l.Round = pb.Round
 	l.TimestampUsec = pb.TimestampUsecs
 	if pb.NextValidatorSet != nil {
 		if err := l.NextValidatorSet.FromProto(pb.NextValidatorSet); err != nil {

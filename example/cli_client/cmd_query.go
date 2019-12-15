@@ -71,6 +71,8 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 			return nil
 		}
 
+		addr := resource.GetAddress()
+		log.Printf("Address: %v", hex.EncodeToString(addr[:]))
 		log.Printf("Balance (microLibra): %d", resource.GetBalance())
 		log.Printf("Sequence Number: %d", resource.GetSequenceNumber())
 		log.Printf("SentEventsCount: %d", resource.GetSentEvents().Count)
@@ -78,6 +80,8 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 		log.Printf("ReceivedEventsCount: %d", resource.GetReceivedEvents().Count)
 		log.Printf("    Key: %x", resource.GetReceivedEvents().Key)
 		log.Printf("DelegatedWithdrawalCapability: %v", resource.GetDelegatedWithdrawalCapability())
+		log.Printf("Authentication key: %v", hex.EncodeToString(resource.GetAuthenticationKey()))
+		log.Printf("Event generator: %v", resource.GetEventGenerator())
 	}
 	return nil
 }
@@ -222,7 +226,7 @@ func cmdQueryEvents(ctx *cli.Context) error {
 			log.Printf("        (Unknown event type)")
 		} else {
 			log.Printf("        Amount (microLibra): %d", pev.Amount)
-			log.Printf("        Opponent address: %s", hex.EncodeToString(pev.Address))
+			log.Printf("        Opponent address: %s", hex.EncodeToString(pev.Address[:]))
 		}
 	}
 

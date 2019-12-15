@@ -73,7 +73,7 @@ func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.Ac
 			{
 				RequestedItems: &pbtypes.RequestItem_GetAccountTransactionBySequenceNumberRequest{
 					GetAccountTransactionBySequenceNumberRequest: &pbtypes.GetAccountTransactionBySequenceNumberRequest{
-						Account:        addr,
+						Account:        addr[:],
 						SequenceNumber: sequence,
 						FetchEvents:    withEvents,
 					},

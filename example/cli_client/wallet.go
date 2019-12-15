@@ -51,9 +51,9 @@ func LoadAccounts(file string) (*SimpleWallet, error) {
 			pubkey := account.PrivateKey.Public().(ed25519.PublicKey)
 			hasher := sha3.New256()
 			hasher.Write(pubkey)
-			account.Address = hasher.Sum([]byte{})
+			hasher.Sum(account.Address[:0])
 		}
-		wallet.Accounts[hex.EncodeToString(account.Address)] = account
+		wallet.Accounts[hex.EncodeToString(account.Address[:])] = account
 	}
 	return wallet, nil
 }
@@ -61,7 +61,7 @@ func LoadAccounts(file string) (*SimpleWallet, error) {
 func (w *SimpleWallet) GetAccount(prefix string) (*Account, error) {
 	var seen *Account
 	for addr, account := range w.Accounts {
-		if strings.HasPrefix(addr, prefix) {
+		if strings.HasPrefix(string(addr[:]), prefix) {
 			if seen != nil {
 				return nil, fmt.Errorf("more than 1 accounts have prefix %s", prefix)
 			}
@@ -74,9 +74,9 @@ func (w *SimpleWallet) GetAccount(prefix string) (*Account, error) {
 
 	newAddr, err := hex.DecodeString(prefix)
 	if err == nil && len(newAddr) == types.AccountAddressLength {
-		return &Account{
-			Address: newAddr,
-		}, nil
+		a := &Account{}
+		copy(a.Address[:], newAddr)
+		return a, nil
 	}
 
 	return nil, fmt.Errorf("account not present in local config file")

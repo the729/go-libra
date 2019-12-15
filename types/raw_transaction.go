@@ -7,7 +7,7 @@ import (
 // RawTransaction is a raw transaction struct.
 type RawTransaction struct {
 	// Sender address.
-	Sender AccountAddress `lcs:"len=32"`
+	Sender AccountAddress
 
 	// SequenceNumber of this transaction corresponding to sender's account.
 	SequenceNumber uint64
@@ -40,9 +40,7 @@ type TransactionArgument interface {
 type TxnArgU64 uint64
 
 // TxnArgAddress is transaction argument of account address type
-type TxnArgAddress struct {
-	AccountAddress `lcs:"len=32"`
-}
+type TxnArgAddress AccountAddress
 
 // TxnArgString is string transaction argument
 type TxnArgString string
@@ -50,22 +48,29 @@ type TxnArgString string
 // TxnArgBytes is byte array transaction argument
 type TxnArgBytes []byte
 
+// TxnArgBool is boolean transaction argument
+type TxnArgBool bool
+
 func (TxnArgU64) isTransactionArgument()     {}
 func (TxnArgAddress) isTransactionArgument() {}
 func (TxnArgString) isTransactionArgument()  {}
 func (TxnArgBytes) isTransactionArgument()   {}
+func (TxnArgBool) isTransactionArgument()    {}
 
 // Clone the argument
 func (v TxnArgU64) Clone() TransactionArgument { return v }
 
 // Clone the argument
-func (v TxnArgAddress) Clone() TransactionArgument { return TxnArgAddress{cloneBytes(v.AccountAddress)} }
+func (v TxnArgAddress) Clone() TransactionArgument { return v }
 
 // Clone the argument
 func (v TxnArgString) Clone() TransactionArgument { return v }
 
 // Clone the argument
 func (v TxnArgBytes) Clone() TransactionArgument { return TxnArgBytes(cloneBytes(v)) }
+
+// Clone the argument
+func (v TxnArgBool) Clone() TransactionArgument { return v }
 
 var txnArgEnumDef = []lcs.EnumVariant{
 	{
@@ -87,6 +92,11 @@ var txnArgEnumDef = []lcs.EnumVariant{
 		Name:     "TransactionArgument",
 		Value:    3,
 		Template: TxnArgBytes(nil),
+	},
+	{
+		Name:     "TransactionArgument",
+		Value:    4,
+		Template: TxnArgBool(false),
 	},
 }
 
@@ -144,30 +154,6 @@ type TransactionPayload interface {
 	Clone() TransactionPayload
 }
 
-// TxnPayloadProgram is variant of TransactionPayload. It is DEPRECATED
-type TxnPayloadProgram struct {
-	Code    []byte
-	Args    []TransactionArgument `lcs:"enum=TransactionArgument"`
-	Modules [][]byte
-}
-
-// EnumTypes defines enum variants for lcs
-func (*TxnPayloadProgram) EnumTypes() []lcs.EnumVariant { return txnArgEnumDef }
-
-// Clone the transaction payload
-func (v *TxnPayloadProgram) Clone() TransactionPayload {
-	c := cloneBytes(v.Code)
-	args := make([]TransactionArgument, 0, len(v.Args))
-	for _, arg := range v.Args {
-		args = append(args, arg.Clone())
-	}
-	mods := make([][]byte, 0, len(v.Modules))
-	for _, mod := range v.Modules {
-		mods = append(mods, cloneBytes(mod))
-	}
-	return &TxnPayloadProgram{Code: c, Args: args, Modules: mods}
-}
-
 // TxnPayloadWriteSet is variant of TransactionPayload
 type TxnPayloadWriteSet []*WriteOpWithPath
 
@@ -205,7 +191,6 @@ type TxnPayloadModule []byte
 // Clone the transaction payload
 func (v TxnPayloadModule) Clone() TransactionPayload { return TxnPayloadModule(cloneBytes(v)) }
 
-func (*TxnPayloadProgram) isTransactionPayload() {}
 func (TxnPayloadWriteSet) isTransactionPayload() {}
 func (*TxnPayloadScript) isTransactionPayload()  {}
 func (TxnPayloadModule) isTransactionPayload()   {}
@@ -213,11 +198,6 @@ func (TxnPayloadModule) isTransactionPayload()   {}
 // EnumTypes defines enum variants for lcs
 func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
 	return []lcs.EnumVariant{
-		{
-			Name:     "TransactionPayload",
-			Value:    0,
-			Template: (*TxnPayloadProgram)(nil),
-		},
 		{
 			Name:     "TransactionPayload",
 			Value:    1,
@@ -239,7 +219,7 @@ func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
 // Clone the raw transaction
 func (rt *RawTransaction) Clone() *RawTransaction {
 	return &RawTransaction{
-		Sender:         cloneBytes(rt.Sender),
+		Sender:         rt.Sender,
 		SequenceNumber: rt.SequenceNumber,
 		Payload:        rt.Payload.Clone(),
 		MaxGasAmount:   rt.MaxGasAmount,

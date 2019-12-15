@@ -89,7 +89,7 @@ func (pb *ProvenAccountBlob) GetResource(path []byte) (*ProvenAccountResource, e
 	}
 	par := &ProvenAccountResource{
 		proven:     true,
-		addr:       cloneBytes(pb.addr),
+		addr:       pb.addr,
 		ledgerInfo: pb.ledgerInfo,
 	}
 	par.accountResource = *(ar.Clone())
@@ -101,5 +101,5 @@ func (pb *ProvenAccountBlob) GetAddress() AccountAddress {
 	if !pb.proven {
 		panic("not valid proven account blob")
 	}
-	return AccountAddress(cloneBytes(pb.addr))
+	return pb.addr
 }

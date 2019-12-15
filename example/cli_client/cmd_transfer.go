@@ -41,7 +41,7 @@ func cmdTransfer(ctx *cli.Context) error {
 	}
 	amountMicro := uint64(amount) * 1000000
 
-	log.Printf("Going to transfer %d microLibra from %s to %s", amountMicro, hex.EncodeToString(sender.Address), hex.EncodeToString(receiver.Address))
+	log.Printf("Going to transfer %d microLibra from %s to %s", amountMicro, hex.EncodeToString(sender.Address[:]), hex.EncodeToString(receiver.Address[:]))
 
 	maxGasAmount := uint64(140000) // must > 70996?
 	gasUnitPrice := uint64(0)

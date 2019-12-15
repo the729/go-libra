@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultServer    = "ac.testnet.libra.org:8000"
-	trustedPeersFile = "../trusted_peers.config.toml"
+	trustedPeersFile = "../consensus_peers.config.toml"
 	walletFile       = "wallet.toml"
 	knownVersionFile = "known_version.toml"
 )

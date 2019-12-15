@@ -27,7 +27,7 @@ func NewRawP2PTransaction(
 		Payload: &types.TxnPayloadScript{
 			Code: stdscript.PeerToPeerTransfer,
 			Args: []types.TransactionArgument{
-				types.TxnArgAddress{receiverAddress},
+				types.TxnArgAddress(receiverAddress),
 				types.TxnArgU64(amount),
 			},
 		},

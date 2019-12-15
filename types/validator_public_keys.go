@@ -10,6 +10,7 @@ import (
 type ValidatorPublicKeys struct {
 	AccountAddress        AccountAddress
 	ConsensusPubkey       ed25519.PublicKey
+	ConsensusVotingPower  uint64
 	NetworkSigningPubkey  ed25519.PublicKey
 	NetworkIdentityPubkey ed25519.PublicKey
 }
@@ -19,7 +20,7 @@ type ValidatorSet []*ValidatorPublicKeys
 
 // FromProto parses a protobuf struct into this struct.
 func (vk *ValidatorPublicKeys) FromProto(pb *pbtypes.ValidatorPublicKeys) error {
-	vk.AccountAddress = pb.AccountAddress
+	copy(vk.AccountAddress[:], pb.AccountAddress)
 	vk.ConsensusPubkey = pb.ConsensusPublicKey
 	vk.NetworkSigningPubkey = pb.NetworkSigningPublicKey
 	vk.NetworkIdentityPubkey = pb.NetworkIdentityPublicKey

@@ -132,7 +132,7 @@ func (a *AccountStateWithProof) Verify(addr AccountAddress, provenLedgerInfo *Pr
 			Version: a.Version,
 			RawBlob: cloneBytes(a.RawBlob),
 		},
-		addr:       cloneBytes(addr),
+		addr:       addr,
 		ledgerInfo: provenLedgerInfo,
 	}, nil
 }
@@ -158,7 +158,7 @@ func (pas *ProvenAccountState) GetAddress() AccountAddress {
 	if !pas.proven {
 		panic("not valid proven account state")
 	}
-	return AccountAddress(cloneBytes(pas.addr))
+	return pas.addr
 }
 
 // GetAccountBlob returns a copy of the account blob, as a proven struct.
@@ -174,7 +174,7 @@ func (pas *ProvenAccountState) GetAccountBlob() *ProvenAccountBlob {
 	}
 	pab := &ProvenAccountBlob{
 		proven:     true,
-		addr:       cloneBytes(pas.addr),
+		addr:       pas.addr,
 		ledgerInfo: pas.ledgerInfo,
 	}
 	if err := pab.accountBlob.ParseToMap(cloneBytes(pas.accountState.RawBlob)); err != nil {

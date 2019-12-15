@@ -9,9 +9,7 @@ import (
 )
 
 type TrustedPeer struct {
-	NetworkSigningPubkey  lcrypto.PublicKey `toml:"ns"`
-	NetworkIdentityPubkey lcrypto.PublicKey `toml:"ni"`
-	ConsensusPubkey       lcrypto.PublicKey `toml:"c"`
+	ConsensusPubkey lcrypto.PublicKey `toml:"c"`
 }
 
 type TrustedPeersConfig struct {

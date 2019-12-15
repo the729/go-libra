@@ -12,12 +12,12 @@ const (
 )
 
 // AccountAddress is an account address.
-type AccountAddress []byte
+type AccountAddress [32]byte
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (a AccountAddress) Hash() HashValue {
 	hasher := sha3libra.NewAccountAddress()
-	hasher.Write(a)
+	hasher.Write(a[:])
 	return hasher.Sum([]byte{})
 }
 
@@ -27,11 +27,11 @@ func (a *AccountAddress) UnmarshalText(txt []byte) error {
 	if err != nil {
 		return err
 	}
-	*a = data
+	copy(a[:], data)
 	return nil
 }
 
 // MarshalText marshals the account address into hex representation.
 func (a AccountAddress) MarshalText() (text []byte, err error) {
-	return []byte(hex.EncodeToString(a)), nil
+	return []byte(hex.EncodeToString(a[:])), nil
 }

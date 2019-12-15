@@ -30,9 +30,7 @@ type TypeTagU64 uint64
 type TypeTagBytes []byte
 
 // TypeTagAddress is account address type
-type TypeTagAddress struct {
-	AccountAddress `lcs:"len=32"`
-}
+type TypeTagAddress AccountAddress
 
 // TypeTagStructTag is StructTag
 type TypeTagStructTag = StructTag
@@ -62,7 +60,7 @@ var typeTagEnumDef = []lcs.EnumVariant{
 	{
 		Name:     "TypeTag",
 		Value:    3,
-		Template: TypeTagAddress{},
+		Template: TypeTagAddress([32]byte{}),
 	},
 	{
 		Name:     "TypeTag",
@@ -82,7 +80,7 @@ func (*TypeTag) EnumTypes() []lcs.EnumVariant { return typeTagEnumDef }
 //
 // StructTag implements AccessPathTag interface
 type StructTag struct {
-	Address    AccountAddress `lcs:"len=32"`
+	Address    AccountAddress
 	Module     string
 	Name       string
 	TypeParams []TypeTag
@@ -90,7 +88,7 @@ type StructTag struct {
 
 // Hash outputs the hash of this struct, using the appropriate hash function.
 func (t *StructTag) Hash() HashValue {
-	hasher := sha3libra.NewAccessPath()
+	hasher := sha3libra.NewStructTag()
 	if err := lcs.NewEncoder(hasher).Encode(t); err != nil {
 		panic(err)
 	}
