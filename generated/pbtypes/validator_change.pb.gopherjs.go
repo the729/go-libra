@@ -20,28 +20,16 @@ const _ = jspb.JspbPackageIsVersion2
 // proof.  The client can then verify that these events were under the current
 // tree and that the changes were signed by the old validators (and that the
 // events correctly show which validators are the new validators).
-//
-// This message represents a single validator change event and the proof that
-// corresponds to it
 type ValidatorChangeEventWithProof struct {
-	LedgerInfoWithSigs *LedgerInfoWithSignatures
-	EventWithProof     *EventWithProof
+	LedgerInfoWithSigs []*LedgerInfoWithSignatures
 }
 
 // GetLedgerInfoWithSigs gets the LedgerInfoWithSigs of the ValidatorChangeEventWithProof.
-func (m *ValidatorChangeEventWithProof) GetLedgerInfoWithSigs() (x *LedgerInfoWithSignatures) {
+func (m *ValidatorChangeEventWithProof) GetLedgerInfoWithSigs() (x []*LedgerInfoWithSignatures) {
 	if m == nil {
 		return x
 	}
 	return m.LedgerInfoWithSigs
-}
-
-// GetEventWithProof gets the EventWithProof of the ValidatorChangeEventWithProof.
-func (m *ValidatorChangeEventWithProof) GetEventWithProof() (x *EventWithProof) {
-	if m == nil {
-		return x
-	}
-	return m.EventWithProof
 }
 
 // MarshalToWriter marshals ValidatorChangeEventWithProof to the provided writer.
@@ -50,15 +38,9 @@ func (m *ValidatorChangeEventWithProof) MarshalToWriter(writer jspb.Writer) {
 		return
 	}
 
-	if m.LedgerInfoWithSigs != nil {
+	for _, msg := range m.LedgerInfoWithSigs {
 		writer.WriteMessage(1, func() {
-			m.LedgerInfoWithSigs.MarshalToWriter(writer)
-		})
-	}
-
-	if m.EventWithProof != nil {
-		writer.WriteMessage(2, func() {
-			m.EventWithProof.MarshalToWriter(writer)
+			msg.MarshalToWriter(writer)
 		})
 	}
 
@@ -82,11 +64,7 @@ func (m *ValidatorChangeEventWithProof) UnmarshalFromReader(reader jspb.Reader) 
 		switch reader.GetFieldNumber() {
 		case 1:
 			reader.ReadMessage(func() {
-				m.LedgerInfoWithSigs = m.LedgerInfoWithSigs.UnmarshalFromReader(reader)
-			})
-		case 2:
-			reader.ReadMessage(func() {
-				m.EventWithProof = m.EventWithProof.UnmarshalFromReader(reader)
+				m.LedgerInfoWithSigs = append(m.LedgerInfoWithSigs, new(LedgerInfoWithSignatures).UnmarshalFromReader(reader))
 			})
 		default:
 			reader.SkipField()

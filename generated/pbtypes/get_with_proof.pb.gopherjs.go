@@ -291,7 +291,7 @@ type UpdateToLatestLedgerResponse struct {
 	// Validator change events from what the client last knew.  This is used to
 	// inform the client of validator changes from the client's last known version
 	// until the current version
-	ValidatorChangeEvents []*ValidatorChangeEventWithProof
+	ValidatorChangeEvents *ValidatorChangeEventWithProof
 	// A proof that shows the latest ledger accumulator is consistent with the
 	// old accumulator at "client_known_version".
 	LedgerConsistencyProof *AccumulatorConsistencyProof
@@ -314,7 +314,7 @@ func (m *UpdateToLatestLedgerResponse) GetLedgerInfoWithSigs() (x *LedgerInfoWit
 }
 
 // GetValidatorChangeEvents gets the ValidatorChangeEvents of the UpdateToLatestLedgerResponse.
-func (m *UpdateToLatestLedgerResponse) GetValidatorChangeEvents() (x []*ValidatorChangeEventWithProof) {
+func (m *UpdateToLatestLedgerResponse) GetValidatorChangeEvents() (x *ValidatorChangeEventWithProof) {
 	if m == nil {
 		return x
 	}
@@ -347,9 +347,9 @@ func (m *UpdateToLatestLedgerResponse) MarshalToWriter(writer jspb.Writer) {
 		})
 	}
 
-	for _, msg := range m.ValidatorChangeEvents {
+	if m.ValidatorChangeEvents != nil {
 		writer.WriteMessage(3, func() {
-			msg.MarshalToWriter(writer)
+			m.ValidatorChangeEvents.MarshalToWriter(writer)
 		})
 	}
 
@@ -387,7 +387,7 @@ func (m *UpdateToLatestLedgerResponse) UnmarshalFromReader(reader jspb.Reader) *
 			})
 		case 3:
 			reader.ReadMessage(func() {
-				m.ValidatorChangeEvents = append(m.ValidatorChangeEvents, new(ValidatorChangeEventWithProof).UnmarshalFromReader(reader))
+				m.ValidatorChangeEvents = m.ValidatorChangeEvents.UnmarshalFromReader(reader)
 			})
 		case 4:
 			reader.ReadMessage(func() {
