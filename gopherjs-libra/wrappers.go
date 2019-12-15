@@ -37,6 +37,7 @@ type jsProvenAccountResource struct {
 	getSentEvents                    interface{} `js:"getSentEvents"`
 	getReceivedEvents                interface{} `js:"getReceivedEvents"`
 	getDelegatedWithdrawalCapability interface{} `js:"getDelegatedWithdrawalCapability"`
+	getEventGenerator                interface{} `js:"getEventGenerator"`
 	getLedgerInfo                    interface{} `js:"getLedgerInfo"`
 }
 
@@ -123,6 +124,7 @@ func wrapProvenAccountResource(g *types.ProvenAccountResource) *js.Object {
 	j.getSentEvents = g.GetSentEvents
 	j.getReceivedEvents = g.GetReceivedEvents
 	j.getDelegatedWithdrawalCapability = g.GetDelegatedWithdrawalCapability
+	j.getEventGenerator = g.GetEventGenerator
 	j.getLedgerInfo = func() *js.Object {
 		return wrapProvenLedgerInfo(g.GetLedgerInfo())
 	}

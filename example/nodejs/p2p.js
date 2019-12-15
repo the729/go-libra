@@ -1,4 +1,6 @@
-const { libra } = require("gopherjs-libra");
+// Use following require statement when using npm.
+// const { libra } = require("gopherjs-libra");
+const { libra } = require("../../gopherjs-libra/gopherjs-libra.js");
 
 const fromHexString = hexString =>
     new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));

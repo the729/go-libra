@@ -30,8 +30,8 @@ func main() {
 type jsClient struct {
 	*js.Object
 
-	queryAccountState            func(...interface{}) *js.Object                                     `js:"queryAccountState"`
-	queryAccountSequenceNumber   func(...interface{}) *js.Object                                     `js:"queryAccountSequenceNumber"`
+	queryAccountState            func(types.AccountAddress) *js.Object                               `js:"queryAccountState"`
+	queryAccountSequenceNumber   func(types.AccountAddress) *js.Object                               `js:"queryAccountSequenceNumber"`
 	submitP2PTransaction         func(*js.Object) *js.Object                                         `js:"submitP2PTransaction"`
 	pollSequenceUntil            func(types.AccountAddress, uint64, int64) *js.Object                `js:"pollSequenceUntil"`
 	queryTransactionByAccountSeq func(types.AccountAddress, uint64, bool) *js.Object                 `js:"queryTransactionByAccountSeq"`
@@ -45,25 +45,32 @@ func newClient(server, trustedPeers string) *js.Object {
 		panic(err)
 	}
 	jc := jsClient{Object: js.Global.Get("Object").New()}
-	jc.queryAccountState = jopher.Promisify(func(addr types.AccountAddress) (*js.Object, error) {
+	promiseQueryAccountState := jopher.Promisify(func(addr types.AccountAddress) (*js.Object, error) {
 		r, err := c.QueryAccountState(context.TODO(), addr)
 		return wrapProvenAccountState(r), err
 	})
-	jc.queryAccountSequenceNumber = jopher.Promisify(func(addr types.AccountAddress) (uint64, error) {
+	jc.queryAccountState = func(addr types.AccountAddress) *js.Object {
+		return promiseQueryAccountState(addr)
+	}
+
+	promiseQueryAccountSequenceNumber := jopher.Promisify(func(addr types.AccountAddress) (uint64, error) {
 		return c.QueryAccountSequenceNumber(context.TODO(), addr)
 	})
+	jc.queryAccountSequenceNumber = func(addr types.AccountAddress) *js.Object {
+		return promiseQueryAccountSequenceNumber(addr)
+	}
 
 	promiseSubmitP2PTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
 		type jsP2PTxn struct {
 			*js.Object
-			SenderAddr          []byte `js:"senderAddr"`
-			SenderPriKey        []byte `js:"senderPrivateKey"`
-			RecvAddr            []byte `js:"recvAddr"`
-			SenderSeq           uint64 `js:"senderSeq"`
-			AmountMicro         uint64 `js:"amountMicro"`
-			MaxGasAmount        uint64 `js:"maxGasAmount"`
-			GasUnitPrice        uint64 `js:"gasUnitPrice"`
-			ExpirationTimestamp int64  `js:"expirationTimestamp"`
+			SenderAddr          [32]byte `js:"senderAddr"`
+			SenderPriKey        []byte   `js:"senderPrivateKey"`
+			RecvAddr            [32]byte `js:"recvAddr"`
+			SenderSeq           uint64   `js:"senderSeq"`
+			AmountMicro         uint64   `js:"amountMicro"`
+			MaxGasAmount        uint64   `js:"maxGasAmount"`
+			GasUnitPrice        uint64   `js:"gasUnitPrice"`
+			ExpirationTimestamp int64    `js:"expirationTimestamp"`
 		}
 		jstxn := &jsP2PTxn{Object: txn}
 		rawTxn, _ := client.NewRawP2PTransaction(
