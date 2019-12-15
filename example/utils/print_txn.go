@@ -21,7 +21,7 @@ func PrintTxn(txn *types.ProvenTransaction) {
 	log.Printf("        Sender account: %v", hex.EncodeToString(rawTxn.Sender[:]))
 	log.Printf("        Sender seq #%v", rawTxn.SequenceNumber)
 	switch pld := rawTxn.Payload.(type) {
-	case types.TxnPayloadWriteSet:
+	case *types.TxnPayloadWriteSet:
 		log.Printf("        Payload is WriteSet.")
 		return
 	case *types.TxnPayloadScript:

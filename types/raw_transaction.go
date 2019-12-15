@@ -155,15 +155,22 @@ type TransactionPayload interface {
 }
 
 // TxnPayloadWriteSet is variant of TransactionPayload
-type TxnPayloadWriteSet []*WriteOpWithPath
+type TxnPayloadWriteSet struct {
+	WriteSet []*WriteOpWithPath
+	Events   []*ContractEvent
+}
 
 // Clone the transaction payload
-func (v TxnPayloadWriteSet) Clone() TransactionPayload {
-	n := make([]*WriteOpWithPath, 0, len(v))
-	for _, wop := range v {
-		n = append(n, wop.Clone())
+func (v *TxnPayloadWriteSet) Clone() TransactionPayload {
+	ws := make([]*WriteOpWithPath, 0, len(v.WriteSet))
+	for _, wop := range v.WriteSet {
+		ws = append(ws, wop.Clone())
 	}
-	return TxnPayloadWriteSet(n)
+	ev := make([]*ContractEvent, 0, len(v.Events))
+	for _, ev1 := range v.Events {
+		ev = append(ev, ev1.Clone())
+	}
+	return &TxnPayloadWriteSet{ws, ev}
 }
 
 // TxnPayloadScript is variant of TransactionPayload
@@ -191,9 +198,9 @@ type TxnPayloadModule []byte
 // Clone the transaction payload
 func (v TxnPayloadModule) Clone() TransactionPayload { return TxnPayloadModule(cloneBytes(v)) }
 
-func (TxnPayloadWriteSet) isTransactionPayload() {}
-func (*TxnPayloadScript) isTransactionPayload()  {}
-func (TxnPayloadModule) isTransactionPayload()   {}
+func (*TxnPayloadWriteSet) isTransactionPayload() {}
+func (*TxnPayloadScript) isTransactionPayload()   {}
+func (TxnPayloadModule) isTransactionPayload()    {}
 
 // EnumTypes defines enum variants for lcs
 func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
@@ -201,7 +208,7 @@ func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
 		{
 			Name:     "TransactionPayload",
 			Value:    1,
-			Template: TxnPayloadWriteSet(nil),
+			Template: (*TxnPayloadWriteSet)(nil),
 		},
 		{
 			Name:     "TransactionPayload",

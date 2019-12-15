@@ -12,8 +12,10 @@ type isTransaction interface {
 	isTransaction()
 }
 
+type WriteSet []*WriteOpWithPath
+
 func (*SignedTransaction) isTransaction() {}
-func (TxnPayloadWriteSet) isTransaction() {}
+func (WriteSet) isTransaction()           {}
 func (*BlockMetaData) isTransaction()     {}
 
 // EnumTypes defines enum variants for lcs
@@ -27,7 +29,7 @@ func (*Transaction) EnumTypes() []lcs.EnumVariant {
 		{
 			Name:     "transaction",
 			Value:    1, // WriteSet
-			Template: TxnPayloadWriteSet(nil),
+			Template: WriteSet(nil),
 		},
 		{
 			Name:     "transaction",
