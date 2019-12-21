@@ -30,6 +30,7 @@ func main() {
 type jsClient struct {
 	*js.Object
 
+	queryLedgerInfo              func(...interface{}) *js.Object                                     `js:"queryLedgerInfo"`
 	queryAccountState            func(types.AccountAddress) *js.Object                               `js:"queryAccountState"`
 	queryAccountSequenceNumber   func(types.AccountAddress) *js.Object                               `js:"queryAccountSequenceNumber"`
 	submitP2PTransaction         func(*js.Object) *js.Object                                         `js:"submitP2PTransaction"`
@@ -45,6 +46,11 @@ func newClient(server, trustedPeers string) *js.Object {
 		panic(err)
 	}
 	jc := jsClient{Object: js.Global.Get("Object").New()}
+	jc.queryLedgerInfo = jopher.Promisify(func() (*js.Object, error) {
+		r, err := c.QueryLedgerInfo(context.TODO())
+		return wrapProvenLedgerInfo(r), err
+	})
+
 	promiseQueryAccountState := jopher.Promisify(func(addr types.AccountAddress) (*js.Object, error) {
 		r, err := c.QueryAccountState(context.TODO(), addr)
 		return wrapProvenAccountState(r), err

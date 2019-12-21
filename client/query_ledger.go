@@ -44,7 +44,11 @@ func (c *Client) verifyLedgerInfoAndConsistency(
 	if err != nil {
 		return nil, fmt.Errorf("ledger info verification failed: %v", err)
 	}
-	numLeaves, frozenSubtreeRoots, err = pli.VerifyConsistency(numLeaves, frozenSubtreeRoots, resp.LedgerConsistencyProof.Subtrees)
+	numLeaves, frozenSubtreeRoots, err = pli.VerifyConsistency(
+		numLeaves,
+		frozenSubtreeRoots,
+		resp.GetLedgerConsistencyProof().GetSubtrees(),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("ledger not consistent with known version: %v", err)
 	}

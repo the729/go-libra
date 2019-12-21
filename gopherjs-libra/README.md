@@ -97,6 +97,10 @@ Returns SHA3 hash of input public key, which is used as Libra account address.
 
 Client represents a Libra client.
 
+### Client.queryLedgerInfo()
+
+Return a promise that resolves to a `provenLedgerInfo` object.
+
 ### Client.queryAccountState(address)
 
 Argument:
