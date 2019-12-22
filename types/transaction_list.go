@@ -49,8 +49,9 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 		eventsList = pb.EventsForVersions.EventsForVersion
 	}
 
-	if pb.FirstTransactionVersion == nil && len(pb.Transactions) > 0 {
-		return errors.New("missing first txn version")
+	var firstTxnVersion uint64
+	if pb.FirstTransactionVersion != nil {
+		firstTxnVersion = pb.FirstTransactionVersion.Value
 	}
 
 	tl.Transactions = nil
@@ -62,7 +63,7 @@ func (tl *TransactionListWithProof) FromProto(pb *pbtypes.TransactionListWithPro
 		item := &SubmittedTransaction{
 			RawSignedTxn: pb.Transactions[idx].Transaction,
 			Info:         info,
-			Version:      pb.FirstTransactionVersion.Value + uint64(idx),
+			Version:      firstTxnVersion + uint64(idx),
 		}
 
 		if eventsList != nil {
