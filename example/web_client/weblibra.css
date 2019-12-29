@@ -1,0 +1,15 @@
+div.ledger-info {
+    display: block;
+}
+div.txn-card {
+    display: block;
+}
+div.txn-list {
+    display: block;
+}
+div.txn-list div.controls {
+    display: block;
+}
+tr.pointer {
+    cursor: pointer;
+}

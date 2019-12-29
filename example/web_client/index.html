@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web Libra Client (testnet)</title>
+    <link rel="stylesheet" href="milligram.min.css">
+    <link rel="stylesheet" href="weblibra.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script src="gopherjs-libra.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <ledger-info @ledger-info-updated="li_update"></ledger-info>
+        <hr>
+        <txn-list :ledger_info="ledger_info" @txn-selected="txn_selected" @addr-selected="addr_selected"></txn-list>
+        <hr>
+        <txn-detail id="txn-detail" v-if="selected_txn" :txn="selected_txn" @addr-selected="addr_selected"></txn-detail>
+        <hr>
+        <account-detail id="account-detail" ref="account_detail" :address="selected_address"></account-detail>
+    </div>
+    <script src="weblibra.js"></script>
+</body>
+
+</html>

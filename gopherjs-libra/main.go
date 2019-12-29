@@ -6,7 +6,9 @@ import (
 
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/miratronix/jopher"
+
 	"github.com/the729/go-libra/client"
+	"github.com/the729/go-libra/language/stdscript"
 	"github.com/the729/go-libra/types"
 )
 
@@ -24,6 +26,7 @@ func main() {
 		"accountSentEventPath":     types.AccountSentEventPath,
 		"accountReceivedEventPath": types.AccountReceivedEventPath,
 		"pubkeyToAddress":          client.PubkeyMustToAddress,
+		"inferProgramName":         stdscript.InferProgramName,
 	})
 }
 
