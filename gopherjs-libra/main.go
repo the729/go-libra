@@ -37,6 +37,7 @@ type jsClient struct {
 	queryAccountState            func(types.AccountAddress) *js.Object                               `js:"queryAccountState"`
 	queryAccountSequenceNumber   func(types.AccountAddress) *js.Object                               `js:"queryAccountSequenceNumber"`
 	submitP2PTransaction         func(*js.Object) *js.Object                                         `js:"submitP2PTransaction"`
+	submitContractTransaction    func(*js.Object) *js.Object                                         `js:"submitContractTransaction"`
 	pollSequenceUntil            func(types.AccountAddress, uint64, int64) *js.Object                `js:"pollSequenceUntil"`
 	queryTransactionByAccountSeq func(types.AccountAddress, uint64, bool) *js.Object                 `js:"queryTransactionByAccountSeq"`
 	queryTransactionRange        func(uint64, uint64, bool) *js.Object                               `js:"queryTransactionRange"`
@@ -92,6 +93,31 @@ func newClient(server, trustedPeers string) *js.Object {
 	})
 	jc.submitP2PTransaction = func(rawTxn *js.Object) *js.Object {
 		return promiseSubmitP2PTransaction(rawTxn)
+	}
+
+	promiseSubmitContractTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
+		type jsContractTxn struct {
+			*js.Object
+			SenderAddr          [32]byte                 `js:"senderAddr"`
+			SenderPriKey        []byte                   `js:"senderPrivateKey"`
+			SenderSeq           uint64                   `js:"senderSeq"`
+			MaxGasAmount        uint64                   `js:"maxGasAmount"`
+			GasUnitPrice        uint64                   `js:"gasUnitPrice"`
+			ExpirationTimestamp int64                    `js:"expirationTimestamp"`
+			Payload             types.TransactionPayload `js:"payload"`
+		}
+		contractTxn := &jsContractTxn{Object: txn}
+		rawTxn, _ := client.NewRawCustomTransaction(
+			contractTxn.SenderAddr,
+			contractTxn.SenderSeq,
+			contractTxn.MaxGasAmount, contractTxn.GasUnitPrice,
+			time.Unix(contractTxn.ExpirationTimestamp, 0),
+			contractTxn.Payload,
+		)
+		return c.SubmitRawTransaction(context.TODO(), rawTxn, contractTxn.SenderPriKey)
+	})
+	jc.submitContractTransaction = func(rawTxn *js.Object) *js.Object {
+		return promiseSubmitContractTransaction(rawTxn)
 	}
 
 	promisePollSequenceUntil := jopher.Promisify(func(addr types.AccountAddress, seq uint64, expirationTimestamp int64) error {

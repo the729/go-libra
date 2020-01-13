@@ -17,3 +17,5 @@ known_version.toml
 
 ignore/
 node_modules/
+
+.idea

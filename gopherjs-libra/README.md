@@ -141,6 +141,20 @@ Arguments:
 
 Returns a promise that resolves to the expected sequence number of this transaction. Use `pollSequenceUntil` afterward to make sure the transaction is included in the ledger.
 
+### Client.submitContractTransaction(rawTxn)
+
+Arguments:
+ - rawTxn (Object): the raw transaction object, with following keys
+   - senderAddr (Uint8Array): sender address
+   - senderPrivateKey (Uint8Array): sender ed25519 secret key (64 bytes)
+   - senderSeq (integer): current sender account sequence number
+   - maxGasAmount (integer): max gas amount in micro libra
+   - gasUnitPrice (integer): micro libra per gas
+   - expirationTimestamp (integer): transaction expiration unix timestamp
+   - payload (types.TransactionPayload): the code and/or args to publish/execute
+
+Returns a promise that resolves to the expected sequence number of this transaction. Use `pollSequenceUntil` afterward to make sure the transaction is included in the ledger.
+
 ### Client.queryTransactionByAccountSeq(address, seq, withEvents)
 
 Arguments:
