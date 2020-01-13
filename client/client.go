@@ -33,6 +33,10 @@ import (
 	"github.com/the729/go-libra/types/validator"
 )
 
+const (
+	TestNetRootHash = "b7712506940af39e57de4a868c15849ab09bd8e3c4a89113a492797c6f98bf6b"
+)
+
 // Client is a Libra client.
 // It has a gRPC client to a Libra RPC server, with public keys to trusted peers.
 type Client struct {
@@ -46,11 +50,11 @@ type Client struct {
 // New creates a new Libra Client.
 //
 // For normal usage, ServerAddr is in host:port format. TrustedPeer is a TOML file that contains
-// the trusted peers.
+// the trusted peers. RootHash is the hash of Libra's merkle tree root.
 //
 // For use with Javascript, ServerAddr is in http://host:port format. TrustedPeer is a TOML formated
-// text of the trusted peers config.
-func New(ServerAddr, TrustedPeer string) (*Client, error) {
+// text of the trusted peers config. RootHash is the hash of Libra's merkle tree root.
+func New(ServerAddr, TrustedPeer string, RootHash ...string) (*Client, error) {
 	c := &Client{}
 	if err := c.loadTrustedPeers(TrustedPeer); err != nil {
 		return nil, err
@@ -58,8 +62,11 @@ func New(ServerAddr, TrustedPeer string) (*Client, error) {
 	if err := c.connect(ServerAddr); err != nil {
 		return nil, err
 	}
+	if len(RootHash) == 0 {
+		RootHash = append(RootHash, TestNetRootHash)
+	}
 
-	genesisHash, _ := hex.DecodeString("b7712506940af39e57de4a868c15849ab09bd8e3c4a89113a492797c6f98bf6b")
+	genesisHash, _ := hex.DecodeString(RootHash[0])
 	c.acc = &accumulator.Accumulator{
 		Hasher:             sha3libra.NewTransactionAccumulator(),
 		FrozenSubtreeRoots: [][]byte{genesisHash},
