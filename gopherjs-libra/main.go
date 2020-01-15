@@ -44,8 +44,8 @@ type jsClient struct {
 	queryEventsByAccessPath      func(types.AccountAddress, []byte, uint64, bool, uint64) *js.Object `js:"queryEventsByAccessPath"`
 }
 
-func newClient(server, trustedPeers string) *js.Object {
-	c, err := client.New(server, trustedPeers)
+func newClient(server, trustedPeers, RootHash string) *js.Object {
+	c, err := client.New(server, trustedPeers, RootHash)
 	if err != nil {
 		panic(err)
 	}
