@@ -324,6 +324,73 @@ func (m *AccumulatorRangeProof) Unmarshal(rawBytes []byte) (*AccumulatorRangePro
 	return m, nil
 }
 
+type SparseMerkleRangeProof struct {
+	// The siblings on the right of the path from root to the last leaf. The ones
+	// near the leaf are at the beginning of the list. The placeholder nodes are
+	// represented by empty byte arrays, other nodes should be exactly 32-bytes
+	// long.
+	RightSiblings [][]byte
+}
+
+// GetRightSiblings gets the RightSiblings of the SparseMerkleRangeProof.
+func (m *SparseMerkleRangeProof) GetRightSiblings() (x [][]byte) {
+	if m == nil {
+		return x
+	}
+	return m.RightSiblings
+}
+
+// MarshalToWriter marshals SparseMerkleRangeProof to the provided writer.
+func (m *SparseMerkleRangeProof) MarshalToWriter(writer jspb.Writer) {
+	if m == nil {
+		return
+	}
+
+	for _, val := range m.RightSiblings {
+		writer.WriteBytes(1, val)
+	}
+
+	return
+}
+
+// Marshal marshals SparseMerkleRangeProof to a slice of bytes.
+func (m *SparseMerkleRangeProof) Marshal() []byte {
+	writer := jspb.NewWriter()
+	m.MarshalToWriter(writer)
+	return writer.GetResult()
+}
+
+// UnmarshalFromReader unmarshals a SparseMerkleRangeProof from the provided reader.
+func (m *SparseMerkleRangeProof) UnmarshalFromReader(reader jspb.Reader) *SparseMerkleRangeProof {
+	for reader.Next() {
+		if m == nil {
+			m = &SparseMerkleRangeProof{}
+		}
+
+		switch reader.GetFieldNumber() {
+		case 1:
+			m.RightSiblings = append(m.RightSiblings, reader.ReadBytes())
+		default:
+			reader.SkipField()
+		}
+	}
+
+	return m
+}
+
+// Unmarshal unmarshals a SparseMerkleRangeProof from a slice of bytes.
+func (m *SparseMerkleRangeProof) Unmarshal(rawBytes []byte) (*SparseMerkleRangeProof, error) {
+	reader := jspb.NewReader(rawBytes)
+
+	m = m.UnmarshalFromReader(reader)
+
+	if err := reader.Err(); err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
 // The complete proof used to authenticate a transaction.
 type TransactionProof struct {
 	LedgerInfoToTransactionInfoProof *AccumulatorProof

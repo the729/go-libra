@@ -10,30 +10,33 @@ import jspb "github.com/johanbrandhorst/protobuf/jspb"
 // is compatible with the jspb package it is being compiled against.
 const _ = jspb.JspbPackageIsVersion2
 
-// This is used to prove validator changes.  When a validator is changing, it
-// triggers an event on /validator_change_account/events/sent.  To tell the
-// client about validator changes, we query
-// /validator_change_account/events/sent to get all versions that contain
-// validator changes after the version that we are trying to update from. For
-// each of these versions, the old validator set would have signed the ledger
-// info at that version.  The client needs this as well as the event results +
-// proof.  The client can then verify that these events were under the current
-// tree and that the changes were signed by the old validators (and that the
-// events correctly show which validators are the new validators).
-type ValidatorChangeEventWithProof struct {
+// This is used to prove validator changes.
+type ValidatorChangeProof struct {
+	// A list of LedgerInfos with contiguous increasing epoch numbers.
 	LedgerInfoWithSigs []*LedgerInfoWithSignatures
+	// A flag (when true) that indicates the above list is incomplete and only
+	// contains the first N epoch changes.
+	More bool
 }
 
-// GetLedgerInfoWithSigs gets the LedgerInfoWithSigs of the ValidatorChangeEventWithProof.
-func (m *ValidatorChangeEventWithProof) GetLedgerInfoWithSigs() (x []*LedgerInfoWithSignatures) {
+// GetLedgerInfoWithSigs gets the LedgerInfoWithSigs of the ValidatorChangeProof.
+func (m *ValidatorChangeProof) GetLedgerInfoWithSigs() (x []*LedgerInfoWithSignatures) {
 	if m == nil {
 		return x
 	}
 	return m.LedgerInfoWithSigs
 }
 
-// MarshalToWriter marshals ValidatorChangeEventWithProof to the provided writer.
-func (m *ValidatorChangeEventWithProof) MarshalToWriter(writer jspb.Writer) {
+// GetMore gets the More of the ValidatorChangeProof.
+func (m *ValidatorChangeProof) GetMore() (x bool) {
+	if m == nil {
+		return x
+	}
+	return m.More
+}
+
+// MarshalToWriter marshals ValidatorChangeProof to the provided writer.
+func (m *ValidatorChangeProof) MarshalToWriter(writer jspb.Writer) {
 	if m == nil {
 		return
 	}
@@ -44,21 +47,25 @@ func (m *ValidatorChangeEventWithProof) MarshalToWriter(writer jspb.Writer) {
 		})
 	}
 
+	if m.More {
+		writer.WriteBool(2, m.More)
+	}
+
 	return
 }
 
-// Marshal marshals ValidatorChangeEventWithProof to a slice of bytes.
-func (m *ValidatorChangeEventWithProof) Marshal() []byte {
+// Marshal marshals ValidatorChangeProof to a slice of bytes.
+func (m *ValidatorChangeProof) Marshal() []byte {
 	writer := jspb.NewWriter()
 	m.MarshalToWriter(writer)
 	return writer.GetResult()
 }
 
-// UnmarshalFromReader unmarshals a ValidatorChangeEventWithProof from the provided reader.
-func (m *ValidatorChangeEventWithProof) UnmarshalFromReader(reader jspb.Reader) *ValidatorChangeEventWithProof {
+// UnmarshalFromReader unmarshals a ValidatorChangeProof from the provided reader.
+func (m *ValidatorChangeProof) UnmarshalFromReader(reader jspb.Reader) *ValidatorChangeProof {
 	for reader.Next() {
 		if m == nil {
-			m = &ValidatorChangeEventWithProof{}
+			m = &ValidatorChangeProof{}
 		}
 
 		switch reader.GetFieldNumber() {
@@ -66,6 +73,8 @@ func (m *ValidatorChangeEventWithProof) UnmarshalFromReader(reader jspb.Reader) 
 			reader.ReadMessage(func() {
 				m.LedgerInfoWithSigs = append(m.LedgerInfoWithSigs, new(LedgerInfoWithSignatures).UnmarshalFromReader(reader))
 			})
+		case 2:
+			m.More = reader.ReadBool()
 		default:
 			reader.SkipField()
 		}
@@ -74,8 +83,8 @@ func (m *ValidatorChangeEventWithProof) UnmarshalFromReader(reader jspb.Reader) 
 	return m
 }
 
-// Unmarshal unmarshals a ValidatorChangeEventWithProof from a slice of bytes.
-func (m *ValidatorChangeEventWithProof) Unmarshal(rawBytes []byte) (*ValidatorChangeEventWithProof, error) {
+// Unmarshal unmarshals a ValidatorChangeProof from a slice of bytes.
+func (m *ValidatorChangeProof) Unmarshal(rawBytes []byte) (*ValidatorChangeProof, error) {
 	reader := jspb.NewReader(rawBytes)
 
 	m = m.UnmarshalFromReader(reader)
