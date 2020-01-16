@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	TestNetRootHash = "b7712506940af39e57de4a868c15849ab09bd8e3c4a89113a492797c6f98bf6b"
+	TestNetRootHash = "57837542f4362bd644bfd61356eb14484a6446222f5693c41d7d328b58d83dcc"
 )
 
 // Client is a Libra client.

@@ -43,6 +43,8 @@ client.queryTransactionRange(100, 2, true)
 
 Several examples are included in [`example/nodejs`](https://github.com/the729/go-libra/tree/master/example/nodejs) folder.
 
+There is a [pure frontend Libra blockchain explorer](http://pg.wutj.info/web_client/), based on gopherjs-libra.
+
 ## Generating Libra Accounts
 
 This library does not handle account generation based on mnemonic. You will have to manage your public-private key pairs with other wallet libraries. 

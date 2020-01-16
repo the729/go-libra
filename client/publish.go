@@ -5,19 +5,19 @@ import (
 	"time"
 )
 
-// NewRawCustomTransaction creates a new serialized raw transaction bytes corresponding to a
-// custom transaction.
-func NewRawCustomTransaction(
+// NewRawCustomModuleTransaction creates a new serialized raw transaction bytes corresponding to a
+// custom module transaction.
+func NewRawCustomModuleTransaction(
 	senderAddress types.AccountAddress,
 	senderSequenceNumber uint64,
 	maxGasAmount, gasUnitPrice uint64,
 	expiration time.Time,
-	payload types.TransactionPayload,
+	module types.TxnPayloadModule,
 ) (*types.RawTransaction, error) {
 	txn := &types.RawTransaction{
 		Sender:         senderAddress,
 		SequenceNumber: senderSequenceNumber,
-		Payload:        payload,
+		Payload:        module,
 		MaxGasAmount:   maxGasAmount,
 		GasUnitPrice:   gasUnitPrice,
 		ExpirationTime: uint64(expiration.Unix()),

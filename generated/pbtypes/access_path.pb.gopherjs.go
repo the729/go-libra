@@ -48,6 +48,7 @@
 		SparseMerkleProof
 		AccumulatorConsistencyProof
 		AccumulatorRangeProof
+		SparseMerkleRangeProof
 		TransactionProof
 		AccountStateProof
 		EventProof
@@ -61,7 +62,7 @@
 		AccountState
 		TransactionToCommit
 		TransactionListWithProof
-		ValidatorChangeEventWithProof
+		ValidatorChangeProof
 		ValidatorPublicKeys
 		ValidatorSet
 		VMStatus

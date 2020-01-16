@@ -288,10 +288,10 @@ type UpdateToLatestLedgerResponse struct {
 	// validator signatures as well as a proof that shows the latest ledger
 	// extends the old ledger the client had.
 	LedgerInfoWithSigs *LedgerInfoWithSignatures
-	// Validator change events from what the client last knew.  This is used to
-	// inform the client of validator changes from the client's last known version
-	// until the current version
-	ValidatorChangeEvents *ValidatorChangeEventWithProof
+	// A proof for Validator changes from what the client last knew. This is
+	// used to inform the client of validator changes from the client's last
+	// known version until the current version.
+	ValidatorChangeProof *ValidatorChangeProof
 	// A proof that shows the latest ledger accumulator is consistent with the
 	// old accumulator at "client_known_version".
 	LedgerConsistencyProof *AccumulatorConsistencyProof
@@ -313,12 +313,12 @@ func (m *UpdateToLatestLedgerResponse) GetLedgerInfoWithSigs() (x *LedgerInfoWit
 	return m.LedgerInfoWithSigs
 }
 
-// GetValidatorChangeEvents gets the ValidatorChangeEvents of the UpdateToLatestLedgerResponse.
-func (m *UpdateToLatestLedgerResponse) GetValidatorChangeEvents() (x *ValidatorChangeEventWithProof) {
+// GetValidatorChangeProof gets the ValidatorChangeProof of the UpdateToLatestLedgerResponse.
+func (m *UpdateToLatestLedgerResponse) GetValidatorChangeProof() (x *ValidatorChangeProof) {
 	if m == nil {
 		return x
 	}
-	return m.ValidatorChangeEvents
+	return m.ValidatorChangeProof
 }
 
 // GetLedgerConsistencyProof gets the LedgerConsistencyProof of the UpdateToLatestLedgerResponse.
@@ -347,9 +347,9 @@ func (m *UpdateToLatestLedgerResponse) MarshalToWriter(writer jspb.Writer) {
 		})
 	}
 
-	if m.ValidatorChangeEvents != nil {
+	if m.ValidatorChangeProof != nil {
 		writer.WriteMessage(3, func() {
-			m.ValidatorChangeEvents.MarshalToWriter(writer)
+			m.ValidatorChangeProof.MarshalToWriter(writer)
 		})
 	}
 
@@ -387,7 +387,7 @@ func (m *UpdateToLatestLedgerResponse) UnmarshalFromReader(reader jspb.Reader) *
 			})
 		case 3:
 			reader.ReadMessage(func() {
-				m.ValidatorChangeEvents = m.ValidatorChangeEvents.UnmarshalFromReader(reader)
+				m.ValidatorChangeProof = m.ValidatorChangeProof.UnmarshalFromReader(reader)
 			})
 		case 4:
 			reader.ReadMessage(func() {

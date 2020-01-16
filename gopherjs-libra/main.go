@@ -33,15 +33,16 @@ func main() {
 type jsClient struct {
 	*js.Object
 
-	queryLedgerInfo              func(...interface{}) *js.Object                                     `js:"queryLedgerInfo"`
-	queryAccountState            func(types.AccountAddress) *js.Object                               `js:"queryAccountState"`
-	queryAccountSequenceNumber   func(types.AccountAddress) *js.Object                               `js:"queryAccountSequenceNumber"`
-	submitP2PTransaction         func(*js.Object) *js.Object                                         `js:"submitP2PTransaction"`
-	submitContractTransaction    func(*js.Object) *js.Object                                         `js:"submitContractTransaction"`
-	pollSequenceUntil            func(types.AccountAddress, uint64, int64) *js.Object                `js:"pollSequenceUntil"`
-	queryTransactionByAccountSeq func(types.AccountAddress, uint64, bool) *js.Object                 `js:"queryTransactionByAccountSeq"`
-	queryTransactionRange        func(uint64, uint64, bool) *js.Object                               `js:"queryTransactionRange"`
-	queryEventsByAccessPath      func(types.AccountAddress, []byte, uint64, bool, uint64) *js.Object `js:"queryEventsByAccessPath"`
+	queryLedgerInfo               func(...interface{}) *js.Object                                     `js:"queryLedgerInfo"`
+	queryAccountState             func(types.AccountAddress) *js.Object                               `js:"queryAccountState"`
+	queryAccountSequenceNumber    func(types.AccountAddress) *js.Object                               `js:"queryAccountSequenceNumber"`
+	submitP2PTransaction          func(*js.Object) *js.Object                                         `js:"submitP2PTransaction"`
+	submitCustomModuleTransaction func(*js.Object) *js.Object                                         `js:"submitCustomModuleTransaction"`
+	submitCustomScriptTransaction func(*js.Object) *js.Object                                         `js:"submitCustomScriptTransaction"`
+	pollSequenceUntil             func(types.AccountAddress, uint64, int64) *js.Object                `js:"pollSequenceUntil"`
+	queryTransactionByAccountSeq  func(types.AccountAddress, uint64, bool) *js.Object                 `js:"queryTransactionByAccountSeq"`
+	queryTransactionRange         func(uint64, uint64, bool) *js.Object                               `js:"queryTransactionRange"`
+	queryEventsByAccessPath       func(types.AccountAddress, []byte, uint64, bool, uint64) *js.Object `js:"queryEventsByAccessPath"`
 }
 
 func newClient(server, trustedPeers, RootHash string) *js.Object {
@@ -95,29 +96,56 @@ func newClient(server, trustedPeers, RootHash string) *js.Object {
 		return promiseSubmitP2PTransaction(rawTxn)
 	}
 
-	promiseSubmitContractTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
+	promiseSubmitCustomModuleTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
 		type jsContractTxn struct {
 			*js.Object
-			SenderAddr          [32]byte                 `js:"senderAddr"`
-			SenderPriKey        []byte                   `js:"senderPrivateKey"`
-			SenderSeq           uint64                   `js:"senderSeq"`
-			MaxGasAmount        uint64                   `js:"maxGasAmount"`
-			GasUnitPrice        uint64                   `js:"gasUnitPrice"`
-			ExpirationTimestamp int64                    `js:"expirationTimestamp"`
-			Payload             types.TransactionPayload `js:"payload"`
+			SenderAddr          [32]byte               `js:"senderAddr"`
+			SenderPriKey        []byte                 `js:"senderPrivateKey"`
+			SenderSeq           uint64                 `js:"senderSeq"`
+			MaxGasAmount        uint64                 `js:"maxGasAmount"`
+			GasUnitPrice        uint64                 `js:"gasUnitPrice"`
+			ExpirationTimestamp int64                  `js:"expirationTimestamp"`
+			Module              types.TxnPayloadModule `js:"module"`
 		}
 		contractTxn := &jsContractTxn{Object: txn}
-		rawTxn, _ := client.NewRawCustomTransaction(
+		rawTxn, _ := client.NewRawCustomModuleTransaction(
 			contractTxn.SenderAddr,
 			contractTxn.SenderSeq,
 			contractTxn.MaxGasAmount, contractTxn.GasUnitPrice,
 			time.Unix(contractTxn.ExpirationTimestamp, 0),
-			contractTxn.Payload,
+			contractTxn.Module,
 		)
 		return c.SubmitRawTransaction(context.TODO(), rawTxn, contractTxn.SenderPriKey)
 	})
-	jc.submitContractTransaction = func(rawTxn *js.Object) *js.Object {
-		return promiseSubmitContractTransaction(rawTxn)
+	jc.submitCustomModuleTransaction = func(rawTxn *js.Object) *js.Object {
+		return promiseSubmitCustomModuleTransaction(rawTxn)
+	}
+
+	promiseSubmitCustomScriptTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
+		type jsContractTxn struct {
+			*js.Object
+			SenderAddr          [32]byte                    `js:"senderAddr"`
+			SenderPriKey        []byte                      `js:"senderPrivateKey"`
+			SenderSeq           uint64                      `js:"senderSeq"`
+			MaxGasAmount        uint64                      `js:"maxGasAmount"`
+			GasUnitPrice        uint64                      `js:"gasUnitPrice"`
+			ExpirationTimestamp int64                       `js:"expirationTimestamp"`
+			code                []byte                      `js:"code"`
+			args                []types.TransactionArgument `js:"args"`
+		}
+		contractTxn := &jsContractTxn{Object: txn}
+		rawTxn, _ := client.NewRawCustomScriptTransaction(
+			contractTxn.SenderAddr,
+			contractTxn.SenderSeq,
+			contractTxn.MaxGasAmount, contractTxn.GasUnitPrice,
+			time.Unix(contractTxn.ExpirationTimestamp, 0),
+			contractTxn.code,
+			contractTxn.args,
+		)
+		return c.SubmitRawTransaction(context.TODO(), rawTxn, contractTxn.SenderPriKey)
+	})
+	jc.submitCustomScriptTransaction = func(rawTxn *js.Object) *js.Object {
+		return promiseSubmitCustomScriptTransaction(rawTxn)
 	}
 
 	promisePollSequenceUntil := jopher.Promisify(func(addr types.AccountAddress, seq uint64, expirationTimestamp int64) error {
