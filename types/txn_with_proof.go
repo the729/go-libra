@@ -27,7 +27,7 @@ func (t *TransactionWithProof) FromProto(pb *pbtypes.TransactionWithProof) error
 	if pb.Transaction == nil {
 		return ErrNilInput
 	}
-	t.RawSignedTxn = pb.Transaction.Transaction
+	t.RawTxn = pb.Transaction.Transaction
 
 	t.Events = make([]*ContractEvent, 0, len(pb.Events.Events))
 	for _, ev := range pb.Events.Events {

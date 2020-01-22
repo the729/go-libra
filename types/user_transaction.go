@@ -1,8 +1,6 @@
 package types
 
 import (
-	"crypto"
-	"crypto/rand"
 	"errors"
 	"fmt"
 
@@ -13,8 +11,11 @@ import (
 	"github.com/the729/lcs"
 )
 
-// SignedTransaction is a signed transaction, which consists of a raw transaction
+// SignedTransaction is a signed user transaction, which consists of a raw transaction
 // and the signature and public key.
+//
+// TODO: according to a comment in libra codebase(types/src/transaction/mod.rs Line#1065),
+// should be renamed to SignedUserTransaction.
 type SignedTransaction struct {
 	// RawTxn is the raw transaction.
 	RawTxn *RawTransaction
@@ -24,35 +25,6 @@ type SignedTransaction struct {
 
 	// Signature is the signature.
 	Signature []byte
-}
-
-// SubmittedTransaction is a signed transaction with execution outputs.
-// It is not guaranteed to be included in the ledger.
-type SubmittedTransaction struct {
-	// TODO: this is raw (bytes) abstract transaction. Rename this or SignedTransaction properly.
-	RawSignedTxn []byte
-
-	// Info is the transaction info.
-	Info *TransactionInfo
-
-	// Events is a list of output events.
-	Events EventList
-
-	// Version is height of this transaction in the ledger.
-	Version uint64
-}
-
-// ProvenTransaction is a transaction which has been proven to be included in the ledger.
-type ProvenTransaction struct {
-	proven      bool
-	withEvents  bool
-	signedTxn   *SignedTransaction
-	txnHash     HashValue
-	events      EventList
-	version     uint64
-	gasUsed     uint64
-	majorStatus VMStatusCode
-	ledgerInfo  *ProvenLedgerInfo
 }
 
 // ToProto builds a protobuf struct from this struct.
@@ -113,141 +85,4 @@ func (t *SignedTransaction) VerifySignature() error {
 	}
 
 	return nil
-}
-
-// Verify the submitted transaction, and output a ProvenTransaction which is NOT fully proven yet.
-//
-// Your should not need to call this function.
-// To fully prove a submitted transaction, you will need to verify a SignedTransactionWithProof or
-// a TransactionListWithProof.
-func (st *SubmittedTransaction) Verify() (*ProvenTransaction, error) {
-	// according to https://community.libra.org/t/how-to-verify-a-signedtransaction-thoroughly/1214/3,
-	// it is unnecessary to verify SignedTransaction itself
-
-	// verify Events hash from transaction info
-	eventHash := st.Events.Hash()
-	withEvents := true
-	if !sha3libra.Equal(eventHash, st.Info.EventRootHash) {
-		if st.Events != nil {
-			return nil, fmt.Errorf("event root hash mismatch in txn(%d)", st.Version)
-		}
-		// if event hash does not match, and events is nil, must be without events
-		withEvents = false
-	}
-
-	// verify Transaction hash from transaction info
-	hasher := sha3libra.NewTransaction()
-	if _, err := hasher.Write(st.RawSignedTxn); err != nil {
-		panic(err)
-	}
-	txnHash := hasher.Sum([]byte{})
-	if !sha3libra.Equal(txnHash, st.Info.TransactionHash) {
-		return nil, fmt.Errorf("txn hash mismatch in txn(%d)", st.Version)
-	}
-
-	decodedTxn := &Transaction{}
-	if err := lcs.Unmarshal(st.RawSignedTxn, decodedTxn); err != nil {
-		return nil, fmt.Errorf("lcs unmarshal signedtxn error: %v", err)
-	}
-	signedUserTxn, _ := decodedTxn.Transaction.(*SignedTransaction)
-
-	return &ProvenTransaction{
-		// this verification alone does not prove ledger inclusion
-		proven:      false,
-		withEvents:  withEvents,
-		signedTxn:   signedUserTxn,
-		txnHash:     st.Info.Hash(),
-		events:      st.Events.Clone(),
-		version:     st.Version,
-		gasUsed:     st.Info.GasUsed,
-		majorStatus: st.Info.MajorStatus,
-	}, nil
-}
-
-// GetLedgerInfo returns the ledger info.
-func (pt *ProvenTransaction) GetLedgerInfo() *ProvenLedgerInfo {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return pt.ledgerInfo
-}
-
-// GetSignedTxn returns a copy of the underlying signed transaction.
-func (pt *ProvenTransaction) GetSignedTxn() *SignedTransaction {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	if pt.signedTxn == nil {
-		// This transaction is not a signed user transaction
-		return nil
-	}
-	return pt.signedTxn.Clone()
-}
-
-// GetHash returns a copy of the transaction info hash
-func (pt *ProvenTransaction) GetHash() HashValue {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return cloneBytes(pt.txnHash)
-}
-
-// GetWithEvents returns whether this proven transaction has output events included.
-func (pt *ProvenTransaction) GetWithEvents() bool {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return pt.withEvents
-}
-
-// GetEvents returns a copy of the underlying events list.
-//
-// Nil output does not necessarily mean empty output event list. It could be this proven
-// transaction does not have output events list included. Call GetWithEvents() to find out.
-func (pt *ProvenTransaction) GetEvents() []*ContractEvent {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return pt.events.Clone()
-}
-
-// GetVersion returns the height of this transaction.
-func (pt *ProvenTransaction) GetVersion() uint64 {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return pt.version
-}
-
-// GetGasUsed returns the gas used to process this transaction.
-func (pt *ProvenTransaction) GetGasUsed() uint64 {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return pt.gasUsed
-}
-
-// GetMajorStatus returns the major VM status returned from this transaction.
-func (pt *ProvenTransaction) GetMajorStatus() VMStatusCode {
-	if !pt.proven {
-		panic("not valid proven transaction")
-	}
-	return pt.majorStatus
-}
-
-// SignRawTransaction signes a raw transaction with a private key.
-func SignRawTransaction(rawTxn *RawTransaction, signer ed25519.PrivateKey) *SignedTransaction {
-	hasher := sha3libra.NewRawTransaction()
-	if err := lcs.NewEncoder(hasher).Encode(rawTxn); err != nil {
-		panic(err)
-	}
-	txnHash := hasher.Sum([]byte{})
-	senderPubKey := signer.Public().(ed25519.PublicKey)
-	sig, _ := signer.Sign(rand.Reader, txnHash, crypto.Hash(0))
-
-	return &SignedTransaction{
-		RawTxn:    rawTxn,
-		PublicKey: senderPubKey,
-		Signature: sig,
-	}
 }

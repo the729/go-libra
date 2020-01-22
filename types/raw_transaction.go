@@ -1,10 +1,18 @@
 package types
 
 import (
+	"crypto"
+	"crypto/rand"
+
+	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/lcs"
+	"golang.org/x/crypto/ed25519"
 )
 
-// RawTransaction is a raw transaction struct.
+// RawTransaction is a raw user transaction.
+//
+// TODO: according to a comment in libra codebase(types/src/transaction/mod.rs Line#1065),
+// should be renamed to RawUserTransaction.
 type RawTransaction struct {
 	// Sender address.
 	Sender AccountAddress
@@ -232,5 +240,26 @@ func (rt *RawTransaction) Clone() *RawTransaction {
 		MaxGasAmount:   rt.MaxGasAmount,
 		GasUnitPrice:   rt.GasUnitPrice,
 		ExpirationTime: rt.ExpirationTime,
+	}
+}
+
+// Sign the raw transaction with a private key. It panics when the private key is
+// invalid.
+func (rt *RawTransaction) Sign(signer ed25519.PrivateKey) *SignedTransaction {
+	hasher := sha3libra.NewRawTransaction()
+	if err := lcs.NewEncoder(hasher).Encode(rt); err != nil {
+		panic(err)
+	}
+	txnHash := hasher.Sum([]byte{})
+	senderPubKey := signer.Public().(ed25519.PublicKey)
+	sig, err := signer.Sign(rand.Reader, txnHash, crypto.Hash(0))
+	if err != nil {
+		panic(err)
+	}
+
+	return &SignedTransaction{
+		RawTxn:    rt,
+		PublicKey: senderPubKey,
+		Signature: sig,
 	}
 }
