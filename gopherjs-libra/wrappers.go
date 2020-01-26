@@ -24,9 +24,11 @@ type jsProvenAccountState struct {
 
 type jsProvenAccountBlob struct {
 	*js.Object
-	getAddress    interface{} `js:"getAddress"`
-	getResource   interface{} `js:"getResource"`
-	getLedgerInfo interface{} `js:"getLedgerInfo"`
+	getAddress              interface{} `js:"getAddress"`
+	getResource             interface{} `js:"getResource"`
+	getResourcePaths        interface{} `js:"getResourcePaths"`
+	getLibraAccountResource interface{} `js:"getLibraAccountResource"`
+	getLedgerInfo           interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenAccountResource struct {
@@ -43,13 +45,14 @@ type jsProvenAccountResource struct {
 
 type jsProvenTransaction struct {
 	*js.Object
-	getMajorStatus interface{} `js:"getMajorStatus"`
-	getVersion     interface{} `js:"getVersion"`
-	getGasUsed     interface{} `js:"getGasUsed"`
-	getWithEvents  interface{} `js:"getWithEvents"`
-	getSignedTxn   interface{} `js:"getSignedTxn"`
-	getEvents      interface{} `js:"getEvents"`
-	getLedgerInfo  interface{} `js:"getLedgerInfo"`
+	getMajorStatus   interface{} `js:"getMajorStatus"`
+	getVersion       interface{} `js:"getVersion"`
+	getGasUsed       interface{} `js:"getGasUsed"`
+	getWithEvents    interface{} `js:"getWithEvents"`
+	getSignedTxn     interface{} `js:"getSignedTxn"`
+	getBlockMetadata interface{} `js:"getBlockMetadata"`
+	getEvents        interface{} `js:"getEvents"`
+	getLedgerInfo    interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenTransactionList struct {
@@ -100,13 +103,20 @@ func wrapProvenAccountBlob(g *types.ProvenAccountBlob) *js.Object {
 	}
 	j := &jsProvenAccountBlob{Object: js.Global.Get("Object").New()}
 	j.getAddress = g.GetAddress
-	j.getResource = jopher.Promisify(func(path []byte) (*js.Object, error) {
-		r, err := g.GetResource(path)
+	j.getLibraAccountResource = jopher.Promisify(func() (*js.Object, error) {
+		r, err := g.GetLibraAccountResource()
 		if err != nil {
 			return nil, err
 		}
 		return wrapProvenAccountResource(r), nil
 	})
+	j.getResource = func(path []byte) []byte {
+		r, _ := g.GetResource(path)
+		return r
+	}
+	j.getResourcePaths = func() [][]byte {
+		return g.GetResourcePaths()
+	}
 	j.getLedgerInfo = func() *js.Object {
 		return wrapProvenLedgerInfo(g.GetLedgerInfo())
 	}
@@ -142,6 +152,7 @@ func wrapProvenTransaction(g *types.ProvenTransaction) *js.Object {
 	j.getWithEvents = g.GetWithEvents
 	j.getEvents = g.GetEvents
 	j.getSignedTxn = g.GetSignedTxn
+	j.getBlockMetadata = g.GetBlockMetadata
 	j.getLedgerInfo = func() *js.Object {
 		return wrapProvenLedgerInfo(g.GetLedgerInfo())
 	}

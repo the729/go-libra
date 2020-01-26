@@ -16,7 +16,7 @@ type AccountResource struct {
 // to be included in the ledger.
 type ProvenAccountResource struct {
 	proven          bool
-	accountResource AccountResource
+	accountResource *AccountResource
 	addr            AccountAddress
 	ledgerInfo      *ProvenLedgerInfo
 }

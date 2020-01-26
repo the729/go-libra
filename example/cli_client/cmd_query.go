@@ -65,7 +65,7 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 		fmt.Println("Account is not present in the ledger.")
 	} else {
 		log.Printf("Account version: %d", accountState.GetVersion())
-		resource, err := c.GetLibraCoinResourceFromAccountBlob(accountState.GetAccountBlob())
+		resource, err := accountState.GetAccountBlob().GetLibraAccountResource()
 		if err != nil {
 			log.Printf("Account does not contain libra coin resource, err: %v", err)
 			return nil

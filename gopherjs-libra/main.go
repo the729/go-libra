@@ -22,6 +22,7 @@ func main() {
 	exports.Set("libra", map[string]interface{}{
 		"client":                   newClient,
 		"trustedPeersFile":         trustedPeersFile,
+		"resourcePath":             types.ResourcePath,
 		"accountResourcePath":      types.AccountResourcePath,
 		"accountSentEventPath":     types.AccountSentEventPath,
 		"accountReceivedEventPath": types.AccountReceivedEventPath,

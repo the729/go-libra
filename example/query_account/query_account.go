@@ -33,7 +33,7 @@ func main() {
 		return
 	}
 
-	resource, err := c.GetLibraCoinResourceFromAccountBlob(provenState.GetAccountBlob())
+	resource, err := provenState.GetAccountBlob().GetLibraAccountResource()
 	if err != nil {
 		log.Fatal(err)
 	}

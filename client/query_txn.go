@@ -114,7 +114,7 @@ func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.Ac
 			return nil, errors.New("account not exist")
 		}
 
-		pres, err := c.GetLibraCoinResourceFromAccountBlob(pstate.GetAccountBlob())
+		pres, err := pstate.GetAccountBlob().GetLibraAccountResource()
 		if err != nil {
 			return nil, err
 		}

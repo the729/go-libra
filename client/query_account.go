@@ -54,15 +54,6 @@ func (c *Client) QueryAccountState(ctx context.Context, addr types.AccountAddres
 	return paccount, nil
 }
 
-// GetLibraCoinResourceFromAccountBlob decodes the resource of Libra coin from a proven account blob.
-func (c *Client) GetLibraCoinResourceFromAccountBlob(blob *types.ProvenAccountBlob) (*types.ProvenAccountResource, error) {
-	res, err := blob.GetResource(types.AccountResourcePath())
-	if err != nil {
-		return nil, fmt.Errorf("get resource failed: %v", err)
-	}
-	return res, nil
-}
-
 // QueryAccountSequenceNumber queries sequence number of an account from RPC server, and does necessary
 // crypto verifications.
 func (c *Client) QueryAccountSequenceNumber(ctx context.Context, addr types.AccountAddress) (uint64, error) {
@@ -73,7 +64,7 @@ func (c *Client) QueryAccountSequenceNumber(ctx context.Context, addr types.Acco
 	if paccount.IsNil() {
 		return 0, errors.New("sender account not present in ledger")
 	}
-	resource, err := c.GetLibraCoinResourceFromAccountBlob(paccount.GetAccountBlob())
+	resource, err := paccount.GetAccountBlob().GetLibraAccountResource()
 	if err != nil {
 		return 0, err
 	}

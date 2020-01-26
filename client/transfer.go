@@ -78,7 +78,7 @@ func (c *Client) PollSequenceUntil(ctx context.Context, addr types.AccountAddres
 		}
 		ledgerInfo := paccount.GetLedgerInfo()
 		if !paccount.IsNil() {
-			resource, err := c.GetLibraCoinResourceFromAccountBlob(paccount.GetAccountBlob())
+			resource, err := paccount.GetAccountBlob().GetLibraAccountResource()
 			if err != nil {
 				return err
 			}

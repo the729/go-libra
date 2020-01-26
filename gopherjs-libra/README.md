@@ -76,6 +76,19 @@ Returns a Libra Client instance.
 
 A constant string. TOML formated string of the default trusted peers of the libra testnet.
 
+## .resourcePath(addr, module, name, accesses ...)
+
+Build a resource path and returns a `Uint8Array`. The following calls are equivalent: 
+```resourcePath(new Uint8Array(32), "LibraAccount", "T", "sent_events_count", "")```
+and
+```accountSentEventPath()```
+
+### Arguments
+ - addr (Uint8Array): 32-byte address.
+ - module (string): module name.
+ - name (string): type name.
+ - accesses (string): 0 or more access paths. 
+
 ## .accountResourcePath()
 
 Returns a `Uint8Array`: the raw path to the Libra account resource, which is `0x01+hash(0x0.LibraAccount.T)`.
@@ -215,7 +228,11 @@ Returns address (Uint8Array).
 
 ### getResource(path)
 
-Returns `provenAccountResource` on the given path. Use `accountResourcePath()` as the path.
+Returns a binary resource content on the given path. Use `resourcePath()` to build a path.
+
+### getLibraAccountResource()
+
+Returns `provenAccountResource`: the Libra account resource.
 
 ## Object: provenAccountResource
 
@@ -235,6 +252,7 @@ Returns `provenAccountResource` on the given path. Use `accountResourcePath()` a
 ### .getGasUsed()
 ### .getWithEvents()
 ### .getEvents()
+### .getBlockMetadata()
 ### .getSignedTxn()
 
 ## Object: provenTransactionList

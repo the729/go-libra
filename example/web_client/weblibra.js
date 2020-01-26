@@ -48,8 +48,8 @@ Vue.component("txn-card", {
     template: `
     <tr @click="$emit('txn-selected', txn)" class="pointer">
         <td>{{ version }}</td>
-        <td>{{ exp_time }}<br/>({{ new Date(exp_time*1000).toLocaleTimeString() }})</td>
         <td>{{ type }}</td>
+        <td>{{ exp_time }}<span v-if="isFinite(exp_time)"><br/>({{ new Date(exp_time*1000).toLocaleTimeString() }})</span></td>
         <td>Sender: 
             <a @click.stop="$emit('addr-selected', toHexString(sender))">{{ toHexString(sender) }}</a>
             <br/>Receiver: 
@@ -68,12 +68,16 @@ Vue.component("txn-card", {
             var stxn = this.txn.getSignedTxn();
             return stxn ? stxn.RawTxn : null
         },
+        block_meta: function () { return this.txn.getBlockMetadata() },
         exp_time: function () {
-            return this.raw_txn ? this.raw_txn.ExpirationTime : null;
+            return this.raw_txn ? this.raw_txn.ExpirationTime :
+                this.block_meta ? this.block_meta.TimestampUSec / 1000 : "N/A";
         },
         type: function () {
-            if (!this.raw_txn) return "blockmeta";
-            if (!this.raw_txn.Payload.Code) return "writeset";
+            if (this.block_meta) return "block_meta";
+            if (!this.raw_txn) return "unknown";
+            if (this.raw_txn.Payload.WriteSet) return "write_set";
+            if (!this.raw_txn.Payload.Code) return "unknown";
             var name = libra.inferProgramName(this.raw_txn.Payload.Code);
             switch (name) {
                 case "peer_to_peer_transfer": return "p2p";
@@ -120,8 +124,8 @@ Vue.component("txn-list", {
             <thead>
                 <tr>
                     <th>Version</th>
-                    <th>Exp. Time</th>
                     <th>Type</th>
+                    <th>Exp. Time</th>
                     <th>Sender / Receiver</th>
                     <th>Amount</th>
                     <th>Result</th>
@@ -230,6 +234,13 @@ Vue.component("txn-detail", {
                     </li>
                 </ul>
             </li>
+            <li v-else-if="block_meta != null"> Block metadata:
+                <ul>
+                    <li>ID: {{ toHexString(block_meta.ID) }}</li>
+                    <li>Proposer: {{ toHexString(block_meta.Proposer)}}</li>
+                    <li>Timestamp usec: {{ block_meta.TimestampUSec }}</li>
+                </ul>
+            </li>
             <li v-else>Not a user transaction.</li>
         </ul>
         <p>(See console for raw SignedTxn object.)</p>
@@ -243,9 +254,12 @@ Vue.component("txn-detail", {
             var stxn = this.txn.getSignedTxn();
             return stxn ? stxn.RawTxn : null
         },
+        block_meta: function () { return this.txn.getBlockMetadata() },
         type: function () {
-            if (!this.raw_txn) return "blockmeta";
-            if (!this.raw_txn.Payload.Code) return "writeset";
+            if (this.block_meta) return "block_meta";
+            if (!this.raw_txn) return "unknown";
+            if (this.raw_txn.Payload.WriteSet) return "write_set";
+            if (!this.raw_txn.Payload.Code) return "unknown";
             var name = libra.inferProgramName(this.raw_txn.Payload.Code);
             switch (name) {
                 case "peer_to_peer_transfer": return "p2p";
@@ -282,30 +296,39 @@ Vue.component("account-detail", {
     <div class="account-detail">
         <h2>Account Detail</h2>
         <p>
-            Address: <input type="text" :value="address"></input>
+            Address: <input type="text" v-model="address"></input>
             <button @click="refresh" :disabled="loading">{{ loading?"Refreshing...":"Refresh" }}</button>
         </p>
         <div v-if="state">
-            <ul v-if="blob && resource">
-                <li>Balance: {{ resource.getBalance() / 1000000.0 }}</li>
-                <li>Sequence Number: {{ resource.getSequenceNumber() }}</li>
-                <li>Sent Events: 
-                    <ul>
-                        <li>Count: {{ resource.getSentEvents().Count }}</li>
-                        <li>Key: {{ toHexString(resource.getSentEvents().Key) }}</li>
-                    </ul>
-                </li>
-                <li>Received Events: 
-                    <ul>
-                        <li>Count: {{ resource.getReceivedEvents().Count }}</li>
-                        <li>Key: {{ toHexString(resource.getReceivedEvents().Key) }}</li>
-                    </ul>
-                </li>
-                <li>Delegated withdrawal capability: {{ resource.getDelegatedWithdrawalCapability() }}</li>
-                <li>Event generator: {{ resource.getEventGenerator() }}</li>
-                <li>Proven at ledger version: {{ resource.getLedgerInfo().getVersion() }}</li>
-            </ul>
-            <p v-else-if="blob">Account exists but cannot get 0x0.LibraAccount.T resource.</p>
+            <div v-if="blob">
+                <p>All resources:</p>
+                <ul>
+                    <li v-for="path in paths">{{ toHexString(path) }} (Type:{{ path[0]==0?"Code":path[0]==1?"Resource":"Unknown" }})<br/>
+                        Raw content: {{ toHexString(blob.getResource(path)) }}
+                    </li>
+                </ul>
+                <p>Libra account resource:</p>
+                <ul v-if="resource">
+                    <li>Balance: {{ resource.getBalance() / 1000000.0 }}</li>
+                    <li>Sequence Number: {{ resource.getSequenceNumber() }}</li>
+                    <li>Sent Events: 
+                        <ul>
+                            <li>Count: {{ resource.getSentEvents().Count }}</li>
+                            <li>Key: {{ toHexString(resource.getSentEvents().Key) }}</li>
+                        </ul>
+                    </li>
+                    <li>Received Events: 
+                        <ul>
+                            <li>Count: {{ resource.getReceivedEvents().Count }}</li>
+                            <li>Key: {{ toHexString(resource.getReceivedEvents().Key) }}</li>
+                        </ul>
+                    </li>
+                    <li>Delegated withdrawal capability: {{ resource.getDelegatedWithdrawalCapability() }}</li>
+                    <li>Event generator: {{ resource.getEventGenerator() }}</li>
+                    <li>Proven at ledger version: {{ resource.getLedgerInfo().getVersion() }}</li>
+                </ul>
+                <p v-else>Account exists but cannot get 0x0.LibraAccount.T resource.</p>
+            </div>
             <p v-else>Account does not exist at version {{ state.getVersion() }}</p>
         </div>
     </div>
@@ -315,16 +338,18 @@ Vue.component("account-detail", {
             loading: false,
             state: null,
             blob: null,
-            resource: null
+            resource: null,
+            paths: []
         }
     },
     methods: {
         refresh: function () {
-            var addr = fromHexString(this.address);
-            if (addr.length != 32) {
+            if (this.address.length != 64) {
                 alert("Invalid address.");
                 return
             }
+
+            var addr = fromHexString(this.address);
 
             this.loading = true;
             client.queryAccountState(addr)
@@ -334,7 +359,9 @@ Vue.component("account-detail", {
                 })
                 .then(r => {
                     this.blob = r;
-                    return r.getResource(libra.accountResourcePath())
+                    if (r == null) return null;
+                    this.paths = r.getResourcePaths()
+                    return r.getLibraAccountResource()
                 })
                 .then(r => {
                     this.resource = r;
@@ -364,7 +391,8 @@ new Vue({
         },
         txn_selected: function (txn) {
             this.selected_txn = txn;
-            console.log("Selected Txn", txn.getSignedTxn())
+            if (txn.getSignedTxn()) console.log("Selected Txn (user txn): ", txn.getSignedTxn())
+            if (txn.getBlockMetadata()) console.log("Selected Txn (block meta): ", txn.getBlockMetadata())
             setTimeout(_ => window.scrollTo(0, this.$el.querySelector("#txn-detail").offsetTop), 10)
         },
         addr_selected: function (addr) {

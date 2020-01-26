@@ -8,6 +8,20 @@ func AccountResourceTag() AccessPathTag {
 	}
 }
 
+// ResourcePath builds a path based on address, module, name and access pathes.
+func ResourcePath(addr AccountAddress, module, name string, accesses ...string) []byte {
+	p := &DecodedPath{
+		Tag: &StructTag{
+			Address: addr,
+			Module:  module,
+			Name:    name,
+		},
+		Accesses: accesses,
+	}
+	b, _ := p.MarshalBinary()
+	return b
+}
+
 // AccountResourcePath returns the raw path to the Account resource, which is 0x01+hash(0x0.LibraAccount.T)
 func AccountResourcePath() []byte {
 	p := &DecodedPath{

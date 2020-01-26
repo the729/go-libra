@@ -55,11 +55,22 @@ func (b *AccountBlob) ParseToMap(raw RawAccountBlob) error {
 //
 // The account blob should be already parsed into map of resources. To get Libra coin account resource,
 // use AccountResourcePath() to generate the path.
-func (b *AccountBlob) GetResource(path []byte) (*AccountResource, error) {
+func (b *AccountBlob) GetResource(path []byte) ([]byte, error) {
 	key := string(path)
 	val, ok := b.Map[key]
 	if !ok {
 		return nil, errors.New("resource not found")
+	}
+	return val, nil
+}
+
+// GetLibraAccountResource gets 0x0.LibraAccount.T resource from the account blob.
+//
+// The account blob should be already parsed into map of resources.
+func (b *AccountBlob) GetLibraAccountResource() (*AccountResource, error) {
+	val, err := b.GetResource(AccountResourcePath())
+	if err != nil {
+		return nil, err
 	}
 	r := &AccountResource{}
 	if err := lcs.Unmarshal(val, r); err != nil {
@@ -77,9 +88,7 @@ func (pb *ProvenAccountBlob) GetLedgerInfo() *ProvenLedgerInfo {
 }
 
 // GetResource gets a resource from a proven account blob by its path.
-//
-// To get Libra coin account resource, use AccountResourcePath() to generate the path.
-func (pb *ProvenAccountBlob) GetResource(path []byte) (*ProvenAccountResource, error) {
+func (pb *ProvenAccountBlob) GetResource(path []byte) ([]byte, error) {
 	if !pb.proven {
 		panic("not valid proven account blob")
 	}
@@ -87,12 +96,36 @@ func (pb *ProvenAccountBlob) GetResource(path []byte) (*ProvenAccountResource, e
 	if err != nil {
 		return nil, err
 	}
-	par := &ProvenAccountResource{
-		proven:     true,
-		addr:       pb.addr,
-		ledgerInfo: pb.ledgerInfo,
+	return cloneBytes(ar), nil
+}
+
+// GetResourcePaths gets a list of resource paths from a proven account blob.
+func (pb *ProvenAccountBlob) GetResourcePaths() [][]byte {
+	if !pb.proven {
+		panic("not valid proven account blob")
 	}
-	par.accountResource = *(ar.Clone())
+	paths := make([][]byte, 0, len(pb.accountBlob.Map))
+	for p := range pb.accountBlob.Map {
+		paths = append(paths, []byte(p))
+	}
+	return paths
+}
+
+// GetLibraAccountResource gets 0x0.LibraAccount.T resource from a proven account blob.
+func (pb *ProvenAccountBlob) GetLibraAccountResource() (*ProvenAccountResource, error) {
+	if !pb.proven {
+		panic("not valid proven account blob")
+	}
+	ar, err := pb.accountBlob.GetLibraAccountResource()
+	if err != nil {
+		return nil, err
+	}
+	par := &ProvenAccountResource{
+		proven:          true,
+		accountResource: ar.Clone(),
+		addr:            pb.addr,
+		ledgerInfo:      pb.ledgerInfo,
+	}
 	return par, nil
 }
 
