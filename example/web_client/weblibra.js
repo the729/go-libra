@@ -71,7 +71,7 @@ Vue.component("txn-card", {
         block_meta: function () { return this.txn.getBlockMetadata() },
         exp_time: function () {
             return this.raw_txn ? this.raw_txn.ExpirationTime :
-                this.block_meta ? this.block_meta.TimestampUSec / 1000 : "N/A";
+                this.block_meta ? this.block_meta.TimestampUSec / 1000000 : "N/A";
         },
         type: function () {
             if (this.block_meta) return "block_meta";
@@ -88,7 +88,8 @@ Vue.component("txn-card", {
             return "unknown";
         },
         sender: function () {
-            return this.raw_txn ? this.raw_txn.Sender : null;
+            return this.raw_txn ? this.raw_txn.Sender :
+                this.block_meta ? this.block_meta.Proposer : null;
         },
         receiver: function () {
             if (!this.raw_txn) return null;
