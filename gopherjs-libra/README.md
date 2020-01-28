@@ -41,9 +41,9 @@ client.queryTransactionRange(100, 2, true)
 
 # Examples
 
-Several examples are included in [`example/nodejs`](https://github.com/the729/go-libra/tree/master/example/nodejs) folder.
+For NodeJS, there are several examples included in [`example/nodejs`](https://github.com/the729/go-libra/tree/master/example/nodejs) folder.
 
-There is a [pure frontend Libra blockchain explorer](http://pg.wutj.info/web_client/), based on gopherjs-libra.
+For browsers, there is a [pure frontend Libra blockchain explorer](http://pg.wutj.info/web_client/), based on gopherjs-libra.
 
 ## Generating Libra Accounts
 
@@ -83,7 +83,7 @@ Build a resource path and returns a `Uint8Array`. The following calls are equiva
 and
 ```accountSentEventPath()```
 
-### Arguments
+Arguments:
  - addr (Uint8Array): 32-byte address.
  - module (string): module name.
  - name (string): type name.
@@ -103,7 +103,7 @@ Returns a `Uint8Array`: the raw path to Libra coin received events, which is `0x
 
 ## .pubkeyToAddress(publicKey)
 
-### Arguments
+Arguments:
  - publicKey (Uint8Array): 32-byte ed25519 public key.
 
 Returns SHA3 hash of input public key, which is used as Libra account address.
@@ -141,15 +141,57 @@ Arguments:
 
 Returns a promise that resolves when the expected sequence number is reached.
 
-### Client.submitP2PTransaction(rawTxn)
+### Client.submitP2PTransaction(p2pTxn)
+
+Submit a p2p Libra coin payment transaction.
 
 Arguments:
- - rawTxn (Object): the raw transaction object, with following keys
+ - p2pTxn (Object): a p2p transaction object, with following keys
    - senderAddr (Uint8Array): sender address
    - recvAddr (Uint8Array): receiver address
    - senderPrivateKey (Uint8Array): sender ed25519 secret key (64 bytes)
    - senderSeq (integer): current sender account sequence number
    - amountMicro (integer): amount to transfer in micro libra
+   - maxGasAmount (integer): max gas amount in micro libra
+   - gasUnitPrice (integer): micro libra per gas
+   - expirationTimestamp (integer): transaction expiration unix timestamp
+
+Returns a promise that resolves to the expected sequence number of this transaction. Use `pollSequenceUntil` afterward to make sure the transaction is included in the ledger.
+
+### Client.submitRawTransaction(rawTxn)
+
+Submit a raw user transaction. There are 2 types of user transactions: script and module. 
+Script transaction has a piece of `code` with arguments(`args`), which will be executed on the libra Move VM.
+Module transaction contains a code `module`. 
+
+A transaction payload should have either `code` or `module`, not both. 
+You will need a Move compiler to generate binary codes for both type of transactions. 
+
+Transaction arguments have 5 types: bool, uint64, bytes, string, address.
+The arguments specified in the payload will be converted to these 5 types according to the following rules.
+
+1. JS bool -> Move bool, JS string -> Move string
+1. JS number -> Move uint64
+   
+   Floating point numbers are truncated, and because of the limitation of float64, integers greater or equal to 1<<53 will be truncated too. If you need large integers, use explicit type definition.
+
+1. JS Uint8Array -> Move Address or raw bytes, based on length
+
+   If the length is 32, it will become an address, otherwise a raw byte array. If you need a raw byte array whose length is exactly 32, use explicit type definition. 
+
+1. Explicit type definition: JS Object with keys:
+   - type (string): 'uint64' or 'bytes'
+   - value (Uint8Array): if type is 'uint64', value should have exactly 8 bytes.
+
+Arguments:
+ - rawTxn (Object): a raw transaction object, with following keys
+   - senderAddr (Uint8Array): sender address
+   - senderPrivateKey (Uint8Array): sender ed25519 secret key (64 bytes)
+   - senderSeq (integer): current sender account sequence number
+   - payload (Object): transaction payload
+     - code (Uint8Array): binary MoveVM code, for script transaction
+     - args (Array of object): arguments for the script
+     - module (Uint8Array): binary MoveVM module, for module transaction
    - maxGasAmount (integer): max gas amount in micro libra
    - gasUnitPrice (integer): micro libra per gas
    - expirationTimestamp (integer): transaction expiration unix timestamp
