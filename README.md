@@ -7,11 +7,13 @@
 
 A golang client library for [Libra blockchain](https://github.com/libra/libra). 
 
+Thanks to [gopherjs](https://gopherjs.github.io/), go-libra is also available as a Javascript client library: [gopherjs-libra](https://www.npmjs.com/package/gopherjs-libra). It works for both NodeJS and browsers. 
+
 It has all cryptographic verification algorithms, including validator-signature-based consensus verification, ledger history accumulator proof, and account state sparse Merkle tree proof, etc. 
 
 ## Features
 
-Compatible with testnet 2020/1/8 (commit hash [62a901496a](https://github.com/libra/libra/commit/62a901496a8260d96bb13992ef29242fa237310f)).
+Compatible with testnet 2020/1/27 (commit hash [735c7210](https://github.com/libra/libra/commit/735c7210726adc433daa379a05ade5c69c5fba99)).
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
@@ -133,5 +135,7 @@ Several examples are included in `example` folder.
 - [query_txn_range](example/query_txn_range): Query a range of transactions
 - [query_txn_by_seq](example/query_txn_by_seq): Query a transaction by specific account and sequence number
 - [p2p_transaction](example/p2p_transaction): Make P2P transaction
+- [NodeJS examples](example/nodejs) based on gopherjs-libra
+- [web_client](example/web_client): a pure front-end libra explorer based on gopherjs-libra. [See it in action](http://pg.wutj.info/web_client/)
 
 ## Contributions are welcome

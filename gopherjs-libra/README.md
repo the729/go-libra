@@ -1,8 +1,13 @@
-A Libra js client library with crypto verifications, for Nodejs and browsers.
+A Libra js client library with crypto verifications, for NodeJS and browsers.
 
 # Usage
 
 In order to work with browsers, `gopherjs-libra` uses gRPC-Web which is not directly compatible with gRPC. A proxy is needed to forward gRPC-Web requests to gRPC backends. You can setup an Envoy proxy (https://grpc.io/docs/tutorials/basic/web/), or use my demo proxy shown in the examples. 
+
+To setup an Envoy proxy using Docker:
+```bash
+docker run -d --name envoy-libra -p 38080:8080 wutianji/envoy-libra
+```
 
 ## Node.js
 
@@ -43,7 +48,7 @@ client.queryTransactionRange(100, 2, true)
 
 For NodeJS, there are several examples included in [`example/nodejs`](https://github.com/the729/go-libra/tree/master/example/nodejs) folder.
 
-For browsers, there is a [pure frontend Libra blockchain explorer](http://pg.wutj.info/web_client/), based on gopherjs-libra.
+For browsers, there is a [pure front-end Libra blockchain explorer](http://pg.wutj.info/web_client/), based on gopherjs-libra.
 
 ## Generating Libra Accounts
 
@@ -62,26 +67,27 @@ address = libra.pubkeyToAddress(keyPair.publicKey);
 
 # API Reference
 
-## .client(server, trustedPeers)
+### .client(server, trustedPeers)
 
 Create a client using specified server and trusted peers. 
 
-### Arguments
+Arguments:
  - server (string): gRPC-Web server URL.
  - trustedPeers (string): a TOML formated string containing configurations of trusted peers. You can use `libra.trustedPeersFile`.
 
 Returns a Libra Client instance. 
 
-## .trustedPeersFile
+### .trustedPeersFile
 
 A constant string. TOML formated string of the default trusted peers of the libra testnet.
 
-## .resourcePath(addr, module, name, accesses ...)
+### .resourcePath(addr, module, name, accesses ...)
 
-Build a resource path and returns a `Uint8Array`. The following calls are equivalent: 
-```resourcePath(new Uint8Array(32), "LibraAccount", "T", "sent_events_count", "")```
-and
-```accountSentEventPath()```
+Build a resource path and returns a `Uint8Array`. Note that if you need a trailing '/', put an extra empty string in `accesses`. For example, the following call build the path `0x0.LibraAccount.T/sent_events_count/`
+```js
+resourcePath(new Uint8Array(32), "LibraAccount", "T", "sent_events_count", "")
+```
+which is equivalent to `accountSentEventPath()`.
 
 Arguments:
  - addr (Uint8Array): 32-byte address.
@@ -89,19 +95,19 @@ Arguments:
  - name (string): type name.
  - accesses (string): 0 or more access paths. 
 
-## .accountResourcePath()
+### .accountResourcePath()
 
 Returns a `Uint8Array`: the raw path to the Libra account resource, which is `0x01+hash(0x0.LibraAccount.T)`.
 
-## .accountSentEventPath()
+### .accountSentEventPath()
 
 Returns a `Uint8Array`: the raw path to Libra coin sent events, which is `0x01+hash(0x0.LibraAccount.T)/sent_events_count/`.
 
-## .accountReceivedEventPath()
+### .accountReceivedEventPath()
 
 Returns a `Uint8Array`: the raw path to Libra coin received events, which is `0x01+hash(0x0.LibraAccount.T)/received_events_count/`.
 
-## .pubkeyToAddress(publicKey)
+### .pubkeyToAddress(publicKey)
 
 Arguments:
  - publicKey (Uint8Array): 32-byte ed25519 public key.
