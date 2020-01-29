@@ -34,7 +34,7 @@ Vue.component("ledger-info", {
                     this.ledger_info = r;
                     this.$emit('ledger-info-updated', r);
                 })
-                .catch(e => { console.log("Error:", e) })
+                .catch(e => { alert("Failed to update ledger info. Testnet reloaded? Error: " + e) })
                 .finally(_ => { this.loading = false })
         }
     },
@@ -200,7 +200,7 @@ Vue.component("txn-list", {
                     }
                     this.txns = txns;
                 })
-                .catch(e => { console.log("Error:", e) })
+                .catch(e => { alert("Failed to query transaction range. Error: " + e) })
                 .finally(_ => { this.loading = false })
         }
     }
@@ -370,9 +370,7 @@ Vue.component("account-detail", {
                         window.scrollTo(0, this.$el.offsetTop)
                     }, 10)
                 })
-                .catch(e => {
-                    console.log("Error: ", e)
-                })
+                .catch(e => { alert("Failed to query account state. Error: " + e) })
                 .finally(_ => { this.loading = false })
         }
     }
