@@ -244,7 +244,7 @@ Vue.component("txn-detail", {
             </li>
             <li v-else>Not a user transaction.</li>
         </ul>
-        <p>(See console for raw SignedTxn object.)</p>
+        <p>(See console for raw transaction object.)</p>
     </div>
     `,
     computed: {

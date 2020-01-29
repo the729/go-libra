@@ -59,7 +59,7 @@ func New(ServerAddr, TrustedPeer string) (*Client, error) {
 		return nil, err
 	}
 
-	genesisHash, _ := hex.DecodeString("19dbc2184fef5008efb2958ddf92d77856119d8a6a647a0abeae3ff395d0a6d3")
+	genesisHash, _ := hex.DecodeString("c7f50b86fdbb6857333afc6c3450ed61871a9c788ec6818e741cfbd1be08faad")
 	c.acc = &accumulator.Accumulator{
 		Hasher:             sha3libra.NewTransactionAccumulator(),
 		FrozenSubtreeRoots: [][]byte{genesisHash},
