@@ -674,7 +674,8 @@ func (m *TransactionToCommit) Unmarshal(rawBytes []byte) (*TransactionToCommit, 
 type TransactionListWithProof struct {
 	// The list of transactions.
 	Transactions []*Transaction
-	// The list of corresponding Event objects (only present if fetch_events was set to true in req)
+	// The list of corresponding Event objects (only present if fetch_events was
+	// set to true in req)
 	EventsForVersions *EventsForVersions
 	// If the list is not empty, the version of the first transaction.
 	FirstTransactionVersion *google_protobuf1.UInt64Value

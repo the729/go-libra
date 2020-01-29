@@ -683,7 +683,7 @@ type GetEventsByEventAccessPathResponse struct {
 	EventsWithProof []*EventWithProof `protobuf:"bytes,1,rep,name=events_with_proof,json=eventsWithProof,proto3" json:"events_with_proof,omitempty"`
 	// If the number of events returned is less than `limit` for an ascending
 	// query or if start_event_seq_num > the latest seq_num for a descending
-	// query,  returns the state of the account containing the given access path
+	// query, returns the state of the account containing the given access path
 	// in the latest state. This allows the client to verify that there are in
 	// fact no extra events.
 	//

@@ -9,6 +9,4 @@ option go_package = "github.com/the729/go-libra/generated/pbtypes";
 import "validator_public_keys.proto";
 
 // Protobuf definition for the Rust struct ValidatorSet.
-message ValidatorSet {
-  repeated ValidatorPublicKeys validator_public_keys = 1;
-}
+message ValidatorSet { repeated ValidatorPublicKeys validator_public_keys = 1; }

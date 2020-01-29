@@ -60,7 +60,8 @@ func (x AdmissionControlStatusCode) String() string {
 	return AdmissionControlStatusCode_name[int(x)]
 }
 
-// The request for submitting a transaction to an upstream validator or full node.
+// The request for submitting a transaction to an upstream validator or full
+// node.
 type AdmissionControlMsg struct {
 	// Types that are valid to be assigned to Message:
 	//	*AdmissionControlMsg_SubmitTransactionRequest

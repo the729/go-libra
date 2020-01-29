@@ -431,7 +431,8 @@ func (m *TransactionToCommit) GetMajorStatus() uint64 {
 type TransactionListWithProof struct {
 	// The list of transactions.
 	Transactions []*Transaction `protobuf:"bytes,1,rep,name=transactions,proto3" json:"transactions,omitempty"`
-	// The list of corresponding Event objects (only present if fetch_events was set to true in req)
+	// The list of corresponding Event objects (only present if fetch_events was
+	// set to true in req)
 	EventsForVersions *EventsForVersions `protobuf:"bytes,2,opt,name=events_for_versions,json=eventsForVersions,proto3" json:"events_for_versions,omitempty"`
 	// If the list is not empty, the version of the first transaction.
 	FirstTransactionVersion *wrappers.UInt64Value `protobuf:"bytes,3,opt,name=first_transaction_version,json=firstTransactionVersion,proto3" json:"first_transaction_version,omitempty"`
