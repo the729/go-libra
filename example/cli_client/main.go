@@ -9,12 +9,12 @@ import (
 
 const (
 	defaultServer    = "ac.testnet.libra.org:8000"
-	trustedPeersFile = "../consensus_peers.config.toml"
+	trustedWaypoint  = ""
 	walletFile       = "wallet.toml"
-	knownVersionFile = "known_version.toml"
+	knownVersionFile = "client_state.toml"
 )
 
-var ServerAddr, TrustedPeersFile, WalletFile, KnownVersionFile string
+var ServerAddr, TrustedWaypoint, WalletFile, KnownVersionFile string
 
 func main() {
 	app := cli.NewApp()
@@ -26,10 +26,10 @@ func main() {
 			Destination: &ServerAddr,
 		},
 		cli.StringFlag{
-			Name:        "peers, s",
-			Value:       trustedPeersFile,
-			Usage:       "load trusted peers from `FILE`",
-			Destination: &TrustedPeersFile,
+			Name:        "waypoint, p",
+			Value:       trustedWaypoint,
+			Usage:       "trusted waypoint, set to 'insecure' to skip check",
+			Destination: &TrustedWaypoint,
 		},
 		cli.StringFlag{
 			Name:        "wallet, w",
@@ -38,9 +38,9 @@ func main() {
 			Destination: &WalletFile,
 		},
 		cli.StringFlag{
-			Name:        "known_version, k",
+			Name:        "client_state, c",
 			Value:       knownVersionFile,
-			Usage:       "load or store known version state in `FILE`",
+			Usage:       "load or store client state in `FILE`",
 			Destination: &KnownVersionFile,
 		},
 	}

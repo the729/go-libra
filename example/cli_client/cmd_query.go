@@ -9,7 +9,6 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/the729/go-libra/client"
 	"github.com/the729/go-libra/example/utils"
 	"github.com/the729/go-libra/language/stdscript"
 	"github.com/the729/go-libra/types"
@@ -17,13 +16,12 @@ import (
 )
 
 func cmdQueryLedgerInfo(ctx *cli.Context) error {
-	c, err := client.New(ServerAddr, TrustedPeersFile)
+	c, err := newClientFromWaypointOrFile(ServerAddr, TrustedWaypoint, KnownVersionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
-	loadKnownVersion(c, KnownVersionFile)
-	defer saveKnownVersion(c, KnownVersionFile)
+	defer saveClientState(c, KnownVersionFile)
 
 	ledgerInfo, err := c.QueryLedgerInfo(context.Background())
 	if err != nil {
@@ -35,13 +33,12 @@ func cmdQueryLedgerInfo(ctx *cli.Context) error {
 }
 
 func cmdQueryAccountState(ctx *cli.Context) error {
-	c, err := client.New(ServerAddr, TrustedPeersFile)
+	c, err := newClientFromWaypointOrFile(ServerAddr, TrustedWaypoint, KnownVersionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
-	loadKnownVersion(c, KnownVersionFile)
-	defer saveKnownVersion(c, KnownVersionFile)
+	defer saveClientState(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {
@@ -87,13 +84,12 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 }
 
 func cmdQueryTransactionRange(ctx *cli.Context) error {
-	c, err := client.New(ServerAddr, TrustedPeersFile)
+	c, err := newClientFromWaypointOrFile(ServerAddr, TrustedWaypoint, KnownVersionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
-	loadKnownVersion(c, KnownVersionFile)
-	defer saveKnownVersion(c, KnownVersionFile)
+	defer saveClientState(c, KnownVersionFile)
 
 	start, err := strconv.Atoi(ctx.Args().Get(0))
 	if err != nil {
@@ -119,13 +115,12 @@ func cmdQueryTransactionRange(ctx *cli.Context) error {
 }
 
 func cmdQueryTransactionByAccountSeq(ctx *cli.Context) error {
-	c, err := client.New(ServerAddr, TrustedPeersFile)
+	c, err := newClientFromWaypointOrFile(ServerAddr, TrustedWaypoint, KnownVersionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
-	loadKnownVersion(c, KnownVersionFile)
-	defer saveKnownVersion(c, KnownVersionFile)
+	defer saveClientState(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {
@@ -152,13 +147,12 @@ func cmdQueryTransactionByAccountSeq(ctx *cli.Context) error {
 }
 
 func cmdQueryEvents(ctx *cli.Context) error {
-	c, err := client.New(ServerAddr, TrustedPeersFile)
+	c, err := newClientFromWaypointOrFile(ServerAddr, TrustedWaypoint, KnownVersionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
-	loadKnownVersion(c, KnownVersionFile)
-	defer saveKnownVersion(c, KnownVersionFile)
+	defer saveClientState(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {

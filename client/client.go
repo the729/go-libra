@@ -24,23 +24,23 @@ to restore the known-version state.
 package client
 
 import (
-	"encoding/hex"
+	"fmt"
 	"sync"
 
-	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbac"
+	"github.com/the729/go-libra/types"
 	"github.com/the729/go-libra/types/proof/accumulator"
-	"github.com/the729/go-libra/types/validator"
 )
 
 // Client is a Libra client.
 // It has a gRPC client to a Libra RPC server, with public keys to trusted peers.
 type Client struct {
-	closeFunc func()
-	ac        pbac.AdmissionControlClient
-	verifier  validator.Verifier
-	acc       *accumulator.Accumulator
-	accMu     sync.RWMutex
+	closeFunc    func()
+	ac           pbac.AdmissionControlClient
+	verifier     types.LedgerInfoVerifier
+	acc          *accumulator.Accumulator
+	accMu        sync.RWMutex
+	lastWaypoint string
 }
 
 // New creates a new Libra Client.
@@ -50,22 +50,18 @@ type Client struct {
 //
 // For use with Javascript, ServerAddr is in http://host:port format. TrustedPeer is a TOML formated
 // text of the trusted peers config.
-func New(ServerAddr, TrustedPeer string) (*Client, error) {
+func New(ServerAddr, Waypoint string) (*Client, error) {
+	return NewFromState(ServerAddr, &ClientState{Waypoint: Waypoint})
+}
+
+func NewFromState(ServerAddr string, state *ClientState) (*Client, error) {
 	c := &Client{}
-	if err := c.loadTrustedPeers(TrustedPeer); err != nil {
-		return nil, err
+	if err := c.SetState(state); err != nil {
+		return nil, fmt.Errorf("invalid state: %v", err)
 	}
 	if err := c.connect(ServerAddr); err != nil {
 		return nil, err
 	}
-
-	genesisHash, _ := hex.DecodeString("c7f50b86fdbb6857333afc6c3450ed61871a9c788ec6818e741cfbd1be08faad")
-	c.acc = &accumulator.Accumulator{
-		Hasher:             sha3libra.NewTransactionAccumulator(),
-		FrozenSubtreeRoots: [][]byte{genesisHash},
-		NumLeaves:          1,
-	}
-
 	return c, nil
 }
 
@@ -74,4 +70,10 @@ func (c *Client) Close() {
 	if c.closeFunc != nil {
 		c.closeFunc()
 	}
+}
+
+// GetLatestWaypoint returns the latest waypoint string that this client has
+// reached.
+func (c *Client) GetLatestWaypoint() string {
+	return c.lastWaypoint
 }

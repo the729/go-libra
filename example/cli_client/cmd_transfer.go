@@ -13,13 +13,12 @@ import (
 )
 
 func cmdTransfer(ctx *cli.Context) error {
-	c, err := client.New(ServerAddr, TrustedPeersFile)
+	c, err := newClientFromWaypointOrFile(ServerAddr, TrustedWaypoint, KnownVersionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
-	loadKnownVersion(c, KnownVersionFile)
-	defer saveKnownVersion(c, KnownVersionFile)
+	defer saveClientState(c, KnownVersionFile)
 
 	wallet, err := LoadAccounts(WalletFile)
 	if err != nil {

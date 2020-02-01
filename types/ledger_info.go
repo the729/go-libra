@@ -8,7 +8,6 @@ import (
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/go-libra/generated/pbtypes"
 	"github.com/the729/go-libra/types/proof/accumulator"
-	"github.com/the729/go-libra/types/validator"
 	"github.com/the729/lcs"
 )
 
@@ -34,8 +33,7 @@ type LedgerInfoWithSignatures struct {
 // ProvenLedgerInfo is a ledger info proven to be history state of the ledger.
 type ProvenLedgerInfo struct {
 	proven     bool
-	acc        accumulator.Accumulator
-	ledgerInfo LedgerInfo
+	ledgerInfo *LedgerInfo
 }
 
 // FromProto parses a protobuf struct into this struct.
@@ -51,6 +49,8 @@ func (l *LedgerInfo) FromProto(pb *pbtypes.LedgerInfo) error {
 		if err := l.NextValidatorSet.FromProto(pb.NextValidatorSet); err != nil {
 			return err
 		}
+	} else {
+		l.NextValidatorSet = nil
 	}
 	return nil
 }
@@ -62,6 +62,23 @@ func (l *LedgerInfo) Hash() HashValue {
 		panic(err)
 	}
 	return hasher.Sum([]byte{})
+}
+
+// Clone deep clones this struct.
+func (l *LedgerInfo) Clone() *LedgerInfo {
+	out := &LedgerInfo{
+		Epoch:                      l.Epoch,
+		Round:                      l.Round,
+		ConsensusBlockID:           cloneBytes(l.ConsensusBlockID),
+		TransactionAccumulatorHash: cloneBytes(l.TransactionAccumulatorHash),
+		Version:                    l.Version,
+		TimestampUsec:              l.TimestampUsec,
+		ConsensusDataHash:          cloneBytes(l.ConsensusDataHash),
+	}
+	for _, v := range l.NextValidatorSet {
+		out.NextValidatorSet = append(out.NextValidatorSet, v.Clone())
+	}
+	return out
 }
 
 // FromProto parses a protobuf struct into this struct.
@@ -78,20 +95,13 @@ func (l *LedgerInfoWithSignatures) FromProto(pb *pbtypes.LedgerInfoWithSignature
 }
 
 // Verify the ledger info with a consensus verifier and output a ProvenLedgerInfo.
-func (l *LedgerInfoWithSignatures) Verify(v validator.Verifier) (*ProvenLedgerInfo, error) {
-	if err := v.Verify(l.LedgerInfo.Hash(), l.Sigs); err != nil {
+func (l *LedgerInfoWithSignatures) Verify(v LedgerInfoVerifier) (*ProvenLedgerInfo, error) {
+	if err := v.Verify(l); err != nil {
 		return nil, err
 	}
 	return &ProvenLedgerInfo{
-		proven: true,
-		ledgerInfo: LedgerInfo{
-			Version:                    l.LedgerInfo.Version,
-			TransactionAccumulatorHash: cloneBytes(l.LedgerInfo.TransactionAccumulatorHash),
-			ConsensusDataHash:          cloneBytes(l.LedgerInfo.ConsensusDataHash),
-			ConsensusBlockID:           cloneBytes(l.LedgerInfo.ConsensusBlockID),
-			Epoch:                      l.LedgerInfo.Epoch,
-			TimestampUsec:              l.LedgerInfo.TimestampUsec,
-		},
+		proven:     true,
+		ledgerInfo: l.LedgerInfo.Clone(),
 	}, nil
 }
 
@@ -125,6 +135,18 @@ func (pl *ProvenLedgerInfo) GetTimestampUsec() uint64 {
 		panic("not valid proven ledger info")
 	}
 	return pl.ledgerInfo.TimestampUsec
+}
+
+func (pl *ProvenLedgerInfo) ToVerifier() (LedgerInfoVerifier, error) {
+	if !pl.proven {
+		panic("not valid proven ledger info")
+	}
+	if len(pl.ledgerInfo.NextValidatorSet) == 0 {
+		return nil, errors.New("empty validator set")
+	}
+	vv := &ValidatorVerifier{}
+	vv.FromValidatorSet(pl.ledgerInfo.NextValidatorSet, pl.ledgerInfo.Epoch+1)
+	return vv, nil
 }
 
 // VerifyConsistency verifies a new version of ledger is consistent with a known version.

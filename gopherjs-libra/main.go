@@ -24,7 +24,6 @@ func main() {
 	}
 	exports.Set("libra", map[string]interface{}{
 		"client":                   newClient,
-		"trustedPeersFile":         trustedPeersFile,
 		"resourcePath":             types.ResourcePath,
 		"accountResourcePath":      types.AccountResourcePath,
 		"accountSentEventPath":     types.AccountSentEventPath,
@@ -48,8 +47,8 @@ type jsClient struct {
 	queryEventsByAccessPath      func(types.AccountAddress, []byte, uint64, bool, uint64) *js.Object `js:"queryEventsByAccessPath"`
 }
 
-func newClient(server, trustedPeers string) *js.Object {
-	c, err := client.New(server, trustedPeers)
+func newClient(server, waypoint string) *js.Object {
+	c, err := client.New(server, waypoint)
 	if err != nil {
 		panic(err)
 	}

@@ -44,7 +44,10 @@ func NewStructTag() hash.Hash {
 func NewAccountAddress() hash.Hash {
 	return newHasher([]byte("AccountAddress::libra_types::account_address"))
 }
-func NewLedgerInfo() hash.Hash             { return newHasher([]byte("LedgerInfo::libra_types::ledger_info")) }
+func NewLedgerInfo() hash.Hash { return newHasher([]byte("LedgerInfo::libra_types::ledger_info")) }
+func NewWaypointLedgerInfo() hash.Hash {
+	return newHasher([]byte("Ledger2WaypointConverter::libra_types::waypoint"))
+}
 func NewTransactionAccumulator() hash.Hash { return newHasher([]byte("TransactionAccumulator")) }
 func NewEventAccumulator() hash.Hash       { return newHasher([]byte("EventAccumulator")) }
 func NewSparseMerkleInternal() hash.Hash   { return newHasher([]byte("SparseMerkleInternal")) }
