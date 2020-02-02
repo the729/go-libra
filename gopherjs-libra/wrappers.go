@@ -1,8 +1,13 @@
 package main
 
 import (
+	"encoding/hex"
+	"errors"
+	"fmt"
+
 	"github.com/gopherjs/gopherjs/js"
 	"github.com/miratronix/jopher"
+	"github.com/the729/go-libra/client"
 	"github.com/the729/go-libra/types"
 )
 
@@ -67,6 +72,22 @@ type jsProvenEvent struct {
 	getEventIndex         interface{} `js:"getEventIndex"`
 	getEvent              interface{} `js:"getEvent"`
 	getLedgerInfo         interface{} `js:"getLedgerInfo"`
+}
+
+type jsValidator struct {
+	*js.Object
+	address         string `js:"addr"`
+	consensusPubkey string `js:"c"`
+	votingPower     uint64 `js:"power"`
+}
+
+type jsClientState struct {
+	*js.Object
+	waypoint     string       `js:"waypoint"`
+	validatorSet []*js.Object `js:"validator_set"`
+	epoch        uint64       `js:"epoch"`
+	knownVersion uint64       `js:"known_version"`
+	subtrees     []string     `js:"subtrees"`
 }
 
 func wrapProvenLedgerInfo(g *types.ProvenLedgerInfo) *js.Object {
@@ -189,4 +210,68 @@ func wrapProvenEvent(g *types.ProvenEvent) *js.Object {
 		return wrapProvenLedgerInfo(g.GetLedgerInfo())
 	}
 	return j.Object
+}
+
+func wrapClientState(cs *client.ClientState) *js.Object {
+	if cs == nil {
+		return nil
+	}
+	j := &jsClientState{Object: js.Global.Get("Object").New()}
+	j.waypoint = cs.Waypoint
+	j.epoch = cs.Epoch
+	j.knownVersion = cs.KnownVersion
+	jsvs := make([]*js.Object, 0, len(cs.ValidatorSet))
+	for _, v := range cs.ValidatorSet {
+		jsv := &jsValidator{Object: js.Global.Get("Object").New()}
+		jsv.address = hex.EncodeToString(v.AccountAddress[:])
+		jsv.consensusPubkey = hex.EncodeToString(v.ConsensusPubkey)
+		jsv.votingPower = v.ConsensusVotingPower
+
+		jsvs = append(jsvs, jsv.Object)
+	}
+	j.validatorSet = jsvs
+	jsSubtrees := make([]string, 0, len(cs.Subtrees))
+	for _, t := range cs.Subtrees {
+		jsSubtrees = append(jsSubtrees, hex.EncodeToString(t))
+	}
+	j.subtrees = jsSubtrees
+	return j.Object
+}
+
+func unwrapClientState(csObj *js.Object) (*client.ClientState, error) {
+	j := &jsClientState{Object: csObj}
+	cs := &client.ClientState{
+		Waypoint:     j.waypoint,
+		Epoch:        j.epoch,
+		KnownVersion: j.knownVersion,
+	}
+	if j.Get("validatorSet") != js.Undefined {
+		for i, vObj := range j.validatorSet {
+			jv := &jsValidator{Object: vObj}
+			var err error
+			v := &types.ValidatorPublicKeys{}
+			v.ConsensusPubkey, err = hex.DecodeString(jv.consensusPubkey)
+			if err != nil {
+				return nil, fmt.Errorf("unable to decode consensus pubkey #%d: %v", i, err)
+			}
+			if l, err := hex.Decode(v.AccountAddress[:], []byte(jv.address)); l != 32 || err != nil {
+				if err == nil {
+					err = errors.New("wrong length")
+				}
+				return nil, fmt.Errorf("unable to decode address #%d: %v", i, err)
+			}
+			v.ConsensusVotingPower = jv.votingPower
+			cs.ValidatorSet = append(cs.ValidatorSet, v)
+		}
+	}
+	if j.Get("subtrees") != js.Undefined {
+		for i, t := range j.subtrees {
+			subtree, err := hex.DecodeString(t)
+			if err != nil {
+				return nil, fmt.Errorf("unable to decode subtree #%d: %v", i, err)
+			}
+			cs.Subtrees = append(cs.Subtrees, subtree)
+		}
+	}
+	return cs, nil
 }

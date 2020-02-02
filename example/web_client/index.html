@@ -22,6 +22,10 @@
     </div>
     <div id="app">
         <p>
+            <label for="server">Server
+                (<a href="https://www.npmjs.com/package/gopherjs-libra#usage" target="_BLANK">setup a
+                    gRPC-Web proxy</a>)</label>
+            <input type="text" id="server" ref="server" v-model="server" data-value="http://hk2.wutj.info:38080" />
             <label for="waypoint">Trusted Waypoint</label>
             <input type="text" id="waypoint" ref="waypoint" v-model="waypoint" data-value="insecure" />
             <button @click="apply_waypoint">Apply</button>

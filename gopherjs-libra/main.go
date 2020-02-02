@@ -2,10 +2,15 @@ package main
 
 import (
 	"github.com/gopherjs/gopherjs/js"
+	"github.com/miratronix/jopher"
 
 	"github.com/the729/go-libra/client"
 	"github.com/the729/go-libra/language/stdscript"
 	"github.com/the729/go-libra/types"
+)
+
+var (
+	jsTypeOf *js.Object
 )
 
 func main() {
@@ -24,12 +29,24 @@ func main() {
 		"pubkeyToAddress":          client.PubkeyMustToAddress,
 		"inferProgramName":         stdscript.InferProgramName,
 	})
+	jsTypeOf = js.Global.Call("eval", `(function(x){return typeof(x);})`)
 }
 
-func newClient(server, waypoint string) *js.Object {
-	c, err := client.New(server, waypoint)
-	if err != nil {
-		panic(err)
+func newClient(server string, state *js.Object) *js.Object {
+	t := jsTypeOf.Invoke(state).String()
+	var c *client.Client
+	var err error
+	switch t {
+	case "string":
+		c, err = client.New(server, state.String())
+		jopher.ThrowOnError(err)
+	case "object":
+		cs, err := unwrapClientState(state)
+		jopher.ThrowOnError(err)
+		c, err = client.NewFromState(server, cs)
+		jopher.ThrowOnError(err)
+	default:
+		panic("state must be string or object")
 	}
 	return wrapClientObject(c)
 }

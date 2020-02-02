@@ -1,5 +1,4 @@
-var defaultServer = "http://hk2.wutj.info:38080";
-var client; // = libra.client(defaultServer, waypoint);
+var client;
 
 const fromHexString = hexString =>
     new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
@@ -379,7 +378,8 @@ Vue.component("account-detail", {
 new Vue({
     el: "#app",
     data: {
-        waypoint: "insecure",
+        server: "",
+        waypoint: "",
         latest_waypoint: "",
         insecure: false,
         selected_txn: null,
@@ -388,8 +388,9 @@ new Vue({
     },
     methods: {
         apply_waypoint: function () {
-            client = libra.client(defaultServer, this.waypoint);
+            client = libra.client(this.server, this.waypoint);
             this.insecure = (this.waypoint == "insecure");
+            this.$refs.ledger_info.refresh()
         },
         li_update: function (li) {
             console.log("Ledger info", li)
@@ -411,8 +412,8 @@ new Vue({
         }
     },
     mounted: function () {
+        this.server = this.$refs.server.dataset.value;
         this.waypoint = this.$refs.waypoint.dataset.value;
         this.apply_waypoint()
-        this.$refs.ledger_info.refresh()
     }
 })

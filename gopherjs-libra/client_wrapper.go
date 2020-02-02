@@ -26,9 +26,9 @@ type jsClient struct {
 	queryTransactionRange        func(uint64, uint64, bool) *js.Object                               `js:"queryTransactionRange"`
 	queryEventsByAccessPath      func(types.AccountAddress, []byte, uint64, bool, uint64) *js.Object `js:"queryEventsByAccessPath"`
 
-	getLatestWaypoint func() string               `js:"getLatestWaypoint"`
-	getState          func() *js.Object           `js:"getState"`
-	setState          func(*js.Object) *js.Object `js:"setState"`
+	getLatestWaypoint func() string     `js:"getLatestWaypoint"`
+	getState          func() *js.Object `js:"getState"`
+	setState          func(*js.Object)  `js:"setState"`
 }
 
 func wrapClientObject(c *client.Client) *js.Object {
@@ -211,16 +211,16 @@ func wrapClientObject(c *client.Client) *js.Object {
 
 	jc.getLatestWaypoint = c.GetLatestWaypoint
 
-	// jc.getState = func() *js.Object {
-	// 	cs := c.GetState()
-	// 	type jsClientState struct {
-	// 		*js.Object
-	// 		*client.ClientState
-	// 	}
-	// 	j := &jsClientState{Object: js.Global.Get("Object").New()}
-	// 	j.ClientState = cs
-	// 	return j.Object
-	// }
+	jc.getState = func() *js.Object {
+		return wrapClientState(c.GetState())
+	}
+
+	jc.setState = func(csObj *js.Object) {
+		cs, err := unwrapClientState(csObj)
+		jopher.ThrowOnError(err)
+		err = c.SetState(cs)
+		jopher.ThrowOnError(err)
+	}
 
 	return jc.Object
 }
