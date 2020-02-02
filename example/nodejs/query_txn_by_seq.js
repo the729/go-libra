@@ -8,12 +8,13 @@ const fromHexString = hexString =>
 const toHexString = bytes =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
-const defaultServer = "http://hk2.wutj.info:38080";
+const defaultServer = "http://hk2.wutj.info:38080",
+    waypoint = "0:59d76f0cb85470b269e754b54edac5d88619f21234d69e02ce85cea6f003089a";
 
 var addrStr = "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
 var addr = fromHexString(addrStr)
 
-var client = libra.client(defaultServer, libra.trustedPeersFile)
+var client = libra.client(defaultServer, waypoint)
 client.queryTransactionByAccountSeq(addr, 0, true)
     .then(r => {
         console.log("Txn #", r.getVersion())

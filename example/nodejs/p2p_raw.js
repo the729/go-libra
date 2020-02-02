@@ -8,7 +8,8 @@ const fromHexString = hexString =>
 const toHexString = bytes =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
-const defaultServer = "http://hk2.wutj.info:38080";
+const defaultServer = "http://hk2.wutj.info:38080",
+    waypoint = "0:59d76f0cb85470b269e754b54edac5d88619f21234d69e02ce85cea6f003089a";
 
 var senderAddr = fromHexString("18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"),
     priKey = fromHexString("657cd8ed5e434cc4f874d6822889f637957f0145c67e2b055c9954c936670a61e57ea705e00e3ecaf417b4285cd0a69b1d79406914581456c1ce278b81a48674"),
@@ -16,7 +17,7 @@ var senderAddr = fromHexString("18b553473df736e5e363e7214bd624735ca66ac22a7048e3
 
 var p2pTransactionCode = fromHexString("a11ceb0b010007014600000004000000034a000000060000000c50000000060000000d5600000006000000055c0000002900000004850000002000000007a50000000f00000000000001000200010300020002050300030205030300063c53454c463e0c4c696272614163636f756e74046d61696e0f7061795f66726f6d5f73656e6465720000000000000000000000000000000000000000000000000000000000000000000100020004000b000b0112010102");
 
-var client = libra.client(defaultServer, libra.trustedPeersFile)
+var client = libra.client(defaultServer, waypoint)
 client.queryAccountSequenceNumber(senderAddr)
     .then(r => {
         var txn = {

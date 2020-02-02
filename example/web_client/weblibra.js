@@ -1,5 +1,5 @@
 var defaultServer = "http://hk2.wutj.info:38080";
-var client = libra.client(defaultServer, libra.trustedPeersFile);
+var client; // = libra.client(defaultServer, waypoint);
 
 const fromHexString = hexString =>
     new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
@@ -37,9 +37,6 @@ Vue.component("ledger-info", {
                 .catch(e => { alert("Failed to update ledger info. Testnet reloaded? Error: " + e) })
                 .finally(_ => { this.loading = false })
         }
-    },
-    mounted: function () {
-        this.refresh()
     }
 })
 
@@ -118,7 +115,9 @@ Vue.component("txn-list", {
         <h2>Transaction List</h2>
         <div class="controls">
             Range: <input v-model="version_from" :disabled="latest_10"/> - <input v-model="version_to" :disabled="latest_10"/>
-            <input type="checkbox" id="latest_10_checkbox" v-model="latest_10">Latest 10 Txns</input>
+            <input type="checkbox" id="latest_10_checkbox" v-model="latest_10"/></input>
+            <label class="label-inline" for="latest_10_checkbox">Latest 10 Txns</label>
+            <br/>
             <button @click="refresh" :disabled="loading">{{ loading?"Refreshing...":"Refresh" }}</button>
         </div>
         <table>
@@ -297,7 +296,8 @@ Vue.component("account-detail", {
     <div class="account-detail">
         <h2>Account Detail</h2>
         <p>
-            Address: <input type="text" v-model="address"></input>
+            <label for="address">Address</label>
+            <input type="text" id="address" v-model="address"></input>
             <button @click="refresh" :disabled="loading">{{ loading?"Refreshing...":"Refresh" }}</button>
         </p>
         <div v-if="state">
@@ -379,14 +379,22 @@ Vue.component("account-detail", {
 new Vue({
     el: "#app",
     data: {
+        waypoint: "insecure",
+        latest_waypoint: "",
+        insecure: false,
         selected_txn: null,
         ledger_info: null,
         selected_address: null
     },
     methods: {
+        apply_waypoint: function () {
+            client = libra.client(defaultServer, this.waypoint);
+            this.insecure = (this.waypoint == "insecure");
+        },
         li_update: function (li) {
             console.log("Ledger info", li)
             this.ledger_info = li;
+            this.latest_waypoint = client.getLatestWaypoint();
         },
         txn_selected: function (txn) {
             this.selected_txn = txn;
@@ -401,5 +409,10 @@ new Vue({
                 window.scrollTo(0, this.$el.querySelector("#account-detail").offsetTop)
             }, 10)
         }
+    },
+    mounted: function () {
+        this.waypoint = this.$refs.waypoint.dataset.value;
+        this.apply_waypoint()
+        this.$refs.ledger_info.refresh()
     }
 })

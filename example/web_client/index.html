@@ -21,7 +21,16 @@
         </p>
     </div>
     <div id="app">
-        <ledger-info @ledger-info-updated="li_update"></ledger-info>
+        <p>
+            <label for="waypoint">Trusted Waypoint</label>
+            <input type="text" id="waypoint" ref="waypoint" v-model="waypoint" data-value="insecure" />
+            <button @click="apply_waypoint">Apply</button>
+        </p>
+        <p class="insecure_warning" v-if="insecure">
+            Warning: Insecure. The client will work without a trusted waypoint.
+        </p>
+        <p v-if="latest_waypoint!=''">Latest Waypoint from the ledger: <b>{{ latest_waypoint }}</b></p>
+        <ledger-info ref="ledger_info" @ledger-info-updated="li_update"></ledger-info>
         <hr>
         <txn-list :ledger_info="ledger_info" @txn-selected="txn_selected" @addr-selected="addr_selected"></txn-list>
         <hr>

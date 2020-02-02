@@ -13,3 +13,7 @@ div.txn-list div.controls {
 tr.pointer {
     cursor: pointer;
 }
+p.insecure_warning {
+    font-weight: bold;
+    color: red;
+}
