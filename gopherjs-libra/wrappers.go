@@ -84,8 +84,8 @@ type jsValidator struct {
 type jsClientState struct {
 	*js.Object
 	waypoint     string       `js:"waypoint"`
-	validatorSet []*js.Object `js:"validator_set"`
 	epoch        uint64       `js:"epoch"`
+	validatorSet []*js.Object `js:"validator_set"`
 	knownVersion uint64       `js:"known_version"`
 	subtrees     []string     `js:"subtrees"`
 }
