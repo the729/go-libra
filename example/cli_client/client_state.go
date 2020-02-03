@@ -27,7 +27,7 @@ func newClientFromWaypointOrFile(serverAddr, waypoint, filepath string) (*client
 		return client.New(serverAddr, waypoint)
 	}
 
-	v := &client.ClientState{}
+	v := &client.State{}
 	_, err := toml.DecodeFile(filepath, v)
 	if err != nil {
 		return nil, fmt.Errorf("toml decode file error: %v", err)

@@ -9,8 +9,11 @@ import (
 	"github.com/the729/go-libra/types/proof/accumulator"
 )
 
+// HashValue is a wrap of []byte. It implementes encoding.TextMarshaler and
+// encoding.TextUnmarshaler.
 type HashValue []byte
 
+// UnmarshalText implements encoding.TextUnmarshaler for HashValue
 func (h *HashValue) UnmarshalText(txt []byte) error {
 	data, err := hex.DecodeString(string(txt))
 	if err != nil {
@@ -20,11 +23,13 @@ func (h *HashValue) UnmarshalText(txt []byte) error {
 	return nil
 }
 
+// MarshalText implements encoding.TextMarshaler for HashValue
 func (h HashValue) MarshalText() (text []byte, err error) {
 	return []byte(hex.EncodeToString(h)), nil
 }
 
-type ClientState struct {
+// State represents the state of a client.
+type State struct {
 	Waypoint     string             `toml:"waypoint" json:"waypoint"`
 	ValidatorSet types.ValidatorSet `toml:"validator_set" json:"validator_set,omitempty"`
 	Epoch        uint64             `toml:"epoch" json:"epoch"`
@@ -32,11 +37,12 @@ type ClientState struct {
 	Subtrees     []HashValue        `toml:"subtrees" json:"subtrees"`
 }
 
-func (c *Client) GetState() *ClientState {
+// GetState returns the current state of a client.
+func (c *Client) GetState() *State {
 	c.accMu.RLock()
 	defer c.accMu.RUnlock()
 
-	cs := &ClientState{}
+	cs := &State{}
 	cs.Waypoint = c.lastWaypoint
 	if vv, ok := c.verifier.(*types.ValidatorVerifier); ok {
 		cs.ValidatorSet, cs.Epoch = vv.ToValidatorSet()
@@ -47,7 +53,8 @@ func (c *Client) GetState() *ClientState {
 	return cs
 }
 
-func (c *Client) SetState(cs *ClientState) error {
+// SetState restores a client to a given state.
+func (c *Client) SetState(cs *State) error {
 	var verifier types.LedgerInfoVerifier
 	if len(cs.ValidatorSet) > 0 {
 		vv := &types.ValidatorVerifier{}

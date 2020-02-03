@@ -212,7 +212,7 @@ func wrapProvenEvent(g *types.ProvenEvent) *js.Object {
 	return j.Object
 }
 
-func wrapClientState(cs *client.ClientState) *js.Object {
+func wrapClientState(cs *client.State) *js.Object {
 	if cs == nil {
 		return nil
 	}
@@ -238,9 +238,9 @@ func wrapClientState(cs *client.ClientState) *js.Object {
 	return j.Object
 }
 
-func unwrapClientState(csObj *js.Object) (*client.ClientState, error) {
+func unwrapClientState(csObj *js.Object) (*client.State, error) {
 	j := &jsClientState{Object: csObj}
-	cs := &client.ClientState{
+	cs := &client.State{
 		Waypoint:     j.waypoint,
 		Epoch:        j.epoch,
 		KnownVersion: j.knownVersion,

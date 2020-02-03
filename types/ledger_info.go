@@ -137,6 +137,8 @@ func (pl *ProvenLedgerInfo) GetTimestampUsec() uint64 {
 	return pl.ledgerInfo.TimestampUsec
 }
 
+// ToVerifier builds a ValidatorVerifier using the next validator set in this
+// LedgerInfo. Only works when this LedgerInfo is at a boundary of epochs.
 func (pl *ProvenLedgerInfo) ToVerifier() (LedgerInfoVerifier, error) {
 	if !pl.proven {
 		panic("not valid proven ledger info")
@@ -149,7 +151,9 @@ func (pl *ProvenLedgerInfo) ToVerifier() (LedgerInfoVerifier, error) {
 	return vv, nil
 }
 
-// VerifyConsistency verifies a new version of ledger is consistent with a known version.
+// VerifyConsistency verifies a new version of ledger is consistent with a known version
+// (and the frozen subtrees at that version).
+//
 // If successful, it outputs the new accumulator states (i.e. numLeaves and subtrees).
 func (pl *ProvenLedgerInfo) VerifyConsistency(numLeaves uint64, oldSubtrees, newSubtrees []HashValue) (uint64, []HashValue, error) {
 	acc1 := accumulator.Accumulator{

@@ -43,18 +43,29 @@ type Client struct {
 	lastWaypoint string
 }
 
-// New creates a new Libra Client.
+// New creates a new Libra Client from a trusted waypoint.
 //
-// For normal usage, ServerAddr is in host:port format. TrustedPeer is a TOML file that contains
-// the trusted peers.
+// For usage in golang, ServerAddr is in host:port format. For use with Javascript,
+// ServerAddr is in http://host:port format.
 //
-// For use with Javascript, ServerAddr is in http://host:port format. TrustedPeer is a TOML formated
-// text of the trusted peers config.
+// Waypoint is a trusted waypoint in the format of "version:hash". Currently, version
+// has to be 0 in order to make consistency check work.
+//
+// Waypoint can also be "insecure", meaning that the client will trust whatever the ledger
+// has. This is useful with the testnet, which gets reset every now and then. Do not rely
+// on this feature, however. It will be removed when the mainnet is online.
 func New(ServerAddr, Waypoint string) (*Client, error) {
-	return NewFromState(ServerAddr, &ClientState{Waypoint: Waypoint})
+	return NewFromState(ServerAddr, &State{Waypoint: Waypoint})
 }
 
-func NewFromState(ServerAddr string, state *ClientState) (*Client, error) {
+// NewFromState creates a new Libra Client from a previous saved state.
+//
+// For usage in golang, ServerAddr is in host:port format. For use with Javascript,
+// ServerAddr is in http://host:port format.
+//
+// The state includes validator set and known version subtrees. It can be exported by
+// calling GetState().
+func NewFromState(ServerAddr string, state *State) (*Client, error) {
 	c := &Client{}
 	if err := c.SetState(state); err != nil {
 		return nil, fmt.Errorf("invalid state: %v", err)

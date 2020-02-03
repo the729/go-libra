@@ -14,6 +14,8 @@ var (
 	VerifyErrTooManySignatures = errors.New("too many signatures")
 )
 
+// ValidatorVerifier is a validator set that can verify ledger infos.
+// It implements LedgerInfoVerifier.
 type ValidatorVerifier struct {
 	publicKeyMap map[string]*ValidatorPublicKeys
 	epoch        uint64
@@ -21,6 +23,7 @@ type ValidatorVerifier struct {
 	quorumPower  uint64
 }
 
+// FromValidatorSet builds a ValidatorVerifier from a validator set and a certain epoch number.
 func (vv *ValidatorVerifier) FromValidatorSet(vs ValidatorSet, epoch uint64) error {
 	vv.publicKeyMap = make(map[string]*ValidatorPublicKeys)
 	vv.totalPower = 0
@@ -39,6 +42,7 @@ func (vv *ValidatorVerifier) FromValidatorSet(vs ValidatorSet, epoch uint64) err
 	return nil
 }
 
+// ToValidatorSet exports a list of validators and the epoch number.
 func (vv *ValidatorVerifier) ToValidatorSet() (ValidatorSet, uint64) {
 	vs := make([]*ValidatorPublicKeys, 0, len(vv.publicKeyMap))
 	for addr, v := range vv.publicKeyMap {
@@ -64,6 +68,7 @@ func (vv *ValidatorVerifier) verifySingle(author string, hash, sig []byte) error
 	return nil
 }
 
+// Verify a LedgerInfoWithSignatures
 func (vv *ValidatorVerifier) Verify(li *LedgerInfoWithSignatures) error {
 	hash := li.LedgerInfo.Hash()
 	sigs := li.Sigs
