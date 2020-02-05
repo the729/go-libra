@@ -3,7 +3,7 @@
 const { libra } = require("../../gopherjs-libra/gopherjs-libra.js");
 
 const defaultServer = "http://hk2.wutj.info:38080",
-    waypoint = "0:59d76f0cb85470b269e754b54edac5d88619f21234d69e02ce85cea6f003089a";
+    waypoint = "0:997acd1b112a19eb1d2d3dff78677a0009343727926071c3858aeff2ea3499bf";
 
 var client = libra.client(defaultServer, waypoint)
 client.queryTransactionRange(8207475, 2, true)
