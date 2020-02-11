@@ -15,6 +15,12 @@ type ValidatorChangeProof struct {
 	More               bool
 }
 
+type ProvenValidatorChange struct {
+	proven         bool
+	lastLedgerInfo *LedgerInfo
+	genesisHash    []byte
+}
+
 // FromProto parses a protobuf struct into this struct.
 func (vcp *ValidatorChangeProof) FromProto(pb *pbtypes.ValidatorChangeProof) error {
 	var lis []*LedgerInfoWithSignatures
@@ -31,14 +37,17 @@ func (vcp *ValidatorChangeProof) FromProto(pb *pbtypes.ValidatorChangeProof) err
 }
 
 // Verify the ValidatorChangeProof, which is a series of LedgerInfo.
-// Returns the last ProvenLedgerInfo.
-func (vcp *ValidatorChangeProof) Verify(v LedgerInfoVerifier) (*ProvenLedgerInfo, error) {
+func (vcp *ValidatorChangeProof) Verify(v LedgerInfoVerifier) (*ProvenValidatorChange, error) {
 	if len(vcp.LedgerInfoWithSigs) == 0 {
 		return nil, errors.New("empty validator change")
 	}
+	var genesisHash []byte
 	for _, li := range vcp.LedgerInfoWithSigs {
 		if err := v.Verify(li); err != nil {
 			return nil, fmt.Errorf("some ledger info failed to verify: %v", err)
+		}
+		if li.Version == 0 {
+			genesisHash = li.TransactionAccumulatorHash
 		}
 		if li.NextValidatorSet == nil {
 			return nil, errors.New("ledger info doesn't carry validator set")
@@ -49,8 +58,28 @@ func (vcp *ValidatorChangeProof) Verify(v LedgerInfoVerifier) (*ProvenLedgerInfo
 		}
 		v = vv
 	}
+	return &ProvenValidatorChange{
+		proven:         true,
+		lastLedgerInfo: vcp.LedgerInfoWithSigs[len(vcp.LedgerInfoWithSigs)-1].LedgerInfo.Clone(),
+		genesisHash:    cloneBytes(genesisHash),
+	}, nil
+}
+
+// GetLastLedgerInfo returns the last (and latest) ProvenLedgerInfo.
+func (pvc *ProvenValidatorChange) GetLastLedgerInfo() *ProvenLedgerInfo {
+	if !pvc.proven {
+		panic("not valid proven validator change")
+	}
 	return &ProvenLedgerInfo{
 		proven:     true,
-		ledgerInfo: vcp.LedgerInfoWithSigs[len(vcp.LedgerInfoWithSigs)-1].LedgerInfo.Clone(),
-	}, nil
+		ledgerInfo: pvc.lastLedgerInfo,
+	}
+}
+
+// GetGenesisHash returns the genesis hash (if extracted from version 0)
+func (pvc *ProvenValidatorChange) GetGenesisHash() []byte {
+	if !pvc.proven {
+		panic("not valid proven validator change")
+	}
+	return cloneBytes(pvc.genesisHash)
 }

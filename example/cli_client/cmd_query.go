@@ -28,7 +28,11 @@ func cmdQueryLedgerInfo(ctx *cli.Context) error {
 		return err
 	}
 
-	log.Printf("Ledger info: version %d, time %d", ledgerInfo.GetVersion(), ledgerInfo.GetTimestampUsec())
+	log.Printf("Ledger info: version %d, epoch %d, time %d",
+		ledgerInfo.GetVersion(),
+		ledgerInfo.GetEpochNum(),
+		ledgerInfo.GetTimestampUsec(),
+	)
 	return nil
 }
 

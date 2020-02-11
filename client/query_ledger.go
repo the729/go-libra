@@ -48,24 +48,25 @@ func (c *Client) verifyLedgerInfoAndConsistency(
 		if err := vcp.FromProto(resp.ValidatorChangeProof); err != nil {
 			return nil, fmt.Errorf("validator change proof invalid: %v", err)
 		}
-		epochChangeLI, err := vcp.Verify(verifier)
+		epochChange, err := vcp.Verify(verifier)
 		if err != nil {
 			return nil, fmt.Errorf("validator change proof verification error: %v", err)
 		}
-		if epochChangeLI.GetVersion() == 0 {
+		if genesisHash := epochChange.GetGenesisHash(); genesisHash != nil {
 			// this is the genesis block, update accumulator
 			numLeaves = 1
-			frozenSubtreeRoots = [][]byte{epochChangeLI.GetTransactionAccumulatorHash()}
+			frozenSubtreeRoots = [][]byte{genesisHash}
 		}
-		v, err := epochChangeLI.ToVerifier()
+		pli := epochChange.GetLastLedgerInfo()
+		v, err := pli.ToVerifier()
 		if err != nil {
 			return nil, err
 		}
 
-		// log.Printf("Ledger info verifier updated, epoch = %d", epochChangeLI.GetEpochNum()+1)
+		// log.Printf("Ledger info verifier updated, epoch = %d, version = %d", pli.GetEpochNum()+1, pli.GetVersion())
 
 		verifier = v
-		lastWaypointB, _ := (&types.Waypoint{}).FromProvenLedgerInfo(epochChangeLI).MarshalText()
+		lastWaypointB, _ := (&types.Waypoint{}).FromProvenLedgerInfo(pli).MarshalText()
 		lastWaypoint = string(lastWaypointB)
 	}
 	pli, err := li.Verify(verifier)
