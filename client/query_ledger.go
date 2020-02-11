@@ -73,13 +73,17 @@ func (c *Client) verifyLedgerInfoAndConsistency(
 	if err != nil {
 		return nil, fmt.Errorf("ledger info verification failed: %v", err)
 	}
-	numLeaves, frozenSubtreeRoots, err = pli.VerifyConsistency(
-		numLeaves,
-		frozenSubtreeRoots,
-		resp.GetLedgerConsistencyProof().GetSubtrees(),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("ledger not consistent with known version: %v", err)
+	if frozenSubtreeRoots != nil {
+		numLeaves, frozenSubtreeRoots, err = pli.VerifyConsistency(
+			numLeaves,
+			frozenSubtreeRoots,
+			resp.GetLedgerConsistencyProof().GetSubtrees(),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ledger not consistent with known version: %v", err)
+		}
+	} else {
+		numLeaves = pli.GetVersion() + 1
 	}
 
 	c.accMu.Lock()

@@ -74,12 +74,18 @@ func (c *Client) SetState(cs *State) error {
 	}
 
 	acc := &accumulator.Accumulator{
-		Hasher:             sha3libra.NewTransactionAccumulator(),
-		FrozenSubtreeRoots: cloneSubtrees1(cs.Subtrees),
-		NumLeaves:          cs.KnownVersion + 1,
+		Hasher:    sha3libra.NewTransactionAccumulator(),
+		NumLeaves: cs.KnownVersion + 1,
 	}
-	if _, err := acc.RootHash(); err != nil {
-		return fmt.Errorf("known accumulator invalid: %v", err)
+	if cs.Subtrees == nil {
+		if wp, ok := verifier.(*types.Waypoint); ok {
+			acc.NumLeaves = wp.Version + 1
+		}
+	} else {
+		acc.FrozenSubtreeRoots = cloneSubtrees1(cs.Subtrees)
+		if _, err := acc.RootHash(); err != nil {
+			return fmt.Errorf("known accumulator invalid: %v", err)
+		}
 	}
 
 	c.accMu.Lock()
