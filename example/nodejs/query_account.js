@@ -22,7 +22,7 @@ client.queryAccountState(addr)
         }
         return r.getAccountBlob()
     })
-    .then(r => r.getResource(libra.accountResourcePath()))
+    .then(r => r.getLibraAccountResource())
     .then(r => {
         console.log("Address: ", addrStr)
         console.log("Balance (microLibra): %d", r.getBalance())
