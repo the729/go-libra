@@ -35,8 +35,8 @@ func PrintTxn(txn *types.ProvenTransaction) {
 				log.Printf("        Arg %d: u64  (%v)", i, arg)
 			case types.TxnArgAddress:
 				log.Printf("        Arg %d: addr (%v)", i, hex.EncodeToString(arg[:]))
-			case types.TxnArgString:
-				log.Printf("        Arg %d: str  (%v)", i, arg)
+			case types.TxnArgBool:
+				log.Printf("        Arg %d: bool (%v)", i, arg)
 			case types.TxnArgBytes:
 				log.Printf("        Arg %d: bytes(%v)", i, hex.EncodeToString(arg))
 			}
@@ -56,8 +56,8 @@ func PrintTxn(txn *types.ProvenTransaction) {
 			log.Printf("      #%d:", idx)
 			log.Printf("        Key: %v", hex.EncodeToString(ev.Key))
 			log.Printf("        Seq #%d", ev.SequenceNumber)
-			if len(ev.Data) > 30 {
-				log.Printf("        Raw event: %s ...", hex.EncodeToString(ev.Data[:30]))
+			if len(ev.Data) > 44 {
+				log.Printf("        Raw event: %s ...(len=%d)", hex.EncodeToString(ev.Data[:44]), len(ev.Data))
 			} else {
 				log.Printf("        Raw event: %s", hex.EncodeToString(ev.Data))
 			}

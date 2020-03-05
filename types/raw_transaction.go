@@ -50,9 +50,6 @@ type TxnArgU64 uint64
 // TxnArgAddress is transaction argument of account address type
 type TxnArgAddress AccountAddress
 
-// TxnArgString is string transaction argument
-type TxnArgString string
-
 // TxnArgBytes is byte array transaction argument
 type TxnArgBytes []byte
 
@@ -61,7 +58,6 @@ type TxnArgBool bool
 
 func (TxnArgU64) isTransactionArgument()     {}
 func (TxnArgAddress) isTransactionArgument() {}
-func (TxnArgString) isTransactionArgument()  {}
 func (TxnArgBytes) isTransactionArgument()   {}
 func (TxnArgBool) isTransactionArgument()    {}
 
@@ -70,9 +66,6 @@ func (v TxnArgU64) Clone() TransactionArgument { return v }
 
 // Clone the argument
 func (v TxnArgAddress) Clone() TransactionArgument { return v }
-
-// Clone the argument
-func (v TxnArgString) Clone() TransactionArgument { return v }
 
 // Clone the argument
 func (v TxnArgBytes) Clone() TransactionArgument { return TxnArgBytes(cloneBytes(v)) }
@@ -94,16 +87,11 @@ var txnArgEnumDef = []lcs.EnumVariant{
 	{
 		Name:     "TransactionArgument",
 		Value:    2,
-		Template: TxnArgString(""),
-	},
-	{
-		Name:     "TransactionArgument",
-		Value:    3,
 		Template: TxnArgBytes(nil),
 	},
 	{
 		Name:     "TransactionArgument",
-		Value:    4,
+		Value:    3,
 		Template: TxnArgBool(false),
 	},
 }
