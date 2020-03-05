@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultServer = "ac.testnet.libra.org:8000"
-	waypoint      = "0:997acd1b112a19eb1d2d3dff78677a0009343727926071c3858aeff2ea3499bf"
+	waypoint      = "0:bf7e1eef81af68cc6b4801c3739da6029c778a72e67118a8adf0dd759f188908"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 	senderAddr := client.MustToAddress("18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a")
 	recvAddr := client.MustToAddress("e89a0d93fcf1ca4423328c1bddebe6c02da666808993c8a888ff7a8bad19ffd5")
 	amountMicro := uint64(2 * 1000000)
-	maxGasAmount := uint64(140000)
+	maxGasAmount := uint64(500000)
 	gasUnitPrice := uint64(0)
 	expiration := time.Now().Add(1 * time.Minute)
 
