@@ -135,8 +135,6 @@ func wrapClientObject(c *client.Client) *js.Object {
 					} else {
 						arg1 = types.TxnArgBytes(v)
 					}
-				case string:
-					arg1 = types.TxnArgString(v)
 				case map[string]interface{}:
 					typ, ok1 := v["type"].(string)
 					val, ok2 := v["value"].([]uint8)

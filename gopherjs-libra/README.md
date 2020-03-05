@@ -194,19 +194,19 @@ Module transaction contains a code `module`.
 A transaction payload should have either `code` or `module`, not both. 
 You will need a Move compiler to generate binary codes for both type of transactions. 
 
-Transaction arguments have 5 types: bool, uint64, bytes, string, address.
-The arguments specified in the payload will be converted to these 5 types according to the following rules.
+Transaction arguments have 4 types: bool, uint64, bytes, address.
+The arguments specified in the payload will be converted to these 4 types according to the following rules.
 
-1. JS bool -> Move bool, JS string -> Move string
-1. JS number -> Move uint64
+1. JS bool -> Move bool
+2. JS number -> Move uint64
    
    Floating point numbers are truncated, and because of the limitation of float64, integers greater or equal to 1<<53 will be truncated too. If you need large integers, use explicit type definition.
 
-1. JS Uint8Array -> Move Address or raw bytes, based on length
+3. JS Uint8Array -> Move Address or raw bytes, based on length
 
    If the length is 32, it will become an address, otherwise a raw byte array. If you need a raw byte array whose length is exactly 32, use explicit type definition. 
 
-1. Explicit type definition: JS Object with keys:
+4. Explicit type definition: JS Object with keys:
    - type (string): 'uint64' or 'bytes'
    - value (Uint8Array): if type is 'uint64', value should have exactly 8 bytes.
 

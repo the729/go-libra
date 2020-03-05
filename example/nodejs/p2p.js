@@ -9,7 +9,7 @@ const toHexString = bytes =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
 const defaultServer = "http://hk2.wutj.info:38080",
-    waypoint = "0:997acd1b112a19eb1d2d3dff78677a0009343727926071c3858aeff2ea3499bf";
+    waypoint = "0:bf7e1eef81af68cc6b4801c3739da6029c778a72e67118a8adf0dd759f188908";
 
 var senderAddr = fromHexString("18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"),
     priKey = fromHexString("657cd8ed5e434cc4f874d6822889f637957f0145c67e2b055c9954c936670a61e57ea705e00e3ecaf417b4285cd0a69b1d79406914581456c1ce278b81a48674"),
@@ -24,7 +24,7 @@ client.queryAccountSequenceNumber(senderAddr)
             "senderPrivateKey": priKey,
             "senderSeq": r,
             "amountMicro": 2 * 1000000,
-            "maxGasAmount": 140000,
+            "maxGasAmount": 500000,
             "gasUnitPrice": 0,
             "expirationTimestamp": parseInt(Date.now() / 1000) + 60,
         };
