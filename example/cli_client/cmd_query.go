@@ -66,23 +66,23 @@ func cmdQueryAccountState(ctx *cli.Context) error {
 		fmt.Println("Account is not present in the ledger.")
 	} else {
 		log.Printf("Account version: %d", accountState.GetVersion())
-		resource, err := accountState.GetAccountBlob().GetLibraAccountResource()
+		ar, br, err := accountState.GetAccountBlob().GetLibraResources()
 		if err != nil {
 			log.Printf("Account does not contain libra coin resource, err: %v", err)
 			return nil
 		}
 
-		addr := resource.GetAddress()
+		addr := accountState.GetAddress()
 		log.Printf("Address: %v", hex.EncodeToString(addr[:]))
-		log.Printf("Balance (microLibra): %d", resource.GetBalance())
-		log.Printf("Sequence Number: %d", resource.GetSequenceNumber())
-		log.Printf("SentEventsCount: %d", resource.GetSentEvents().Count)
-		log.Printf("    Key: %x", resource.GetSentEvents().Key)
-		log.Printf("ReceivedEventsCount: %d", resource.GetReceivedEvents().Count)
-		log.Printf("    Key: %x", resource.GetReceivedEvents().Key)
-		log.Printf("DelegatedWithdrawalCapability: %v", resource.GetDelegatedWithdrawalCapability())
-		log.Printf("Authentication key: %v", hex.EncodeToString(resource.GetAuthenticationKey()))
-		log.Printf("Event generator: %v", resource.GetEventGenerator())
+		log.Printf("Balance: %d", br.Coin)
+		log.Printf("Sequence Number: %d", ar.SequenceNumber)
+		log.Printf("SentEventsCount: %d", ar.SentEvents.Count)
+		log.Printf("    Key: %x", ar.SentEvents.Key)
+		log.Printf("ReceivedEventsCount: %d", ar.ReceivedEvents.Count)
+		log.Printf("    Key: %x", ar.ReceivedEvents.Key)
+		log.Printf("DelegatedWithdrawalCapability: %v", ar.DelegatedWithdrawalCapability)
+		log.Printf("Authentication key: %v", hex.EncodeToString(ar.AuthenticationKey))
+		log.Printf("Event generator: %v", ar.EventGenerator)
 	}
 	return nil
 }

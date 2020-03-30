@@ -118,7 +118,7 @@ func (c *Client) QueryTransactionByAccountSeq(ctx context.Context, addr types.Ac
 		if err != nil {
 			return nil, err
 		}
-		return nil, fmt.Errorf("sequence too large, should < %v", pres.GetSequenceNumber())
+		return nil, fmt.Errorf("sequence too large, should < %v", pres.SequenceNumber)
 	}
 
 	txn := &types.TransactionWithProof{}

@@ -3,7 +3,6 @@ package types
 // AccountResource is the Libra coin resource of an account.
 type AccountResource struct {
 	AuthenticationKey              []byte
-	Balance                        uint64
 	DelegatedKeyRotationCapability bool
 	DelegatedWithdrawalCapability  bool
 	ReceivedEvents                 *EventHandle
@@ -21,11 +20,14 @@ type ProvenAccountResource struct {
 	ledgerInfo      *ProvenLedgerInfo
 }
 
+type BalanceResource struct {
+	Coin uint64
+}
+
 // Clone deep clones this struct.
 func (r *AccountResource) Clone() *AccountResource {
 	out := &AccountResource{}
 	out.AuthenticationKey = cloneBytes(r.AuthenticationKey)
-	out.Balance = r.Balance
 	out.DelegatedWithdrawalCapability = r.DelegatedWithdrawalCapability
 	out.ReceivedEvents = r.ReceivedEvents.Clone()
 	out.SentEvents = r.SentEvents.Clone()
@@ -40,14 +42,6 @@ func (pr *ProvenAccountResource) GetLedgerInfo() *ProvenLedgerInfo {
 		panic("not valid proven account resource")
 	}
 	return pr.ledgerInfo
-}
-
-// GetBalance returns Libra coin balance in microLibra.
-func (pr *ProvenAccountResource) GetBalance() uint64 {
-	if !pr.proven {
-		panic("not valid proven account resource")
-	}
-	return pr.accountResource.Balance
 }
 
 // GetSequenceNumber returns sequence number of the account.

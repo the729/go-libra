@@ -64,6 +64,7 @@ func (c *Client) verifyLedgerInfoAndConsistency(
 		}
 
 		// log.Printf("Ledger info verifier updated, epoch = %d, version = %d", pli.GetEpochNum()+1, pli.GetVersion())
+		// spew.Dump(v)
 
 		verifier = v
 		lastWaypointB, _ := (&types.Waypoint{}).FromProvenLedgerInfo(pli).MarshalText()

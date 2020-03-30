@@ -82,7 +82,7 @@ func (c *Client) PollSequenceUntil(ctx context.Context, addr types.AccountAddres
 			if err != nil {
 				return err
 			}
-			seq := resource.GetSequenceNumber()
+			seq := resource.SequenceNumber
 			// log.Printf("sequence number: %d, ledger version: %d", seq, ledgerInfo.GetVersion())
 			if seq >= targetSeq {
 				return nil

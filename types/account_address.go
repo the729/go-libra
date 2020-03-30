@@ -7,12 +7,12 @@ import (
 )
 
 const (
-	// AccountAddressLength is the length of an account address, which is 32 bytes.
-	AccountAddressLength = sha3libra.HashSize
+	// AccountAddressLength is the length of an account address, which is 16 bytes.
+	AccountAddressLength = 16
 )
 
 // AccountAddress is an account address.
-type AccountAddress [32]byte
+type AccountAddress [AccountAddressLength]byte
 
 // Hash ouptuts the hash of this struct, using the appropriate hash function.
 func (a AccountAddress) Hash() HashValue {

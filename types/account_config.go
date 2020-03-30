@@ -8,6 +8,20 @@ func AccountResourceTag() AccessPathTag {
 	}
 }
 
+// BalanceResourceTag returns the path tag to the Balance resource, which is 0x01+hash(0x0.LibraAccount.Balance)
+func BalanceResourceTag() AccessPathTag {
+	return &StructTag{
+		Module: "LibraAccount",
+		Name:   "Balance",
+		TypeParams: []TypeTag{{
+			TypeTag: &TypeTagStructTag{
+				Module: "LBR",
+				Name:   "T",
+			},
+		}},
+	}
+}
+
 // ResourcePath builds a path based on address, module, name and access pathes.
 func ResourcePath(addr AccountAddress, module, name string, accesses ...string) []byte {
 	p := &DecodedPath{
@@ -26,6 +40,15 @@ func ResourcePath(addr AccountAddress, module, name string, accesses ...string) 
 func AccountResourcePath() []byte {
 	p := &DecodedPath{
 		Tag: AccountResourceTag(),
+	}
+	b, _ := p.MarshalBinary()
+	return b
+}
+
+// BalanceResourcePath returns the raw path to the Balance resource, which is 0x01+hash(0x0.LibraAccount.Balance)
+func BalanceResourcePath() []byte {
+	p := &DecodedPath{
+		Tag: BalanceResourceTag(),
 	}
 	b, _ := p.MarshalBinary()
 	return b
@@ -56,6 +79,7 @@ func AccountReceivedEventPath() []byte {
 var (
 	pathTagNameMap = map[string]string{
 		string(AccountResourcePath()): "0x0.LibraAccount.T",
+		string(BalanceResourcePath()): "0x0.LibraAccount.Balance",
 	}
 )
 

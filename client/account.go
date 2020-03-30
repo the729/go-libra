@@ -23,13 +23,14 @@ func MustToAddress(str string) (out types.AccountAddress) {
 	return
 }
 
-// PubkeyMustToAddress converts an ed25519 public key (32 bytes) into types.AccountAddress.
+// PubkeyMustToAddress converts an ed25519 public key (32 bytes) into types.AccountAddress (16 bytes).
 func PubkeyMustToAddress(pubkey []byte) (out types.AccountAddress) {
 	if len(pubkey) != ed25519.PublicKeySize {
 		panic("wrong pubkey length")
 	}
 	hasher := sha3.New256()
 	hasher.Write(pubkey)
-	copy(out[:], hasher.Sum([]byte{}))
+	keyHash := hasher.Sum([]byte{})
+	copy(out[:], keyHash[hasher.Size()-types.AccountAddressLength:])
 	return
 }

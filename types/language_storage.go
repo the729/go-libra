@@ -32,9 +32,6 @@ type TypeTagU64 uint64
 // TypeTagU128 is [16]byte
 type TypeTagU128 [16]byte
 
-// TypeTagBytes is byte slice
-type TypeTagBytes []byte
-
 // TypeTagAddress is account address type
 type TypeTagAddress AccountAddress
 
@@ -48,7 +45,6 @@ func (TypeTagBool) isTypeTag()       {}
 func (TypeTagU8) isTypeTag()         {}
 func (TypeTagU64) isTypeTag()        {}
 func (TypeTagU128) isTypeTag()       {}
-func (TypeTagBytes) isTypeTag()      {}
 func (TypeTagAddress) isTypeTag()    {}
 func (TypeTagTypeTags) isTypeTag()   {}
 func (*TypeTagStructTag) isTypeTag() {}
@@ -77,21 +73,16 @@ var typeTagEnumDef = []lcs.EnumVariant{
 	{
 		Name:     "TypeTag",
 		Value:    4,
-		Template: TypeTagBytes(nil),
+		Template: TypeTagAddress([AccountAddressLength]byte{}),
 	},
 	{
 		Name:     "TypeTag",
 		Value:    5,
-		Template: TypeTagAddress([32]byte{}),
-	},
-	{
-		Name:     "TypeTag",
-		Value:    6,
 		Template: TypeTagTypeTags(nil),
 	},
 	{
 		Name:     "TypeTag",
-		Value:    7,
+		Value:    6,
 		Template: (*TypeTagStructTag)(nil),
 	},
 }

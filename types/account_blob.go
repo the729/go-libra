@@ -1,8 +1,10 @@
 package types
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/lcs"
@@ -70,13 +72,30 @@ func (b *AccountBlob) GetResource(path []byte) ([]byte, error) {
 func (b *AccountBlob) GetLibraAccountResource() (*AccountResource, error) {
 	val, err := b.GetResource(AccountResourcePath())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get account resource error: %v", err)
 	}
-	r := &AccountResource{}
-	if err := lcs.Unmarshal(val, r); err != nil {
-		return nil, fmt.Errorf("unmarshal resource error: %v", err)
+	ar := &AccountResource{}
+	if err := lcs.Unmarshal(val, ar); err != nil {
+		log.Printf("val: %s", hex.EncodeToString(val))
+		return nil, fmt.Errorf("unmarshal account resource error: %v", err)
 	}
-	return r, nil
+	return ar, nil
+}
+
+// GetLibraBalanceResource gets 0x0.LibraAccount.Balance resource from the account blob.
+//
+// The account blob should be already parsed into map of resources.
+func (b *AccountBlob) GetLibraBalanceResource() (*BalanceResource, error) {
+	val, err := b.GetResource(BalanceResourcePath())
+	if err != nil {
+		return nil, fmt.Errorf("get balance resource error: %v", err)
+	}
+	br := &BalanceResource{}
+	if err := lcs.Unmarshal(val, br); err != nil {
+		log.Printf("val: %s", hex.EncodeToString(val))
+		return nil, fmt.Errorf("unmarshal balance resource error: %v", err)
+	}
+	return br, nil
 }
 
 // GetLedgerInfo returns the ledger info.
@@ -111,22 +130,33 @@ func (pb *ProvenAccountBlob) GetResourcePaths() [][]byte {
 	return paths
 }
 
+// GetLibraResources gets 0x0.LibraAccount.T and 0x0.LibraAccount.Balance resource from a proven account blob.
+func (pb *ProvenAccountBlob) GetLibraResources() (*AccountResource, *BalanceResource, error) {
+	ar, err := pb.accountBlob.GetLibraAccountResource()
+	if err != nil {
+		return nil, nil, err
+	}
+	br, err := pb.accountBlob.GetLibraBalanceResource()
+	if err != nil {
+		return nil, nil, err
+	}
+	return ar, br, nil
+}
+
 // GetLibraAccountResource gets 0x0.LibraAccount.T resource from a proven account blob.
-func (pb *ProvenAccountBlob) GetLibraAccountResource() (*ProvenAccountResource, error) {
+func (pb *ProvenAccountBlob) GetLibraAccountResource() (*AccountResource, error) {
 	if !pb.proven {
 		panic("not valid proven account blob")
 	}
-	ar, err := pb.accountBlob.GetLibraAccountResource()
-	if err != nil {
-		return nil, err
+	return pb.accountBlob.GetLibraAccountResource()
+}
+
+// GetLibraBalanceResource gets 0x0.LibraAccount.Balance resource from a proven account blob.
+func (pb *ProvenAccountBlob) GetLibraBalanceResource() (*BalanceResource, error) {
+	if !pb.proven {
+		panic("not valid proven account blob")
 	}
-	par := &ProvenAccountResource{
-		proven:          true,
-		accountResource: ar.Clone(),
-		addr:            pb.addr,
-		ledgerInfo:      pb.ledgerInfo,
-	}
-	return par, nil
+	return pb.accountBlob.GetLibraBalanceResource()
 }
 
 // GetAddress returns a copy of account address.

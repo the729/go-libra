@@ -68,5 +68,5 @@ func (c *Client) QueryAccountSequenceNumber(ctx context.Context, addr types.Acco
 	if err != nil {
 		return 0, err
 	}
-	return resource.GetSequenceNumber(), nil
+	return resource.SequenceNumber, nil
 }

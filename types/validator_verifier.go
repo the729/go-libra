@@ -17,7 +17,7 @@ var (
 // ValidatorVerifier is a validator set that can verify ledger infos.
 // It implements LedgerInfoVerifier.
 type ValidatorVerifier struct {
-	publicKeyMap map[string]*ValidatorPublicKeys
+	publicKeyMap map[string]*ValidatorInfo
 	epoch        uint64
 	totalPower   uint64
 	quorumPower  uint64
@@ -25,10 +25,10 @@ type ValidatorVerifier struct {
 
 // FromValidatorSet builds a ValidatorVerifier from a validator set and a certain epoch number.
 func (vv *ValidatorVerifier) FromValidatorSet(vs ValidatorSet, epoch uint64) error {
-	vv.publicKeyMap = make(map[string]*ValidatorPublicKeys)
+	vv.publicKeyMap = make(map[string]*ValidatorInfo)
 	vv.totalPower = 0
 	for _, v := range vs {
-		vv.publicKeyMap[hex.EncodeToString(v.AccountAddress[:])] = &ValidatorPublicKeys{
+		vv.publicKeyMap[hex.EncodeToString(v.AccountAddress[:])] = &ValidatorInfo{
 			ConsensusPubkey:      cloneBytes(v.ConsensusPubkey),
 			ConsensusVotingPower: v.ConsensusVotingPower,
 		}
@@ -44,9 +44,9 @@ func (vv *ValidatorVerifier) FromValidatorSet(vs ValidatorSet, epoch uint64) err
 
 // ToValidatorSet exports a list of validators and the epoch number.
 func (vv *ValidatorVerifier) ToValidatorSet() (ValidatorSet, uint64) {
-	vs := make([]*ValidatorPublicKeys, 0, len(vv.publicKeyMap))
+	vs := make([]*ValidatorInfo, 0, len(vv.publicKeyMap))
 	for addr, v := range vv.publicKeyMap {
-		vpk := &ValidatorPublicKeys{
+		vpk := &ValidatorInfo{
 			ConsensusPubkey:      cloneBytes(v.ConsensusPubkey),
 			ConsensusVotingPower: v.ConsensusVotingPower,
 		}
