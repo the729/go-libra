@@ -18,7 +18,7 @@ package pbac
 
 import jspb "github.com/johanbrandhorst/protobuf/jspb"
 import types10 "github.com/the729/go-libra/generated/pbtypes"
-import mempool_status "github.com/the729/go-libra/generated/pbmpshared"
+import types11 "github.com/the729/go-libra/generated/pbtypes"
 import types8 "github.com/the729/go-libra/generated/pbtypes"
 import types12 "github.com/the729/go-libra/generated/pbtypes"
 
@@ -375,7 +375,7 @@ type SubmitTransactionResponse_AcStatus struct {
 
 // SubmitTransactionResponse_MempoolStatus is assignable to Status
 type SubmitTransactionResponse_MempoolStatus struct {
-	MempoolStatus *mempool_status.MempoolAddTransactionStatus
+	MempoolStatus *types11.MempoolStatus
 }
 
 func (*SubmitTransactionResponse_VmStatus) isSubmitTransactionResponse_Status()      {}
@@ -407,7 +407,7 @@ func (m *SubmitTransactionResponse) GetAcStatus() (x *AdmissionControlStatus) {
 }
 
 // GetMempoolStatus gets the MempoolStatus of the SubmitTransactionResponse.
-func (m *SubmitTransactionResponse) GetMempoolStatus() (x *mempool_status.MempoolAddTransactionStatus) {
+func (m *SubmitTransactionResponse) GetMempoolStatus() (x *types11.MempoolStatus) {
 	if v, ok := m.GetStatus().(*SubmitTransactionResponse_MempoolStatus); ok {
 		return v.MempoolStatus
 	}
@@ -486,7 +486,7 @@ func (m *SubmitTransactionResponse) UnmarshalFromReader(reader jspb.Reader) *Sub
 		case 3:
 			reader.ReadMessage(func() {
 				m.Status = &SubmitTransactionResponse_MempoolStatus{
-					MempoolStatus: new(mempool_status.MempoolAddTransactionStatus).UnmarshalFromReader(reader),
+					MempoolStatus: new(types11.MempoolStatus).UnmarshalFromReader(reader),
 				}
 			})
 		case 4:

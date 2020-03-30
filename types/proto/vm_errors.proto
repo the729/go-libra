@@ -6,8 +6,6 @@ syntax = "proto3";
 package types;
 option go_package = "github.com/the729/go-libra/generated/pbtypes";
 
-import "language_storage.proto";
-
 // The statuses and errors produced by the VM can be categorized into a
 // couple different types:
 // 1. Validation Statuses: all the errors that can (/should) be

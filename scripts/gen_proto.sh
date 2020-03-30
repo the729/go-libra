@@ -51,7 +51,6 @@ fi
 if [[ ! -z "$libra_rust" ]]; then
     echo "Copying .proto files from Libra Core: ${libra_rust}"
     copy_proto "types/src/proto" "types/proto" "$go_module_name/generated/pbtypes"
-    copy_proto "mempool/mempool-shared-proto/src/proto" "mempool/proto/shared" "$go_module_name/generated/pbmpshared"
     copy_proto "admission_control/admission-control-proto/src/proto" "admission_control/proto" "$go_module_name/generated/pbac"
 fi
 
@@ -64,12 +63,6 @@ if [[ ! -z "$gopherjs" ]]; then
     
     add_build_constraints "generated/pbtypes/*.pb.gopherjs.go" "// +build js"
 
-    mkdir -p generated/pbmpshared
-    protoc -I mempool/proto/shared -I $GOPATH/src mempool/proto/shared/*.proto \
-        --gopherjs_out=plugins=grpc,import_path=pbmpshared:$GOPATH/src
-
-    add_build_constraints "generated/pbmpshared/*.pb.gopherjs.go" "// +build js"
-
     mkdir -p generated/pbac
     protoc -I types/proto -I mempool/proto/shared -I admission_control/proto -I $GOPATH/src admission_control/proto/*.proto \
         --gopherjs_out=plugins=grpc,import_path=pbac:$GOPATH/src
@@ -80,10 +73,6 @@ else
     mkdir -p generated/pbtypes
     protoc -I types/proto types/proto/*.proto --go_out=plugins=grpc,paths=source_relative:generated/pbtypes
     add_build_constraints "generated/pbtypes/*.pb.go" "// +build !js"
-
-    mkdir -p generated/pbmpshared
-    protoc -I mempool/proto/shared mempool/proto/shared/*.proto --go_out=plugins=grpc,paths=source_relative:generated/pbmpshared
-    add_build_constraints "generated/pbmpshared/*.pb.go" "// +build !js"
 
     mkdir -p generated/pbac
     protoc -I types/proto -I mempool/proto/shared -I admission_control/proto admission_control/proto/*.proto --go_out=plugins=grpc,paths=source_relative:generated/pbac

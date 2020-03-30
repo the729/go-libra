@@ -12,15 +12,15 @@ const _ = jspb.JspbPackageIsVersion2
 
 // Protobuf definition for the Rust struct ValidatorSet.
 type ValidatorSet struct {
-	ValidatorPublicKeys []*ValidatorPublicKeys
+	ValidatorInfo []*ValidatorInfo
 }
 
-// GetValidatorPublicKeys gets the ValidatorPublicKeys of the ValidatorSet.
-func (m *ValidatorSet) GetValidatorPublicKeys() (x []*ValidatorPublicKeys) {
+// GetValidatorInfo gets the ValidatorInfo of the ValidatorSet.
+func (m *ValidatorSet) GetValidatorInfo() (x []*ValidatorInfo) {
 	if m == nil {
 		return x
 	}
-	return m.ValidatorPublicKeys
+	return m.ValidatorInfo
 }
 
 // MarshalToWriter marshals ValidatorSet to the provided writer.
@@ -29,7 +29,7 @@ func (m *ValidatorSet) MarshalToWriter(writer jspb.Writer) {
 		return
 	}
 
-	for _, msg := range m.ValidatorPublicKeys {
+	for _, msg := range m.ValidatorInfo {
 		writer.WriteMessage(1, func() {
 			msg.MarshalToWriter(writer)
 		})
@@ -55,7 +55,7 @@ func (m *ValidatorSet) UnmarshalFromReader(reader jspb.Reader) *ValidatorSet {
 		switch reader.GetFieldNumber() {
 		case 1:
 			reader.ReadMessage(func() {
-				m.ValidatorPublicKeys = append(m.ValidatorPublicKeys, new(ValidatorPublicKeys).UnmarshalFromReader(reader))
+				m.ValidatorInfo = append(m.ValidatorInfo, new(ValidatorInfo).UnmarshalFromReader(reader))
 			})
 		default:
 			reader.SkipField()

@@ -10,13 +10,13 @@
 		account_state_blob.proto
 		events.proto
 		get_with_proof.proto
-		language_storage.proto
 		ledger_info.proto
+		mempool_status.proto
 		proof.proto
 		transaction_info.proto
 		transaction.proto
 		validator_change.proto
-		validator_public_keys.proto
+		validator_info.proto
 		validator_set.proto
 		vm_errors.proto
 
@@ -40,10 +40,10 @@
 		GetEventsByEventAccessPathResponse
 		GetTransactionsRequest
 		GetTransactionsResponse
-		ModuleId
 		LedgerInfo
 		LedgerInfoWithSignatures
 		ValidatorSignature
+		MempoolStatus
 		AccumulatorProof
 		SparseMerkleProof
 		AccumulatorConsistencyProof
@@ -63,7 +63,7 @@
 		TransactionToCommit
 		TransactionListWithProof
 		ValidatorChangeProof
-		ValidatorPublicKeys
+		ValidatorInfo
 		ValidatorSet
 		VMStatus
 */
