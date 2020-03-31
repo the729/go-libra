@@ -20,12 +20,11 @@ type SignedTransaction struct {
 	// RawTxn is the raw transaction.
 	RawTxn *RawTransaction
 
-	// PublicKey is the public key of the sender.
-	PublicKey []byte
-
-	// Signature is the signature.
-	Signature []byte
+	Authenticator TxnAuthenticator `lcs:"enum=TxnAuthenticator"`
 }
+
+// EnumTypes defines enum variants for lcs
+func (*SignedTransaction) EnumTypes() []lcs.EnumVariant { return txnAuthenticatorEnumDef }
 
 // ToProto builds a protobuf struct from this struct.
 func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
@@ -49,8 +48,7 @@ func (t *SignedTransaction) ToProto() (*pbtypes.SignedTransaction, error) {
 func (t *SignedTransaction) Clone() *SignedTransaction {
 	out := &SignedTransaction{}
 	out.RawTxn = t.RawTxn.Clone()
-	out.PublicKey = cloneBytes(t.PublicKey)
-	out.Signature = cloneBytes(t.Signature)
+	out.Authenticator = t.Authenticator.Clone()
 	return out
 }
 
@@ -79,8 +77,9 @@ func (t *SignedTransaction) VerifySignature() error {
 	}
 	txnHash := txnHasher.Sum([]byte{})
 
-	k := ed25519.PublicKey(t.PublicKey)
-	if !ed25519.Verify(k, txnHash, t.Signature) {
+	ea := t.Authenticator.(*ED25519Authenticator)
+	k := ed25519.PublicKey(ea.PublicKey)
+	if !ed25519.Verify(k, txnHash, ea.Signature) {
 		return errors.New("signature verification fail")
 	}
 

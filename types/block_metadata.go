@@ -2,8 +2,9 @@ package types
 
 type BlockMetaData struct {
 	ID                 HashValue
+	Round              uint64
 	TimestampUSec      uint64
-	PreviousBlockVotes map[AccountAddress][]byte
+	PreviousBlockVotes []AccountAddress
 	Proposer           AccountAddress
 }
 
@@ -12,11 +13,11 @@ func (bm *BlockMetaData) Clone() *BlockMetaData {
 	out := &BlockMetaData{
 		ID:                 cloneBytes(bm.ID),
 		TimestampUSec:      bm.TimestampUSec,
-		PreviousBlockVotes: make(map[AccountAddress][]byte),
+		PreviousBlockVotes: make([]AccountAddress, 0, len(bm.PreviousBlockVotes)),
 		Proposer:           bm.Proposer,
 	}
-	for k, v := range bm.PreviousBlockVotes {
-		out.PreviousBlockVotes[k] = cloneBytes(v)
+	for _, v := range bm.PreviousBlockVotes {
+		out.PreviousBlockVotes = append(out.PreviousBlockVotes, v)
 	}
 	return out
 }

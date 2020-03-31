@@ -29,6 +29,8 @@ type RawTransaction struct {
 	// Maximal price can be paid per gas.
 	GasUnitPrice uint64
 
+	GasSpecifier TypeTag
+
 	// Expiration time for this transaction.  If storage is queried and
 	// the time returned is greater than or equal to this time and this
 	// transaction has not been included, you can be certain that it will
@@ -246,8 +248,10 @@ func (rt *RawTransaction) Sign(signer ed25519.PrivateKey) *SignedTransaction {
 	}
 
 	return &SignedTransaction{
-		RawTxn:    rt,
-		PublicKey: senderPubKey,
-		Signature: sig,
+		RawTxn: rt,
+		Authenticator: &ED25519Authenticator{
+			PublicKey: senderPubKey,
+			Signature: sig,
+		},
 	}
 }
