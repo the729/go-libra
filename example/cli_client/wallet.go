@@ -16,11 +16,13 @@ import (
 type Account struct {
 	PrivateKey     ed25519.PrivateKey
 	Address        types.AccountAddress
+	AuthKey        ed25519.PublicKey
 	SequenceNumber uint64
 }
 
 type AccountConfig struct {
 	PrivateKey crypto.PrivateKey    `toml:"private_key"`
+	AuthKey    crypto.PublicKey     `toml:"auth_key"`
 	Address    types.AccountAddress `toml:"address"`
 }
 
@@ -46,12 +48,14 @@ func LoadAccounts(file string) (*SimpleWallet, error) {
 		account := &Account{
 			PrivateKey: ed25519.PrivateKey(accountConf.PrivateKey),
 			Address:    accountConf.Address,
+			AuthKey:    ed25519.PublicKey(accountConf.AuthKey),
 		}
 		if accountConf.PrivateKey != nil {
 			pubkey := account.PrivateKey.Public().(ed25519.PublicKey)
 			hasher := sha3.New256()
 			hasher.Write(pubkey)
-			hasher.Sum(account.Address[:0])
+			account.AuthKey = hasher.Sum([]byte{})
+			copy(account.Address[:], account.AuthKey[16:])
 		}
 		wallet.Accounts[hex.EncodeToString(account.Address[:])] = account
 	}

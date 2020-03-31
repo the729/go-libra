@@ -88,7 +88,7 @@ func cmdMint(ctx *cli.Context) error {
 	}
 	amountMicro := uint64(amount) * 1000000
 
-	faucetURL := fmt.Sprintf("http://faucet.testnet.libra.org/?amount=%d&address=%s", amountMicro, hex.EncodeToString(receiver.Address[:]))
+	faucetURL := fmt.Sprintf("http://faucet.testnet.libra.org/?amount=%d&auth_key=%s", amountMicro, hex.EncodeToString(receiver.AuthKey))
 	log.Printf("Going to POST to faucet service: %s", faucetURL)
 
 	resp, err := http.PostForm(faucetURL, nil)
