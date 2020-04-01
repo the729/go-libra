@@ -29,7 +29,7 @@ type RawTransaction struct {
 	// Maximal price can be paid per gas.
 	GasUnitPrice uint64
 
-	GasSpecifier TypeTag
+	GasSpecifier *TypeTag
 
 	// Expiration time for this transaction.  If storage is queried and
 	// the time returned is greater than or equal to this time and this

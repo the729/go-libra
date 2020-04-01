@@ -74,8 +74,8 @@ func cmdTransfer(ctx *cli.Context) error {
 	log.Printf("... is %d", seq)
 
 	rawTxn, err := client.NewRawP2PTransaction(
-		sender.Address, receiver.Address, seq,
-		amountMicro, maxGasAmount, gasUnitPrice, expiration,
+		sender.Address, receiver.Address, receiver.AuthKey[0:16],
+		seq, amountMicro, maxGasAmount, gasUnitPrice, expiration,
 	)
 	if err != nil {
 		log.Fatal(err)

@@ -16,7 +16,7 @@ import (
 // NewRawP2PTransaction creates a new serialized raw transaction bytes corresponding to a
 // peer-to-peer Libra coin transaction.
 func NewRawP2PTransaction(
-	senderAddress, receiverAddress types.AccountAddress,
+	senderAddress, receiverAddress types.AccountAddress, receiverAuthKeyPrefix []byte,
 	senderSequenceNumber uint64,
 	amount, maxGasAmount, gasUnitPrice uint64,
 	expiration time.Time,
@@ -28,11 +28,13 @@ func NewRawP2PTransaction(
 			Code: stdscript.PeerToPeerTransfer,
 			Args: []types.TransactionArgument{
 				types.TxnArgAddress(receiverAddress),
+				types.TxnArgBytes(receiverAuthKeyPrefix),
 				types.TxnArgU64(amount),
 			},
 		},
 		MaxGasAmount:   maxGasAmount,
 		GasUnitPrice:   gasUnitPrice,
+		GasSpecifier:   types.LBRTypeTag(),
 		ExpirationTime: uint64(expiration.Unix()),
 	}
 

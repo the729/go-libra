@@ -8,17 +8,21 @@ func AccountResourceTag() AccessPathTag {
 	}
 }
 
+func LBRTypeTag() *TypeTag {
+	return &TypeTag{
+		TypeTag: &TypeTagStructTag{
+			Module: "LBR",
+			Name:   "T",
+		},
+	}
+}
+
 // BalanceResourceTag returns the path tag to the Balance resource, which is 0x01+hash(0x0.LibraAccount.Balance)
 func BalanceResourceTag() AccessPathTag {
 	return &StructTag{
-		Module: "LibraAccount",
-		Name:   "Balance",
-		TypeParams: []TypeTag{{
-			TypeTag: &TypeTagStructTag{
-				Module: "LBR",
-				Name:   "T",
-			},
-		}},
+		Module:     "LibraAccount",
+		Name:       "Balance",
+		TypeParams: []TypeTag{*LBRTypeTag()},
 	}
 }
 
