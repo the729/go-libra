@@ -64,8 +64,12 @@ func cmdListAccounts(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	for addr := range wallet.Accounts {
-		log.Printf("account: %s\n", addr)
+	for addr, account := range wallet.Accounts {
+		log.Printf("account: %s   authkey prefix: %s   prikey prefix: %s\n",
+			addr,
+			hex.EncodeToString(account.AuthKey[:16]),
+			hex.EncodeToString(account.PrivateKey[:4]),
+		)
 	}
 
 	return nil

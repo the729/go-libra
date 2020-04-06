@@ -49,6 +49,7 @@ func PrintTxn(txn *types.ProvenTransaction) {
 	log.Printf("    Gas unit price (microLibra/unit): %v", rawTxn.GasUnitPrice)
 	log.Printf("    Expiration timestamp: %v", rawTxn.ExpirationTime)
 	log.Printf("    Gas used (microLibra): %v", txn.GetGasUsed())
+	log.Printf("    Gas specifier: %+v", rawTxn.GasSpecifier)
 	log.Printf("    Major status: %d - %s", txn.GetMajorStatus(), txn.GetMajorStatus())
 	if txn.GetWithEvents() {
 		log.Printf("    Events: (%d total)", len(txn.GetEvents()))
