@@ -12,7 +12,7 @@ import (
 
 const (
 	defaultServer = "ac.testnet.libra.org:8000"
-	waypoint      = "0:bf7e1eef81af68cc6b4801c3739da6029c778a72e67118a8adf0dd759f188908"
+	waypoint      = "0:a69511cc7e6d609efcf03e64098056bc3c96d383e0adcf752464a111b081b808"
 )
 
 func main() {
@@ -23,12 +23,13 @@ func main() {
 	defer c.Close()
 
 	// We need private key fo the sender to sign the transaction
-	priKeyBytes, _ := hex.DecodeString("657cd8ed5e434cc4f874d6822889f637957f0145c67e2b055c9954c936670a61e57ea705e00e3ecaf417b4285cd0a69b1d79406914581456c1ce278b81a48674")
+	priKeyBytes, _ := hex.DecodeString("996911072ee011ffa44a1325e0da593ff3b9374e255115f223cbdffb6bfa0bcfba60d1f8edd6923f59cf9125d3ac80e389afa4e2b8d0e4f1183a30a0270fde71")
 	priKey := ed25519.PrivateKey(priKeyBytes)
 
 	// Transaction parameters
-	senderAddr := client.MustToAddress("18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a")
-	recvAddr := client.MustToAddress("e89a0d93fcf1ca4423328c1bddebe6c02da666808993c8a888ff7a8bad19ffd5")
+	senderAddr := client.MustToAddress("42f5745128c05452a0c68272de8042b1")
+	recvAddr := client.MustToAddress("5817cd6e6e84c110c43efca22df54172")
+	recvAuthKeyPrefix, _ := hex.DecodeString("26c7bfaa8e0f32206f35bf6d44b43c9c")
 	amountMicro := uint64(2 * 1000000)
 	maxGasAmount := uint64(500000)
 	gasUnitPrice := uint64(0)
@@ -42,7 +43,7 @@ func main() {
 	log.Printf("... is %d", seq)
 
 	rawTxn, err := client.NewRawP2PTransaction(
-		senderAddr, recvAddr, seq,
+		senderAddr, recvAddr, recvAuthKeyPrefix, seq,
 		amountMicro, maxGasAmount, gasUnitPrice, expiration,
 	)
 	if err != nil {

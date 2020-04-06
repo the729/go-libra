@@ -10,7 +10,7 @@ import (
 
 const (
 	defaultServer = "ac.testnet.libra.org:8000"
-	waypoint      = "0:bf7e1eef81af68cc6b4801c3739da6029c778a72e67118a8adf0dd759f188908"
+	waypoint      = "0:a69511cc7e6d609efcf03e64098056bc3c96d383e0adcf752464a111b081b808"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	}
 	defer c.Close()
 
-	addrStr := "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
+	addrStr := "42f5745128c05452a0c68272de8042b1"
 	addr := client.MustToAddress(addrStr)
 
 	provenTxn, err := c.QueryTransactionByAccountSeq(context.TODO(), addr, 0, true)
