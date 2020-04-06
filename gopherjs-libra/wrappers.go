@@ -29,11 +29,11 @@ type jsProvenAccountState struct {
 
 type jsProvenAccountBlob struct {
 	*js.Object
-	getAddress              interface{} `js:"getAddress"`
-	getResource             interface{} `js:"getResource"`
-	getResourcePaths        interface{} `js:"getResourcePaths"`
-	getLibraAccountResource interface{} `js:"getLibraAccountResource"`
-	getLedgerInfo           interface{} `js:"getLedgerInfo"`
+	getAddress        interface{} `js:"getAddress"`
+	getResource       interface{} `js:"getResource"`
+	getResourcePaths  interface{} `js:"getResourcePaths"`
+	getLibraResources interface{} `js:"getLibraResources"`
+	getLedgerInfo     interface{} `js:"getLedgerInfo"`
 }
 
 type jsProvenAccountResource struct {
@@ -124,12 +124,20 @@ func wrapProvenAccountBlob(g *types.ProvenAccountBlob) *js.Object {
 	}
 	j := &jsProvenAccountBlob{Object: js.Global.Get("Object").New()}
 	j.getAddress = g.GetAddress
-	j.getLibraAccountResource = jopher.Promisify(func() (*js.Object, error) {
-		r, err := g.GetLibraAccountResource()
+	j.getLibraResources = jopher.Promisify(func() (*js.Object, error) {
+		ar, br, err := g.GetLibraResources()
 		if err != nil {
 			return nil, err
 		}
-		return wrapProvenAccountResource(r), nil
+		type LibraRes struct {
+			*js.Object
+			accountResource *types.AccountResource `js:"accountResource"`
+			balanceResource *types.BalanceResource `js:"balanceResource"`
+		}
+		lr := &LibraRes{Object: js.Global.Get("Object").New()}
+		lr.accountResource = ar
+		lr.balanceResource = br
+		return lr.Object, nil
 	})
 	j.getResource = func(path []byte) []byte {
 		r, _ := g.GetResource(path)
@@ -138,24 +146,6 @@ func wrapProvenAccountBlob(g *types.ProvenAccountBlob) *js.Object {
 	j.getResourcePaths = func() [][]byte {
 		return g.GetResourcePaths()
 	}
-	j.getLedgerInfo = func() *js.Object {
-		return wrapProvenLedgerInfo(g.GetLedgerInfo())
-	}
-	return j.Object
-}
-
-func wrapProvenAccountResource(g *types.ProvenAccountResource) *js.Object {
-	if g == nil {
-		return nil
-	}
-	j := &jsProvenAccountResource{Object: js.Global.Get("Object").New()}
-	j.getAddress = g.GetAddress
-	j.getBalance = g.GetBalance
-	j.getSequenceNumber = g.GetSequenceNumber
-	j.getSentEvents = g.GetSentEvents
-	j.getReceivedEvents = g.GetReceivedEvents
-	j.getDelegatedWithdrawalCapability = g.GetDelegatedWithdrawalCapability
-	j.getEventGenerator = g.GetEventGenerator
 	j.getLedgerInfo = func() *js.Object {
 		return wrapProvenLedgerInfo(g.GetLedgerInfo())
 	}
@@ -249,7 +239,7 @@ func unwrapClientState(csObj *js.Object) (*client.State, error) {
 		for i, vObj := range j.validatorSet {
 			jv := &jsValidator{Object: vObj}
 			var err error
-			v := &types.ValidatorPublicKeys{}
+			v := &types.ValidatorInfo{}
 			v.ConsensusPubkey, err = hex.DecodeString(jv.consensusPubkey)
 			if err != nil {
 				return nil, fmt.Errorf("unable to decode consensus pubkey #%d: %v", i, err)

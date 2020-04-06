@@ -13,6 +13,8 @@ import (
 	"github.com/the729/go-libra/types"
 )
 
+const addrLen = types.AccountAddressLength
+
 type jsClient struct {
 	*js.Object
 
@@ -56,18 +58,19 @@ func wrapClientObject(c *client.Client) *js.Object {
 	promiseSubmitP2PTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
 		type jsP2PTxn struct {
 			*js.Object
-			SenderAddr          [32]byte `js:"senderAddr"`
-			SenderPriKey        []byte   `js:"senderPrivateKey"`
-			RecvAddr            [32]byte `js:"recvAddr"`
-			SenderSeq           uint64   `js:"senderSeq"`
-			AmountMicro         uint64   `js:"amountMicro"`
-			MaxGasAmount        uint64   `js:"maxGasAmount"`
-			GasUnitPrice        uint64   `js:"gasUnitPrice"`
-			ExpirationTimestamp int64    `js:"expirationTimestamp"`
+			SenderAddr          [addrLen]byte `js:"senderAddr"`
+			SenderPriKey        []byte        `js:"senderPrivateKey"`
+			RecvAddr            [addrLen]byte `js:"recvAddr"`
+			RecvAuthKeyPrefix   []byte        `js:"recvAuthKeyPrefix"`
+			SenderSeq           uint64        `js:"senderSeq"`
+			AmountMicro         uint64        `js:"amountMicro"`
+			MaxGasAmount        uint64        `js:"maxGasAmount"`
+			GasUnitPrice        uint64        `js:"gasUnitPrice"`
+			ExpirationTimestamp int64         `js:"expirationTimestamp"`
 		}
 		jstxn := &jsP2PTxn{Object: txn}
 		rawTxn, _ := client.NewRawP2PTransaction(
-			jstxn.SenderAddr, jstxn.RecvAddr,
+			jstxn.SenderAddr, jstxn.RecvAddr, jstxn.RecvAuthKeyPrefix,
 			jstxn.SenderSeq,
 			jstxn.AmountMicro, jstxn.MaxGasAmount, jstxn.GasUnitPrice,
 			time.Unix(jstxn.ExpirationTimestamp, 0),
@@ -81,9 +84,9 @@ func wrapClientObject(c *client.Client) *js.Object {
 	promiseSubmitRawTransaction := jopher.Promisify(func(txn *js.Object) (uint64, error) {
 		type jsRawTxn struct {
 			*js.Object
-			SenderAddr   [32]byte `js:"senderAddr"`
-			SenderPriKey []byte   `js:"senderPrivateKey"`
-			SenderSeq    uint64   `js:"senderSeq"`
+			SenderAddr   [addrLen]byte `js:"senderAddr"`
+			SenderPriKey []byte        `js:"senderPrivateKey"`
+			SenderSeq    uint64        `js:"senderSeq"`
 			Payload      *struct {
 				*js.Object
 				Code   []byte        `js:"code"`
@@ -128,7 +131,7 @@ func wrapClientObject(c *client.Client) *js.Object {
 				case float64:
 					arg1 = types.TxnArgU64(v)
 				case []uint8:
-					if len(v) == 32 {
+					if len(v) == addrLen {
 						a := types.TxnArgAddress{}
 						copy(a[:], v)
 						arg1 = types.TxnArgAddress(a)
