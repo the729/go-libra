@@ -307,25 +307,29 @@ Vue.component("account-detail", {
                         Raw content: {{ toHexString(blob.getResource(path)) }}
                     </li>
                 </ul>
+                <p>Libra balance resource:</p>
+                <ul v-if="bRes">
+                    <li>Balance: {{ bRes.Coin / 1000000.0 }}</li>
+                </ul>
+                <p v-else>Account exists but cannot get 0x0.LibraAccount.Balance resource.</p>
                 <p>Libra account resource:</p>
-                <ul v-if="resource">
-                    <li>Balance: {{ resource.getBalance() / 1000000.0 }}</li>
-                    <li>Sequence Number: {{ resource.getSequenceNumber() }}</li>
+                <ul v-if="aRes">
+                    <li>Sequence Number: {{ aRes.SequenceNumber }}</li>
                     <li>Sent Events: 
                         <ul>
-                            <li>Count: {{ resource.getSentEvents().Count }}</li>
-                            <li>Key: {{ toHexString(resource.getSentEvents().Key) }}</li>
+                            <li>Count: {{ aRes.SentEvents.Count }}</li>
+                            <li>Key: {{ toHexString(aRes.SentEvents.Key) }}</li>
                         </ul>
                     </li>
                     <li>Received Events: 
                         <ul>
-                            <li>Count: {{ resource.getReceivedEvents().Count }}</li>
-                            <li>Key: {{ toHexString(resource.getReceivedEvents().Key) }}</li>
+                            <li>Count: {{ aRes.ReceivedEvents.Count }}</li>
+                            <li>Key: {{ toHexString(aRes.ReceivedEvents.Key) }}</li>
                         </ul>
                     </li>
-                    <li>Delegated withdrawal capability: {{ resource.getDelegatedWithdrawalCapability() }}</li>
-                    <li>Event generator: {{ resource.getEventGenerator() }}</li>
-                    <li>Proven at ledger version: {{ resource.getLedgerInfo().getVersion() }}</li>
+                    <li>Delegated withdrawal capability: {{ aRes.DelegatedWithdrawalCapability }}</li>
+                    <li>Event generator: {{ aRes.EventGenerator }}</li>
+                    <li>Proven at ledger version: {{ blob.getLedgerInfo().getVersion() }}</li>
                 </ul>
                 <p v-else>Account exists but cannot get 0x0.LibraAccount.T resource.</p>
             </div>
@@ -338,13 +342,14 @@ Vue.component("account-detail", {
             loading: false,
             state: null,
             blob: null,
-            resource: null,
+            aRes: null,
+            bRes: null,
             paths: []
         }
     },
     methods: {
         refresh: function () {
-            if (this.address.length != 64) {
+            if (this.address.length != 32) {
                 alert("Invalid address.");
                 return
             }
@@ -361,10 +366,12 @@ Vue.component("account-detail", {
                     this.blob = r;
                     if (r == null) return null;
                     this.paths = r.getResourcePaths()
-                    return r.getLibraAccountResource()
+                    return r.getLibraResources()
                 })
                 .then(r => {
-                    this.resource = r;
+                    console.log("Libra resources: ", r)
+                    this.aRes = r.accountResource
+                    this.bRes = r.balanceResource
                     setTimeout(_ => {
                         window.scrollTo(0, this.$el.offsetTop)
                     }, 10)

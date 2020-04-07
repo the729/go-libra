@@ -81,11 +81,15 @@ func AccountReceivedEventPath() []byte {
 }
 
 var (
+	pathTagNameMap map[string]string
+)
+
+func init() {
 	pathTagNameMap = map[string]string{
 		string(AccountResourcePath()): "0x0.LibraAccount.T",
 		string(BalanceResourcePath()): "0x0.LibraAccount.Balance",
 	}
-)
+}
 
 // InferPathTagName returns the name of known path root tags, by tag hash and type.
 // Known tags:
