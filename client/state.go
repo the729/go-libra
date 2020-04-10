@@ -30,11 +30,12 @@ func (h HashValue) MarshalText() (text []byte, err error) {
 
 // State represents the state of a client.
 type State struct {
-	Waypoint     string             `toml:"waypoint" json:"waypoint"`
-	ValidatorSet types.ValidatorSet `toml:"validator_set" json:"validator_set,omitempty"`
-	Epoch        uint64             `toml:"epoch" json:"epoch"`
-	KnownVersion uint64             `toml:"known_version" json:"known_version"`
-	Subtrees     []HashValue        `toml:"subtrees" json:"subtrees"`
+	Waypoint     string                 `toml:"waypoint" json:"waypoint"`
+	VSScheme     string                 `toml:"validator_set_scheme" json:"validator_set_scheme,omitempty"`
+	ValidatorSet []*types.ValidatorInfo `toml:"validator_set" json:"validator_set,omitempty"`
+	Epoch        uint64                 `toml:"epoch" json:"epoch"`
+	KnownVersion uint64                 `toml:"known_version" json:"known_version"`
+	Subtrees     []HashValue            `toml:"subtrees" json:"subtrees"`
 }
 
 // GetState returns the current state of a client.
@@ -45,7 +46,13 @@ func (c *Client) GetState() *State {
 	cs := &State{}
 	cs.Waypoint = c.lastWaypoint
 	if vv, ok := c.verifier.(*types.ValidatorVerifier); ok {
-		cs.ValidatorSet, cs.Epoch = vv.ToValidatorSet()
+		var vs *types.ValidatorSet
+		vs, cs.Epoch = vv.ToValidatorSet()
+		cs.ValidatorSet = vs.Payload
+		switch vs.Scheme.(type) {
+		case types.SchemeED25519:
+			cs.VSScheme = "ed25519"
+		}
 	}
 	cs.KnownVersion = c.acc.NumLeaves - 1
 	cs.Subtrees = cloneSubtrees2(c.acc.FrozenSubtreeRoots)
@@ -56,9 +63,16 @@ func (c *Client) GetState() *State {
 // SetState restores a client to a given state.
 func (c *Client) SetState(cs *State) error {
 	var verifier types.LedgerInfoVerifier
-	if len(cs.ValidatorSet) > 0 {
+	if cs.ValidatorSet != nil {
 		vv := &types.ValidatorVerifier{}
-		if err := vv.FromValidatorSet(cs.ValidatorSet, cs.Epoch); err != nil {
+		vs := &types.ValidatorSet{
+			Payload: cs.ValidatorSet,
+		}
+		switch cs.VSScheme {
+		case "ed25519":
+			vs.Scheme = types.SchemeED25519{}
+		}
+		if err := vv.FromValidatorSet(vs, cs.Epoch); err != nil {
 			return fmt.Errorf("restore validator set error: %v", err)
 		}
 		verifier = vv

@@ -3,7 +3,6 @@ package types
 import "github.com/the729/lcs"
 
 type TxnAuthenticator interface {
-	isTxnAuthenticator()
 	Clone() TxnAuthenticator
 }
 
@@ -18,8 +17,6 @@ type ED25519Authenticator struct {
 // type MultiED25519Authenticator struct {
 
 // }
-
-func (*ED25519Authenticator) isTxnAuthenticator() {}
 
 // Clone the TxnAuthenticator
 func (v *ED25519Authenticator) Clone() TxnAuthenticator {

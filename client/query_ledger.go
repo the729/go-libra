@@ -39,11 +39,14 @@ func (c *Client) verifyLedgerInfoAndConsistency(
 ) (*types.ProvenLedgerInfo, error) {
 
 	li := &types.LedgerInfoWithSignatures{}
-	li.FromProto(resp.LedgerInfoWithSigs)
+	if err := li.FromProto(resp.LedgerInfoWithSigs); err != nil {
+		return nil, fmt.Errorf("unmarshal ledgerInfoWithSigs error: %v", err)
+	}
+	li0 := li.Value.(*types.LedgerInfoWithSignaturesV0)
 
 	verifier := c.verifier
 	lastWaypoint := ""
-	if verifier.EpochChangeVerificationRequired(li.Epoch) {
+	if verifier.EpochChangeVerificationRequired(li0.Epoch) {
 		vcp := &types.ValidatorChangeProof{}
 		if err := vcp.FromProto(resp.ValidatorChangeProof); err != nil {
 			return nil, fmt.Errorf("validator change proof invalid: %v", err)
@@ -70,7 +73,7 @@ func (c *Client) verifyLedgerInfoAndConsistency(
 		lastWaypointB, _ := (&types.Waypoint{}).FromProvenLedgerInfo(pli).MarshalText()
 		lastWaypoint = string(lastWaypointB)
 	}
-	pli, err := li.Verify(verifier)
+	pli, err := li0.Verify(verifier)
 	if err != nil {
 		return nil, fmt.Errorf("ledger info verification failed: %v", err)
 	}

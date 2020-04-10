@@ -25,7 +25,8 @@ func NewRawP2PTransaction(
 		Sender:         senderAddress,
 		SequenceNumber: senderSequenceNumber,
 		Payload: &types.TxnPayloadScript{
-			Code: stdscript.PeerToPeerTransfer,
+			Code:   stdscript.PeerToPeerTransfer,
+			TyArgs: []*types.TypeTag{types.LBRTypeTag()},
 			Args: []types.TransactionArgument{
 				types.TxnArgAddress(receiverAddress),
 				types.TxnArgBytes(receiverAuthKeyPrefix),

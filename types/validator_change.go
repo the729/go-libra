@@ -43,24 +43,26 @@ func (vcp *ValidatorChangeProof) Verify(v LedgerInfoVerifier) (*ProvenValidatorC
 	}
 	var genesisHash []byte
 	for _, li := range vcp.LedgerInfoWithSigs {
+		li0 := li.Value.(*LedgerInfoWithSignaturesV0)
 		if err := v.Verify(li); err != nil {
 			return nil, fmt.Errorf("some ledger info failed to verify: %v", err)
 		}
-		if li.Version == 0 {
-			genesisHash = li.TransactionAccumulatorHash
+		if li0.Version == 0 {
+			genesisHash = li0.TransactionAccumulatorHash
 		}
-		if li.NextValidatorSet == nil {
+		if li0.NextValidatorSet == nil {
 			return nil, errors.New("ledger info doesn't carry validator set")
 		}
 		vv := &ValidatorVerifier{}
-		if err := vv.FromValidatorSet(li.NextValidatorSet, li.Epoch+1); err != nil {
+		if err := vv.FromValidatorSet(li0.NextValidatorSet, li0.Epoch+1); err != nil {
 			return nil, fmt.Errorf("init new validator error: %v", err)
 		}
 		v = vv
 	}
+	lastLedger0 := vcp.LedgerInfoWithSigs[len(vcp.LedgerInfoWithSigs)-1].Value.(*LedgerInfoWithSignaturesV0)
 	return &ProvenValidatorChange{
 		proven:         true,
-		lastLedgerInfo: vcp.LedgerInfoWithSigs[len(vcp.LedgerInfoWithSigs)-1].LedgerInfo.Clone(),
+		lastLedgerInfo: lastLedger0.LedgerInfo.Clone(),
 		genesisHash:    cloneBytes(genesisHash),
 	}, nil
 }

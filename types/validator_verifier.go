@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/hex"
 	"errors"
 
 	"golang.org/x/crypto/ed25519"
@@ -17,18 +16,18 @@ var (
 // ValidatorVerifier is a validator set that can verify ledger infos.
 // It implements LedgerInfoVerifier.
 type ValidatorVerifier struct {
-	publicKeyMap map[string]*ValidatorInfo
+	publicKeyMap map[AccountAddress]*ValidatorInfo
 	epoch        uint64
 	totalPower   uint64
 	quorumPower  uint64
 }
 
 // FromValidatorSet builds a ValidatorVerifier from a validator set and a certain epoch number.
-func (vv *ValidatorVerifier) FromValidatorSet(vs ValidatorSet, epoch uint64) error {
-	vv.publicKeyMap = make(map[string]*ValidatorInfo)
+func (vv *ValidatorVerifier) FromValidatorSet(vs *ValidatorSet, epoch uint64) error {
+	vv.publicKeyMap = make(map[AccountAddress]*ValidatorInfo)
 	vv.totalPower = 0
-	for _, v := range vs {
-		vv.publicKeyMap[hex.EncodeToString(v.AccountAddress[:])] = &ValidatorInfo{
+	for _, v := range vs.Payload {
+		vv.publicKeyMap[v.AccountAddress] = &ValidatorInfo{
 			ConsensusPubkey:      cloneBytes(v.ConsensusPubkey),
 			ConsensusVotingPower: v.ConsensusVotingPower,
 		}
@@ -43,20 +42,24 @@ func (vv *ValidatorVerifier) FromValidatorSet(vs ValidatorSet, epoch uint64) err
 }
 
 // ToValidatorSet exports a list of validators and the epoch number.
-func (vv *ValidatorVerifier) ToValidatorSet() (ValidatorSet, uint64) {
+func (vv *ValidatorVerifier) ToValidatorSet() (*ValidatorSet, uint64) {
 	vs := make([]*ValidatorInfo, 0, len(vv.publicKeyMap))
 	for addr, v := range vv.publicKeyMap {
 		vpk := &ValidatorInfo{
+			AccountAddress:       addr,
 			ConsensusPubkey:      cloneBytes(v.ConsensusPubkey),
 			ConsensusVotingPower: v.ConsensusVotingPower,
 		}
-		hex.Decode(vpk.AccountAddress[:], []byte(addr))
 		vs = append(vs, vpk)
 	}
-	return vs, vv.epoch
+	vs1 := &ValidatorSet{
+		Scheme:  SchemeED25519{},
+		Payload: vs,
+	}
+	return vs1, vv.epoch
 }
 
-func (vv *ValidatorVerifier) verifySingle(author string, hash, sig []byte) error {
+func (vv *ValidatorVerifier) verifySingle(author AccountAddress, hash, sig []byte) error {
 	pubk, ok := vv.publicKeyMap[author]
 	if !ok {
 		return VerifyErrUnknownAuthor
@@ -70,8 +73,9 @@ func (vv *ValidatorVerifier) verifySingle(author string, hash, sig []byte) error
 
 // Verify a LedgerInfoWithSignatures
 func (vv *ValidatorVerifier) Verify(li *LedgerInfoWithSignatures) error {
-	hash := li.LedgerInfo.Hash()
-	sigs := li.Sigs
+	li0 := li.Value.(*LedgerInfoWithSignaturesV0)
+	hash := li0.LedgerInfo.Hash()
+	sigs := li0.Sigs
 	if len(sigs) > len(vv.publicKeyMap) {
 		return VerifyErrTooManySignatures
 	}

@@ -148,7 +148,6 @@ func (v *WriteOpWithPath) Clone() *WriteOpWithPath {
 
 // TransactionPayload is the enum type of transaction payload
 type TransactionPayload interface {
-	isTransactionPayload()
 	Clone() TransactionPayload
 }
 
@@ -173,8 +172,9 @@ func (v *TxnPayloadWriteSet) Clone() TransactionPayload {
 
 // TxnPayloadScript is variant of TransactionPayload
 type TxnPayloadScript struct {
-	Code []byte
-	Args []TransactionArgument `lcs:"enum=TransactionArgument"`
+	Code   []byte
+	TyArgs []*TypeTag
+	Args   []TransactionArgument `lcs:"enum=TransactionArgument"`
 }
 
 // EnumTypes defines enum variants for lcs
@@ -195,10 +195,6 @@ type TxnPayloadModule []byte
 
 // Clone the transaction payload
 func (v TxnPayloadModule) Clone() TransactionPayload { return TxnPayloadModule(cloneBytes(v)) }
-
-func (*TxnPayloadWriteSet) isTransactionPayload() {}
-func (*TxnPayloadScript) isTransactionPayload()   {}
-func (TxnPayloadModule) isTransactionPayload()    {}
 
 // EnumTypes defines enum variants for lcs
 func (*RawTransaction) EnumTypes() []lcs.EnumVariant {

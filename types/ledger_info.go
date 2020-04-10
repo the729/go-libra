@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 
@@ -19,16 +18,37 @@ type LedgerInfo struct {
 	TransactionAccumulatorHash []byte
 	Version                    uint64
 	TimestampUsec              uint64
-	NextValidatorSet           ValidatorSet `lcs:"optional"`
+	NextValidatorSet           *ValidatorSet `lcs:"optional"`
 	ConsensusDataHash          []byte
 }
 
-// LedgerInfoWithSignatures is a ledger info with signature from trusted
-// validators.
 type LedgerInfoWithSignatures struct {
-	*LedgerInfo
-	Sigs map[string]HashValue
+	Value isLedgerInfoWithSignatures `lcs:"enum=isLedgerInfoWithSignatures"`
 }
+
+type isLedgerInfoWithSignatures interface {
+	isLedgerInfoWithSignatures()
+}
+
+// LedgerInfoWithSignaturesV0 is a ledger info with signature from trusted
+// validators.
+type LedgerInfoWithSignaturesV0 struct {
+	*LedgerInfo
+	Sigs map[AccountAddress]HashValue
+}
+
+func (*LedgerInfoWithSignaturesV0) isLedgerInfoWithSignatures() {}
+
+var ledgerInfoWSigsEnumDef = []lcs.EnumVariant{
+	{
+		Name:     "isLedgerInfoWithSignatures",
+		Value:    0,
+		Template: (*LedgerInfoWithSignaturesV0)(nil),
+	},
+}
+
+// EnumTypes defines enum variants for lcs
+func (*LedgerInfoWithSignatures) EnumTypes() []lcs.EnumVariant { return ledgerInfoWSigsEnumDef }
 
 // ProvenLedgerInfo is a ledger info proven to be history state of the ledger.
 type ProvenLedgerInfo struct {
@@ -73,30 +93,20 @@ func (l *LedgerInfo) Clone() *LedgerInfo {
 		TransactionAccumulatorHash: cloneBytes(l.TransactionAccumulatorHash),
 		Version:                    l.Version,
 		TimestampUsec:              l.TimestampUsec,
+		NextValidatorSet:           l.NextValidatorSet.Clone(),
 		ConsensusDataHash:          cloneBytes(l.ConsensusDataHash),
-	}
-	for _, v := range l.NextValidatorSet {
-		out.NextValidatorSet = append(out.NextValidatorSet, v.Clone())
 	}
 	return out
 }
 
 // FromProto parses a protobuf struct into this struct.
 func (l *LedgerInfoWithSignatures) FromProto(pb *pbtypes.LedgerInfoWithSignatures) error {
-	l.LedgerInfo = &LedgerInfo{}
-	l.LedgerInfo.FromProto(pb.LedgerInfo)
-
-	sigs := make(map[string]HashValue)
-	for _, s := range pb.Signatures {
-		sigs[hex.EncodeToString(s.ValidatorId)] = s.Signature
-	}
-	l.Sigs = sigs
-	return nil
+	return lcs.Unmarshal(pb.Bytes, l)
 }
 
 // Verify the ledger info with a consensus verifier and output a ProvenLedgerInfo.
-func (l *LedgerInfoWithSignatures) Verify(v LedgerInfoVerifier) (*ProvenLedgerInfo, error) {
-	if err := v.Verify(l); err != nil {
+func (l *LedgerInfoWithSignaturesV0) Verify(v LedgerInfoVerifier) (*ProvenLedgerInfo, error) {
+	if err := v.Verify(&LedgerInfoWithSignatures{l}); err != nil {
 		return nil, err
 	}
 	return &ProvenLedgerInfo{
@@ -143,7 +153,7 @@ func (pl *ProvenLedgerInfo) ToVerifier() (LedgerInfoVerifier, error) {
 	if !pl.proven {
 		panic("not valid proven ledger info")
 	}
-	if len(pl.ledgerInfo.NextValidatorSet) == 0 {
+	if pl.ledgerInfo.NextValidatorSet == nil {
 		return nil, errors.New("empty validator set")
 	}
 	vv := &ValidatorVerifier{}

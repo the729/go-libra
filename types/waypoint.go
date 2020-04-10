@@ -23,7 +23,7 @@ type ledger2WaypointConverter struct {
 	RootHash         []byte
 	Version          uint64
 	TimestampUsec    uint64
-	NextValidatorSet ValidatorSet
+	NextValidatorSet *ValidatorSet
 }
 
 func (l2wp *ledger2WaypointConverter) Hash() HashValue {
@@ -87,11 +87,12 @@ func (wp *Waypoint) UnmarshalText(text []byte) error {
 
 // Verify whether the given ledger info matches this waypoint.
 func (wp *Waypoint) Verify(li *LedgerInfoWithSignatures) error {
-	if wp.Version != li.Version {
+	li0 := li.Value.(*LedgerInfoWithSignaturesV0)
+	if wp.Version != li0.Version {
 		return errors.New("waypoint version mismatch")
 	}
 	wp1 := &Waypoint{}
-	wp1.FromLedgerInfo(li.LedgerInfo)
+	wp1.FromLedgerInfo(li0.LedgerInfo)
 	if !sha3libra.Equal(wp.Value, wp1.Value) {
 		return errors.New("waypoint hash value mismatch")
 	}
