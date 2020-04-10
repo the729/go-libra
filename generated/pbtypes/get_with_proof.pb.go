@@ -848,7 +848,9 @@ func init() {
 	proto.RegisterType((*GetTransactionsResponse)(nil), "types.GetTransactionsResponse")
 }
 
-func init() { proto.RegisterFile("get_with_proof.proto", fileDescriptor_5ffcd28ab9b25870) }
+func init() {
+	proto.RegisterFile("get_with_proof.proto", fileDescriptor_5ffcd28ab9b25870)
+}
 
 var fileDescriptor_5ffcd28ab9b25870 = []byte{
 	// 1016 bytes of a gzipped FileDescriptorProto

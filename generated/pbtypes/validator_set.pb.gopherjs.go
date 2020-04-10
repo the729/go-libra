@@ -11,16 +11,17 @@ import jspb "github.com/johanbrandhorst/protobuf/jspb"
 const _ = jspb.JspbPackageIsVersion2
 
 // Protobuf definition for the Rust struct ValidatorSet.
+// Serialized by LCS
 type ValidatorSet struct {
-	ValidatorInfo []*ValidatorInfo
+	Bytes []byte
 }
 
-// GetValidatorInfo gets the ValidatorInfo of the ValidatorSet.
-func (m *ValidatorSet) GetValidatorInfo() (x []*ValidatorInfo) {
+// GetBytes gets the Bytes of the ValidatorSet.
+func (m *ValidatorSet) GetBytes() (x []byte) {
 	if m == nil {
 		return x
 	}
-	return m.ValidatorInfo
+	return m.Bytes
 }
 
 // MarshalToWriter marshals ValidatorSet to the provided writer.
@@ -29,10 +30,8 @@ func (m *ValidatorSet) MarshalToWriter(writer jspb.Writer) {
 		return
 	}
 
-	for _, msg := range m.ValidatorInfo {
-		writer.WriteMessage(1, func() {
-			msg.MarshalToWriter(writer)
-		})
+	if len(m.Bytes) > 0 {
+		writer.WriteBytes(1, m.Bytes)
 	}
 
 	return
@@ -54,9 +53,7 @@ func (m *ValidatorSet) UnmarshalFromReader(reader jspb.Reader) *ValidatorSet {
 
 		switch reader.GetFieldNumber() {
 		case 1:
-			reader.ReadMessage(func() {
-				m.ValidatorInfo = append(m.ValidatorInfo, new(ValidatorInfo).UnmarshalFromReader(reader))
-			})
+			m.Bytes = reader.ReadBytes()
 		default:
 			reader.SkipField()
 		}

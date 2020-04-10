@@ -102,7 +102,9 @@ func init() {
 	proto.RegisterType((*ValidatorInfo)(nil), "types.ValidatorInfo")
 }
 
-func init() { proto.RegisterFile("validator_info.proto", fileDescriptor_58482d830cf3ea80) }
+func init() {
+	proto.RegisterFile("validator_info.proto", fileDescriptor_58482d830cf3ea80)
+}
 
 var fileDescriptor_58482d830cf3ea80 = []byte{
 	// 264 bytes of a gzipped FileDescriptorProto

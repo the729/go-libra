@@ -115,7 +115,9 @@ func init() {
 	proto.RegisterType((*VMStatus)(nil), "types.VMStatus")
 }
 
-func init() { proto.RegisterFile("vm_errors.proto", fileDescriptor_5824ced5fb3a3c2c) }
+func init() {
+	proto.RegisterFile("vm_errors.proto", fileDescriptor_5824ced5fb3a3c2c)
+}
 
 var fileDescriptor_5824ced5fb3a3c2c = []byte{
 	// 210 bytes of a gzipped FileDescriptorProto

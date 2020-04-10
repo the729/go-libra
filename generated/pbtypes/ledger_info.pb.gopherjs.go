@@ -237,25 +237,15 @@ func (m *LedgerInfo) Unmarshal(rawBytes []byte) (*LedgerInfo, error) {
 // / the signatures again when the client performs a query, those are only there
 // / for the client to be able to verify the state
 type LedgerInfoWithSignatures struct {
-	// Signatures of the root node from each validator
-	Signatures []*ValidatorSignature
-	LedgerInfo *LedgerInfo
+	Bytes []byte
 }
 
-// GetSignatures gets the Signatures of the LedgerInfoWithSignatures.
-func (m *LedgerInfoWithSignatures) GetSignatures() (x []*ValidatorSignature) {
+// GetBytes gets the Bytes of the LedgerInfoWithSignatures.
+func (m *LedgerInfoWithSignatures) GetBytes() (x []byte) {
 	if m == nil {
 		return x
 	}
-	return m.Signatures
-}
-
-// GetLedgerInfo gets the LedgerInfo of the LedgerInfoWithSignatures.
-func (m *LedgerInfoWithSignatures) GetLedgerInfo() (x *LedgerInfo) {
-	if m == nil {
-		return x
-	}
-	return m.LedgerInfo
+	return m.Bytes
 }
 
 // MarshalToWriter marshals LedgerInfoWithSignatures to the provided writer.
@@ -264,16 +254,8 @@ func (m *LedgerInfoWithSignatures) MarshalToWriter(writer jspb.Writer) {
 		return
 	}
 
-	for _, msg := range m.Signatures {
-		writer.WriteMessage(1, func() {
-			msg.MarshalToWriter(writer)
-		})
-	}
-
-	if m.LedgerInfo != nil {
-		writer.WriteMessage(2, func() {
-			m.LedgerInfo.MarshalToWriter(writer)
-		})
+	if len(m.Bytes) > 0 {
+		writer.WriteBytes(1, m.Bytes)
 	}
 
 	return
@@ -295,13 +277,7 @@ func (m *LedgerInfoWithSignatures) UnmarshalFromReader(reader jspb.Reader) *Ledg
 
 		switch reader.GetFieldNumber() {
 		case 1:
-			reader.ReadMessage(func() {
-				m.Signatures = append(m.Signatures, new(ValidatorSignature).UnmarshalFromReader(reader))
-			})
-		case 2:
-			reader.ReadMessage(func() {
-				m.LedgerInfo = m.LedgerInfo.UnmarshalFromReader(reader)
-			})
+			m.Bytes = reader.ReadBytes()
 		default:
 			reader.SkipField()
 		}

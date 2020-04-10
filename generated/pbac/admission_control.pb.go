@@ -363,7 +363,9 @@ func init() {
 	proto.RegisterType((*SubmitTransactionResponse)(nil), "admission_control.SubmitTransactionResponse")
 }
 
-func init() { proto.RegisterFile("admission_control.proto", fileDescriptor_d13d6ff9aac892b4) }
+func init() {
+	proto.RegisterFile("admission_control.proto", fileDescriptor_d13d6ff9aac892b4)
+}
 
 var fileDescriptor_d13d6ff9aac892b4 = []byte{
 	// 514 bytes of a gzipped FileDescriptorProto
@@ -404,11 +406,11 @@ var fileDescriptor_d13d6ff9aac892b4 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // AdmissionControlClient is the client API for AdmissionControl service.
 //
@@ -426,10 +428,10 @@ type AdmissionControlClient interface {
 }
 
 type admissionControlClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewAdmissionControlClient(cc *grpc.ClientConn) AdmissionControlClient {
+func NewAdmissionControlClient(cc grpc.ClientConnInterface) AdmissionControlClient {
 	return &admissionControlClient{cc}
 }
 

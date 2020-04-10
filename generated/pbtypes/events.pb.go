@@ -236,7 +236,9 @@ func init() {
 	proto.RegisterType((*EventsForVersions)(nil), "types.EventsForVersions")
 }
 
-func init() { proto.RegisterFile("events.proto", fileDescriptor_8f22242cb04491f9) }
+func init() {
+	proto.RegisterFile("events.proto", fileDescriptor_8f22242cb04491f9)
+}
 
 var fileDescriptor_8f22242cb04491f9 = []byte{
 	// 356 bytes of a gzipped FileDescriptorProto

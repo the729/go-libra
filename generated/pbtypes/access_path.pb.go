@@ -72,7 +72,9 @@ func init() {
 	proto.RegisterType((*AccessPath)(nil), "types.AccessPath")
 }
 
-func init() { proto.RegisterFile("access_path.proto", fileDescriptor_ec5cf8547713a5d2) }
+func init() {
+	proto.RegisterFile("access_path.proto", fileDescriptor_ec5cf8547713a5d2)
+}
 
 var fileDescriptor_ec5cf8547713a5d2 = []byte{
 	// 143 bytes of a gzipped FileDescriptorProto

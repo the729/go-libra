@@ -120,7 +120,9 @@ func init() {
 	proto.RegisterType((*AccountStateWithProof)(nil), "types.AccountStateWithProof")
 }
 
-func init() { proto.RegisterFile("account_state_blob.proto", fileDescriptor_d0fc530c6a6b052a) }
+func init() {
+	proto.RegisterFile("account_state_blob.proto", fileDescriptor_d0fc530c6a6b052a)
+}
 
 var fileDescriptor_d0fc530c6a6b052a = []byte{
 	// 214 bytes of a gzipped FileDescriptorProto

@@ -76,7 +76,9 @@ func init() {
 	proto.RegisterType((*ValidatorChangeProof)(nil), "types.ValidatorChangeProof")
 }
 
-func init() { proto.RegisterFile("validator_change.proto", fileDescriptor_484a7446a4b3dd15) }
+func init() {
+	proto.RegisterFile("validator_change.proto", fileDescriptor_484a7446a4b3dd15)
+}
 
 var fileDescriptor_484a7446a4b3dd15 = []byte{
 	// 206 bytes of a gzipped FileDescriptorProto

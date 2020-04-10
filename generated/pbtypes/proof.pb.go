@@ -488,7 +488,9 @@ func init() {
 	proto.RegisterType((*TransactionListProof)(nil), "types.TransactionListProof")
 }
 
-func init() { proto.RegisterFile("proof.proto", fileDescriptor_473d204b28f447f0) }
+func init() {
+	proto.RegisterFile("proof.proto", fileDescriptor_473d204b28f447f0)
+}
 
 var fileDescriptor_473d204b28f447f0 = []byte{
 	// 471 bytes of a gzipped FileDescriptorProto

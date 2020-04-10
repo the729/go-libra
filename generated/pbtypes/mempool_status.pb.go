@@ -74,7 +74,9 @@ func init() {
 	proto.RegisterType((*MempoolStatus)(nil), "types.MempoolStatus")
 }
 
-func init() { proto.RegisterFile("mempool_status.proto", fileDescriptor_cad4a86f8a5465be) }
+func init() {
+	proto.RegisterFile("mempool_status.proto", fileDescriptor_cad4a86f8a5465be)
+}
 
 var fileDescriptor_cad4a86f8a5465be = []byte{
 	// 150 bytes of a gzipped FileDescriptorProto
