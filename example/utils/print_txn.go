@@ -54,16 +54,17 @@ func PrintTxn(txn *types.ProvenTransaction) {
 	if txn.GetWithEvents() {
 		log.Printf("    Events: (%d total)", len(txn.GetEvents()))
 		for idx, ev := range txn.GetEvents() {
+			ev0 := ev.Value.(*types.ContractEventV0)
 			log.Printf("      #%d:", idx)
-			log.Printf("        Key: %v", hex.EncodeToString(ev.Key))
-			log.Printf("        Seq #%d", ev.SequenceNumber)
-			if len(ev.Data) > 44 {
-				log.Printf("        Raw event: %s ...(len=%d)", hex.EncodeToString(ev.Data[:44]), len(ev.Data))
+			log.Printf("        Key: %v", hex.EncodeToString(ev0.Key))
+			log.Printf("        Seq #%d", ev0.SequenceNumber)
+			if len(ev0.Data) > 44 {
+				log.Printf("        Raw event: %s ...(len=%d)", hex.EncodeToString(ev0.Data[:44]), len(ev0.Data))
 			} else {
-				log.Printf("        Raw event: %s", hex.EncodeToString(ev.Data))
+				log.Printf("        Raw event: %s", hex.EncodeToString(ev0.Data))
 			}
 			pev := &stdscript.PaymentEvent{}
-			if err := lcs.Unmarshal(ev.Data, pev); err != nil {
+			if err := lcs.Unmarshal(ev0.Data, pev); err != nil {
 				log.Printf("            (Unknown event type)")
 			} else {
 				log.Printf("            Amount (microLibra): %d", pev.Amount)

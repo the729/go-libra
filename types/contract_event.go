@@ -18,13 +18,32 @@ type EventHandle struct {
 	Key   EventKey
 }
 
-// ContractEvent is a output event of transaction
 type ContractEvent struct {
+	Value isContractEvent `lcs:"enum=isContractEvent"`
+}
+
+type isContractEvent interface {
+	Clone() isContractEvent
+}
+
+// ContractEventV0 is a output event of transaction
+type ContractEventV0 struct {
 	Key            EventKey
 	SequenceNumber uint64
 	TypeTag        TypeTag
 	Data           []byte
 }
+
+var contractEventEnumDef = []lcs.EnumVariant{
+	{
+		Name:     "isContractEvent",
+		Value:    0,
+		Template: (*ContractEventV0)(nil),
+	},
+}
+
+// EnumTypes defines enum variants for lcs
+func (*ContractEvent) EnumTypes() []lcs.EnumVariant { return contractEventEnumDef }
 
 // EventList is a list of events
 type EventList []*ContractEvent
@@ -73,12 +92,15 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 	if pb == nil {
 		return ErrNilInput
 	}
-	e.Key = pb.Key
-	e.SequenceNumber = pb.SequenceNumber
-	e.Data = pb.EventData
-	if err := lcs.Unmarshal(pb.TypeTag, &e.TypeTag); err != nil {
+	e0 := &ContractEventV0{
+		Key:            pb.Key,
+		SequenceNumber: pb.SequenceNumber,
+		Data:           pb.EventData,
+	}
+	if err := lcs.Unmarshal(pb.TypeTag, &e0.TypeTag); err != nil {
 		return err
 	}
+	e.Value = e0
 
 	return nil
 }
@@ -93,11 +115,19 @@ func (e *ContractEvent) Hash() HashValue {
 }
 
 // Clone deep clones this struct.
-func (e *ContractEvent) Clone() *ContractEvent {
-	out := &ContractEvent{}
+func (e *ContractEventV0) Clone() isContractEvent {
+	out := &ContractEventV0{}
 	out.Key = cloneBytes(e.Key)
 	out.SequenceNumber = e.SequenceNumber
 	out.Data = cloneBytes(e.Data)
+	// out.TypeTag = e.TypeTag.Clone()
+	return out
+}
+
+// Clone deep clones this struct.
+func (e *ContractEvent) Clone() *ContractEvent {
+	out := &ContractEvent{}
+	out.Value = e.Value.Clone()
 	return out
 }
 

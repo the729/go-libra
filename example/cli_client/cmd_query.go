@@ -210,7 +210,7 @@ func cmdQueryEvents(ctx *cli.Context) error {
 
 	for i, ev := range evs {
 		log.Printf("#%d: txn #%d event #%d", i, ev.GetTransactionVersion(), ev.GetEventIndex())
-		evBody := ev.GetEvent()
+		evBody := ev.GetEvent().Value.(*types.ContractEventV0)
 		log.Printf("    Key: %s", hex.EncodeToString(evBody.Key))
 		log.Printf("    Seq number: %d", evBody.SequenceNumber)
 		if len(evBody.Data) > 30 {

@@ -50,6 +50,9 @@ func (c *Client) QueryEventsByAccessPath(ctx context.Context, ap *types.AccessPa
 	// b, err := json.MarshalIndent(resp1, "", "    ")
 	// log.Printf("resp1: %s", string(b))
 
+	if len(resp1.EventsWithProof) < int(limit) {
+		//TODO: verify resp1.ProofOfLatestEvent
+	}
 	pevs := make([]*types.ProvenEvent, 0, len(resp1.EventsWithProof))
 	for _, pbev := range resp1.EventsWithProof {
 		ev := &types.EventWithProof{}
