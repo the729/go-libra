@@ -106,6 +106,7 @@ func wrapClientObject(c *client.Client) *js.Object {
 			SequenceNumber: jstxn.SenderSeq,
 			MaxGasAmount:   jstxn.MaxGasAmount,
 			GasUnitPrice:   jstxn.GasUnitPrice,
+			GasSpecifier:   types.LBRTypeTag(), // TODO: not allowed to set gas specifier for now
 			ExpirationTime: jstxn.ExpirationTimestamp,
 		}
 		// Probably because of https://github.com/gopherjs/gopherjs/issues/460,

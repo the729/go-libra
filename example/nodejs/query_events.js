@@ -9,9 +9,9 @@ const toHexString = bytes =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
 const defaultServer = "http://hk2.wutj.info:38080",
-    waypoint = "0:bf7e1eef81af68cc6b4801c3739da6029c778a72e67118a8adf0dd759f188908";
+    waypoint = "0:4d4d0feaa9378069f8fcee71980e142273837e108702d8d7f93a8419e2736f3f";
 
-var addrStr = "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
+var addrStr = "42f5745128c05452a0c68272de8042b1"
 var addr = fromHexString(addrStr)
 
 var client = libra.client(defaultServer, waypoint)
@@ -19,7 +19,7 @@ client.queryEventsByAccessPath(addr, libra.accountSentEventPath(), 0, true, 10)
     .then(r => {
         r.map(ev => {
             console.log("Txn #", ev.getTransactionVersion(), " event #", ev.getEventIndex())
-            var evBody = ev.getEvent()
+            var evBody = ev.getEvent().Value
             console.log("    Key: ", toHexString(evBody.Key))
             console.log("    Seq num: ", evBody.SequenceNumber)
             console.log("    Raw data: ", toHexString(evBody.Data))

@@ -9,9 +9,9 @@ const toHexString = bytes =>
     bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 
 const defaultServer = "http://hk2.wutj.info:38080",
-    waypoint = "0:bf7e1eef81af68cc6b4801c3739da6029c778a72e67118a8adf0dd759f188908";
+    waypoint = "0:4d4d0feaa9378069f8fcee71980e142273837e108702d8d7f93a8419e2736f3f";
 
-var addrStr = "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
+var addrStr = "42f5745128c05452a0c68272de8042b1"
 var addr = fromHexString(addrStr)
 
 var client = libra.client(defaultServer, waypoint)
@@ -20,18 +20,18 @@ client.queryAccountState(addr)
         if (r.isNil()) {
             throw "Account " + addrStr + " does not exist at version " + r.getVersion() + "."
         }
+        console.log("Proven at ledger version / time: ", r.getLedgerInfo().getVersion(), r.getLedgerInfo().getTimestampUsec() / 1000000)
         return r.getAccountBlob()
     })
-    .then(r => r.getLibraAccountResource())
+    .then(r => r.getLibraResources())
     .then(r => {
         console.log("Address: ", addrStr)
-        console.log("Balance (microLibra): %d", r.getBalance())
-        console.log("Sequence Number: ", r.getSequenceNumber())
-        console.log("Sent Events: ", r.getSentEvents())
-        console.log("Received Events: ", r.getReceivedEvents())
-        console.log("Delegated withdrawal capability: ", r.getDelegatedWithdrawalCapability())
-        console.log("Event generator: ", r.getEventGenerator())
-        console.log("Proven at ledger version / time: ", r.getLedgerInfo().getVersion(), r.getLedgerInfo().getTimestampUsec() / 1000000)
+        console.log("Balance (microLibra): %d", r.balanceResource.Coin)
+        console.log("Sequence Number: ", r.accountResource.SequenceNumber)
+        console.log("Sent Events: ", r.accountResource.SentEvents)
+        console.log("Received Events: ", r.accountResource.ReceivedEvents)
+        console.log("Delegated withdrawal capability: ", r.accountResource.DelegatedWithdrawalCapability)
+        console.log("Event generator: ", r.accountResource.EventGenerator)
     })
     .catch(e => {
         console.log("Error: ", e)
