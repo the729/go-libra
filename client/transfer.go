@@ -45,7 +45,10 @@ func NewRawP2PTransaction(
 // SubmitRawTransaction signes and submits a raw transaction.
 // It returns the expected sequence number of this transaction.
 func (c *Client) SubmitRawTransaction(ctx context.Context, rawTxn *types.RawTransaction, privateKey ed25519.PrivateKey) (uint64, error) {
-	signedTxn := rawTxn.Sign(privateKey)
+	signedTxn, err := rawTxn.Sign(privateKey)
+	if err != nil {
+		return 0, fmt.Errorf("cannot sign transaction: %v", err)
+	}
 	pbSignedTxn, _ := signedTxn.ToProto()
 	resp, err := c.ac.SubmitTransaction(ctx, &pbac.SubmitTransactionRequest{
 		Transaction: pbSignedTxn,

@@ -3,6 +3,7 @@ package types
 import (
 	"crypto"
 	"crypto/rand"
+	"fmt"
 
 	"github.com/the729/go-libra/crypto/sha3libra"
 	"github.com/the729/lcs"
@@ -233,18 +234,17 @@ func (rt *RawTransaction) Clone() *RawTransaction {
 	}
 }
 
-// Sign the raw transaction with a private key. It panics when the private key is
-// invalid.
-func (rt *RawTransaction) Sign(signer ed25519.PrivateKey) *SignedTransaction {
+// Sign the raw transaction with a private key.
+func (rt *RawTransaction) Sign(signer ed25519.PrivateKey) (*SignedTransaction, error) {
 	hasher := sha3libra.NewRawTransaction()
 	if err := lcs.NewEncoder(hasher).Encode(rt); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("raw transaction serialize error: %v", err)
 	}
 	txnHash := hasher.Sum([]byte{})
 	senderPubKey := signer.Public().(ed25519.PublicKey)
 	sig, err := signer.Sign(rand.Reader, txnHash, crypto.Hash(0))
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("sign transaction error: %v", err)
 	}
 
 	return &SignedTransaction{
@@ -253,5 +253,5 @@ func (rt *RawTransaction) Sign(signer ed25519.PrivateKey) *SignedTransaction {
 			PublicKey: senderPubKey,
 			Signature: sig,
 		},
-	}
+	}, nil
 }
