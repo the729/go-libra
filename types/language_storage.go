@@ -16,8 +16,8 @@ type AccessPathTag interface {
 	TypePrefix() byte
 }
 
-type isTypeTag interface {
-	isTypeTag()
+type TypeTag interface {
+	Clone() TypeTag
 }
 
 // TypeTagBool is bool
@@ -41,13 +41,18 @@ type TypeTagTypeTags []TypeTag
 // TypeTagStructTag is StructTag
 type TypeTagStructTag = StructTag
 
-func (TypeTagBool) isTypeTag()       {}
-func (TypeTagU8) isTypeTag()         {}
-func (TypeTagU64) isTypeTag()        {}
-func (TypeTagU128) isTypeTag()       {}
-func (TypeTagAddress) isTypeTag()    {}
-func (TypeTagTypeTags) isTypeTag()   {}
-func (*TypeTagStructTag) isTypeTag() {}
+func (v TypeTagBool) Clone() TypeTag    { return v }
+func (v TypeTagU8) Clone() TypeTag      { return v }
+func (v TypeTagU64) Clone() TypeTag     { return v }
+func (v TypeTagU128) Clone() TypeTag    { return v }
+func (v TypeTagAddress) Clone() TypeTag { return v }
+func (v TypeTagTypeTags) Clone() TypeTag {
+	n := make([]TypeTag, 0, len(v))
+	for _, e := range v {
+		n = append(n, e.Clone())
+	}
+	return TypeTagTypeTags(n)
+}
 
 var typeTagEnumDef = []lcs.EnumVariant{
 	{
@@ -87,12 +92,12 @@ var typeTagEnumDef = []lcs.EnumVariant{
 	},
 }
 
-type TypeTag struct {
-	TypeTag isTypeTag `lcs:"enum=TypeTag"`
+type TypeTagWrap struct {
+	Value TypeTag `lcs:"enum=TypeTag"`
 }
 
 // EnumTypes defines enum variants for lcs
-func (*TypeTag) EnumTypes() []lcs.EnumVariant { return typeTagEnumDef }
+func (*TypeTagWrap) EnumTypes() []lcs.EnumVariant { return typeTagEnumDef }
 
 // StructTag is a tag to form a resource path.
 //
@@ -101,8 +106,11 @@ type StructTag struct {
 	Address    AccountAddress
 	Module     string
 	Name       string
-	TypeParams []TypeTag
+	TypeParams []TypeTag `lcs:"enum=TypeTag"`
 }
+
+// EnumTypes defines enum variants for lcs
+func (*StructTag) EnumTypes() []lcs.EnumVariant { return typeTagEnumDef }
 
 // Hash outputs the hash of this struct, using the appropriate hash function.
 func (t *StructTag) Hash() HashValue {
@@ -111,6 +119,19 @@ func (t *StructTag) Hash() HashValue {
 		panic(err)
 	}
 	return hasher.Sum([]byte{})
+}
+
+func (t *StructTag) Clone() TypeTag {
+	out := &StructTag{
+		Address: t.Address,
+		Module:  t.Module,
+		Name:    t.Name,
+	}
+	n := make([]TypeTag, 0, len(t.TypeParams))
+	for _, e := range t.TypeParams {
+		n = append(n, e.Clone())
+	}
+	return out
 }
 
 // TypePrefix returns type byte of this tag, which is '0x01'

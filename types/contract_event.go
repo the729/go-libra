@@ -30,9 +30,12 @@ type isContractEvent interface {
 type ContractEventV0 struct {
 	Key            EventKey
 	SequenceNumber uint64
-	TypeTag        TypeTag
+	TypeTag        TypeTag `lcs:"enum=TypeTag"`
 	Data           []byte
 }
+
+// EnumTypes defines enum variants for lcs
+func (*ContractEventV0) EnumTypes() []lcs.EnumVariant { return typeTagEnumDef }
 
 var contractEventEnumDef = []lcs.EnumVariant{
 	{
@@ -97,9 +100,11 @@ func (e *ContractEvent) FromProto(pb *pbtypes.Event) error {
 		SequenceNumber: pb.SequenceNumber,
 		Data:           pb.EventData,
 	}
-	if err := lcs.Unmarshal(pb.TypeTag, &e0.TypeTag); err != nil {
+	t := &TypeTagWrap{}
+	if err := lcs.Unmarshal(pb.TypeTag, t); err != nil {
 		return err
 	}
+	e0.TypeTag = t.Value
 	e.Value = e0
 
 	return nil
@@ -120,7 +125,7 @@ func (e *ContractEventV0) Clone() isContractEvent {
 	out.Key = cloneBytes(e.Key)
 	out.SequenceNumber = e.SequenceNumber
 	out.Data = cloneBytes(e.Data)
-	// out.TypeTag = e.TypeTag.Clone()
+	out.TypeTag = e.TypeTag.Clone()
 	return out
 }
 

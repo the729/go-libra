@@ -29,7 +29,7 @@ type RawTransaction struct {
 	// Maximal price can be paid per gas.
 	GasUnitPrice uint64
 
-	GasSpecifier *TypeTag
+	GasSpecifier TypeTag `lcs:"enum=TypeTag"`
 
 	// Expiration time for this transaction.  If storage is queried and
 	// the time returned is greater than or equal to this time and this
@@ -173,12 +173,14 @@ func (v *TxnPayloadWriteSet) Clone() TransactionPayload {
 // TxnPayloadScript is variant of TransactionPayload
 type TxnPayloadScript struct {
 	Code   []byte
-	TyArgs []*TypeTag
+	TyArgs []TypeTag             `lcs:"enum=TypeTag"`
 	Args   []TransactionArgument `lcs:"enum=TransactionArgument"`
 }
 
 // EnumTypes defines enum variants for lcs
-func (*TxnPayloadScript) EnumTypes() []lcs.EnumVariant { return txnArgEnumDef }
+func (*TxnPayloadScript) EnumTypes() []lcs.EnumVariant {
+	return append(txnArgEnumDef, typeTagEnumDef...)
+}
 
 // Clone the transaction payload
 func (v *TxnPayloadScript) Clone() TransactionPayload {
@@ -196,25 +198,27 @@ type TxnPayloadModule []byte
 // Clone the transaction payload
 func (v TxnPayloadModule) Clone() TransactionPayload { return TxnPayloadModule(cloneBytes(v)) }
 
+var txnPayloadEnumDef = []lcs.EnumVariant{
+	{
+		Name:     "TransactionPayload",
+		Value:    1,
+		Template: (*TxnPayloadWriteSet)(nil),
+	},
+	{
+		Name:     "TransactionPayload",
+		Value:    2,
+		Template: (*TxnPayloadScript)(nil),
+	},
+	{
+		Name:     "TransactionPayload",
+		Value:    3,
+		Template: TxnPayloadModule(nil),
+	},
+}
+
 // EnumTypes defines enum variants for lcs
 func (*RawTransaction) EnumTypes() []lcs.EnumVariant {
-	return []lcs.EnumVariant{
-		{
-			Name:     "TransactionPayload",
-			Value:    1,
-			Template: (*TxnPayloadWriteSet)(nil),
-		},
-		{
-			Name:     "TransactionPayload",
-			Value:    2,
-			Template: (*TxnPayloadScript)(nil),
-		},
-		{
-			Name:     "TransactionPayload",
-			Value:    3,
-			Template: TxnPayloadModule(nil),
-		},
-	}
+	return append(txnPayloadEnumDef, typeTagEnumDef...)
 }
 
 // Clone the raw transaction

@@ -8,12 +8,10 @@ func AccountResourceTag() AccessPathTag {
 	}
 }
 
-func LBRTypeTag() *TypeTag {
-	return &TypeTag{
-		TypeTag: &TypeTagStructTag{
-			Module: "LBR",
-			Name:   "T",
-		},
+func LBRTypeTag() TypeTag {
+	return &TypeTagStructTag{
+		Module: "LBR",
+		Name:   "T",
 	}
 }
 
@@ -22,7 +20,7 @@ func BalanceResourceTag() AccessPathTag {
 	return &StructTag{
 		Module:     "LibraAccount",
 		Name:       "Balance",
-		TypeParams: []TypeTag{*LBRTypeTag()},
+		TypeParams: []TypeTag{LBRTypeTag()},
 	}
 }
 
