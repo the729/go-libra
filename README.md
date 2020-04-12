@@ -13,7 +13,7 @@ It has all cryptographic verification algorithms, including validator-signature-
 
 ## Features
 
-Compatible with testnet 2020/2/29 (commit hash [63e2d574](https://github.com/libra/libra/commit/63e2d5747d98656296da2f07ae84c8e1eed3c382)).
+Compatible with testnet 2020/4/8 (commit hash [718ace82](https://github.com/libra/libra/commit/718ace82250e7bd64e08d7d61951bfaa8cee9ea4)).
 
 - Data models with all necessary cryptographic verification algorithms
   - Ledger state: signature-based consensus verification
@@ -60,19 +60,18 @@ import (
 )
 
 const (
-	defaultServer    = "ac.testnet.libra.org:8000"
-	trustedPeersFile = "../consensus_peers.config.toml"
+	defaultServer = "ac.testnet.libra.org:8000"
+	waypoint      = "0:4d4d0feaa9378069f8fcee71980e142273837e108702d8d7f93a8419e2736f3f"
 )
 
 func main() {
-	c, err := client.New(defaultServer, trustedPeersFile)
+	c, err := client.New(defaultServer, waypoint)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
 
-	addrStr := "18b553473df736e5e363e7214bd624735ca66ac22a7048e3295c9b9b9adfc26a"
-	// Parse hex string into binary address
+	addrStr := "42f5745128c05452a0c68272de8042b1"
 	addr := client.MustToAddress(addrStr)
 
 	// provenState is cryptographically proven state of account
@@ -86,45 +85,47 @@ func main() {
 		return
 	}
 
-	provenResource, err := c.GetLibraCoinResourceFromAccountBlob(provenState.GetAccountBlob())
+	ar, br, err := provenState.GetAccountBlob().GetLibraResources()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Balance (microLibra): %d", provenResource.GetBalance())
-	log.Printf("Sequence Number: %d", provenResource.GetSequenceNumber())
+	log.Printf("Balance: %d", br.Coin)
+	log.Printf("Sequence Number: %d", ar.SequenceNumber)
+	log.Printf("Authentication key: %v", hex.EncodeToString(ar.AuthenticationKey))
 }
 ```
 
 ### Make peer-to-peer transaction
 
 ```golang
-// Get current account sequence of sender
-seq, err := c.GetAccountSequenceNumber(senderAddr)
+log.Printf("Get current account sequence of sender...")
+seq, err := c.QueryAccountSequenceNumber(context.TODO(), senderAddr)
 if err != nil {
 	log.Fatal(err)
 }
+log.Printf("... is %d", seq)
 
-// Build a raw transaction
-rawTxn, err := types.NewRawP2PTransaction(
-	senderAddr, recvAddr, seq,
+rawTxn, err := client.NewRawP2PTransaction(
+	senderAddr, recvAddr, recvAuthKeyPrefix, seq,
 	amountMicro, maxGasAmount, gasUnitPrice, expiration,
 )
 if err != nil {
 	log.Fatal(err)
 }
 
-// Sign and submit transaction
-err = c.SubmitRawTransaction(context.TODO(), rawTxn, priKey)
+log.Printf("Submit transaction...")
+expectedSeq, err := c.SubmitRawTransaction(context.TODO(), rawTxn, priKey)
 if err != nil {
 	log.Fatal(err)
 }
 
-// Wait until transaction is included in ledger, or timeout
-err = c.PollSequenceUntil(context.TODO(), senderAddr, seq+1, expiration)
+log.Printf("Waiting until transaction is included in ledger...")
+err = c.PollSequenceUntil(context.TODO(), senderAddr, expectedSeq, expiration)
 if err != nil {
 	log.Fatal(err)
 }
+log.Printf("done.")
 ```
 
 ### Other examples

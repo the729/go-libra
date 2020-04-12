@@ -10,7 +10,7 @@ import (
 
 const (
 	defaultServer = "ac.testnet.libra.org:8000"
-	waypoint      = "0:a69511cc7e6d609efcf03e64098056bc3c96d383e0adcf752464a111b081b808"
+	waypoint      = "0:4d4d0feaa9378069f8fcee71980e142273837e108702d8d7f93a8419e2736f3f"
 )
 
 func main() {
