@@ -24,9 +24,11 @@ func main() {
 		"client":                   newClient,
 		"resourcePath":             types.ResourcePath,
 		"accountResourcePath":      types.AccountResourcePath,
+		"balanceResourcePath":      types.BalanceResourcePath,
 		"accountSentEventPath":     types.AccountSentEventPath,
 		"accountReceivedEventPath": types.AccountReceivedEventPath,
 		"pubkeyToAddress":          client.PubkeyMustToAddress,
+		"pubkeyToAuthKey":          client.PubkeyMustToAuthKey,
 		"inferProgramName":         stdscript.InferProgramName,
 	})
 	jsTypeOf = js.Global.Call("eval", `(function(x){return typeof(x);})`)

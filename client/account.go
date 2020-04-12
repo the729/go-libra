@@ -34,3 +34,13 @@ func PubkeyMustToAddress(pubkey []byte) (out types.AccountAddress) {
 	copy(out[:], keyHash[hasher.Size()-types.AccountAddressLength:])
 	return
 }
+
+// PubkeyMustToAuthKey converts an ed25519 public key (32 bytes) into auth key (32 bytes).
+func PubkeyMustToAuthKey(pubkey []byte) []byte {
+	if len(pubkey) != ed25519.PublicKeySize {
+		panic("wrong pubkey length")
+	}
+	hasher := sha3.New256()
+	hasher.Write(pubkey)
+	return hasher.Sum([]byte{})
+}

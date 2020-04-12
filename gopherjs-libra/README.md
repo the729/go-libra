@@ -1,5 +1,7 @@
 A Libra js client library with crypto verifications, for NodeJS and browsers.
 
+Compatible with libra testnet updated on 4/8/2020.
+
 # Usage
 
 In order to work with browsers, `gopherjs-libra` uses gRPC-Web which is not directly compatible with gRPC. A proxy is needed to forward gRPC-Web requests to gRPC backends. You can setup an Envoy proxy (https://grpc.io/docs/tutorials/basic/web/), or use my demo proxy shown in the examples. 
@@ -62,7 +64,10 @@ const { libra } = require("gopherjs-libra");
 
 keyPair = sign.keyPair();
 address = libra.pubkeyToAddress(keyPair.publicKey);
-// address is a libra account address (Uint8Array, 32-byte)
+authKey = libra.pubkeyToAuthKey(keyPair.publicKey);
+// address is a libra account address (Uint8Array, 16-byte)
+// authKey is the full auth key (Uint8Array, 32-byte)
+// Use authkey[0:16] if you need authKeyPrefix
 // keyPair.secretKey is the corresponding private key (Uint8Array, 64-byte)
 ```
 
@@ -120,6 +125,10 @@ Arguments:
 
 Returns a `Uint8Array`: the raw path to the Libra account resource, which is `0x01+hash(0x0.LibraAccount.T)`.
 
+### `.balanceResourcePath()`
+
+Returns a `Uint8Array`: the raw path to the Libra balance resource, which is `0x01+hash(0x0.LibraAccount.Balance)`.
+
 ### `.accountSentEventPath()`
 
 Returns a `Uint8Array`: the raw path to Libra coin sent events, which is `0x01+hash(0x0.LibraAccount.T)/sent_events_count/`.
@@ -133,7 +142,14 @@ Returns a `Uint8Array`: the raw path to Libra coin received events, which is `0x
 Arguments:
  - publicKey (Uint8Array): 32-byte ed25519 public key.
 
-Returns SHA3 hash of input public key, which is used as Libra account address.
+Returns last 16 bytes of SHA3 hash of input public key, which is used as Libra account address.
+
+### `.pubkeyToAuthKey(publicKey)`
+
+Arguments:
+ - publicKey (Uint8Array): 32-byte ed25519 public key.
+
+Returns the full SHA3 hash of input public key, which is used as initial Libra account auth key.
 
 ## Object: `Client`
 
@@ -176,6 +192,7 @@ Arguments:
  - `p2pTxn` (Object): a p2p transaction object, with following keys
    - `senderAddr` (Uint8Array): sender address
    - `recvAddr` (Uint8Array): receiver address
+   - `recvAuthKeyPrefix` (Uint8Array): receiver auth key prefix (first 16 bytes of auth key)
    - `senderPrivateKey` (Uint8Array): sender ed25519 secret key (64 bytes)
    - `senderSeq` (integer): current sender account sequence number
    - `amountMicro` (integer): amount to transfer in micro libra
@@ -300,20 +317,7 @@ It has a list of getters (with return type), whose names are self-descriptive:
  - `.getLedgerInfo()` (`provenLedgerInfo`)
  - `.getAddress()` (Uint8Array)
  - `.getResource(path)` (Uint8Array): Returns a binary resource content on the given access path. Use `resourcePath()` to build a path.
- - `.getLibraAccountResource()` (`provenAccountResource`): Returns the Libra account resource.
-
-## Object: `provenAccountResource`
-
-Represents the libra account resource (0x0.LibraAccount.T) of an account, proven to be at a certain version.
-
-It has a list of getters (with return type), whose names are self-descriptive:
- - `.getLedgerInfo()` (`provenLedgerInfo`)
- - `.getAddress()` (Uint8Array)
- - `.getBalance()` (integer)
- - `.getSequenceNumber()` (integer)
- - `.getSentEvents()` (object)
- - `.getReceivedEvents()` (object)
- - `.getDelegatedWithdrawalCapability()` (bool)
+ - `.getLibraResources()` (object): Returns the Libra account resources, i.e. `accountResource` and `balanceResource`.
 
 ## Object: `provenTransaction`
 
