@@ -17,10 +17,8 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/the729/lcs v0.1.4
 	github.com/urfave/cli v1.22.1
-	golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
-	golang.org/x/sys v0.0.0-20200409092240-59c9f1ba88fa // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/net v0.7.0 // indirect
 	google.golang.org/genproto v0.0.0-20200410110633-0848e9f44c36 // indirect
 	google.golang.org/grpc v1.28.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
